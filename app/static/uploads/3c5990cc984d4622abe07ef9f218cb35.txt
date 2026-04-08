@@ -1,0 +1,127 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(ShoppingApp());
+}
+
+class ShoppingApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: ProductListScreen(),
+    );
+  }
+}
+
+class ProductListScreen extends StatefulWidget {
+  @override
+  _ProductListScreenState createState() => _ProductListScreenState();
+}
+
+class _ProductListScreenState extends State<ProductListScreen> {
+  final List<Map<String, dynamic>> products = [
+    {"name": "Smartphone", "price": 999, "description": "Latest 5G phone"},
+    {"name": "Laptop", "price": 1499, "description": "Powerful gaming laptop"},
+    {"name": "Headphones", "price": 199, "description": "Noise-cancelling"},
+    {"name": "Smartwatch", "price": 299, "description": "Fitness tracker"},
+  ];
+
+  String query = "";
+
+  @override
+  Widget build(BuildContext context) {
+    List<Map<String, dynamic>> filteredProducts = products
+        .where((product) =>
+            product["name"].toLowerCase().contains(query.toLowerCase()))
+        .toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Shopping App"),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: "Search for a product",
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  query = value;
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredProducts.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  child: ListTile(
+                    title: Text(filteredProducts[index]["name"]),
+                    subtitle: Text("\$${filteredProducts[index]["price"]}"),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ProductDetailScreen(product: filteredProducts[index]),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ProductDetailScreen extends StatelessWidget {
+  final Map<String, dynamic> product;
+
+  ProductDetailScreen({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(product["name"]),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              product["name"],
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Text(
+              "\$${product["price"]}",
+              style: TextStyle(fontSize: 20, color: Colors.green),
+            ),
+            SizedBox(height: 20),
+            Text(
+              product["description"],
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}  change the code into java,css,html,change the backround ,remove price,add shop name and location using google map if some one select the things mean shop location nearby,first we conform the like otp verification then the code will send on gmail,add the host secaret key can access only host they can enter the code and delete the users,first they chose the shop name ,they pepoles where login and search mean is show like flipkard and amason like and the shop keepre add the shop photos, things photo,location change all coding into java and html
+
+i want to create a app like Flipkart, amazon but the item all show like flipkart like but i will create for offline stores for example i have one shop me i enter shop name then i all things i have with name,photo and location of the shop and another shop also name and enter all things they having in the shop and its location of the shop that like multiple shop where add their things and location people want thing mean they will search or photo it will identified and show the result ,things that will have mean show the shop where it have and its shop location not have mean not show 
+
+
+i want to create a app like Flipkart, amazon but the item all show like flipkart like but i will create for offline stores for example i have one shop me i enter shop name then i all things i have with name,photo and location of the shop and another shop also name and enter all things they having in the shop and its location of the shop that like multiple shop where add their things and location people want thing mean they will search or photo it will identified and show the result ,things that will have mean show the shop where it have and its shop location not have mean not show 

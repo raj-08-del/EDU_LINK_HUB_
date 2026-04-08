@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% block title %}Community Channels - EDU Link Hub{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+
+    <div class="chat-layout">
+      <!-- Channels Sidebar -->
+      <aside class="chat-sidebar" id="chatSidebar">
+        <div class="chat-sidebar-section">
+          <h3 class="chat-sidebar-heading"># Channels</h3>
+          <div id="channelList">
+            {% if all_channels %}
+              {% for ch in all_channels %}
+              <a href="/community/channel/{{ ch.slug }}" class="channel-item {{ 'active' if channel.slug == ch.slug else '' }}">
+                <span class="channel-hash">#</span> {{ ch.name }}
+              </a>
+              {% endfor %}
+            {% else %}
+              <a href="/community/channel/general" class="channel-item {{ 'active' if channel_slug == 'general' else '' }}">
+                <span class="channel-hash">#</span> General
+              </a>
+              <a href="/community/channel/career-internships" class="channel-item {{ 'active' if channel_slug == 'career-internships' else '' }}">
+                <span class="channel-hash">#</span> Career & Internships
+              </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="chat-sidebar-section">
+          <h3 class="chat-sidebar-heading">⊠ Actions</h3>
+          <a href="/community" class="chat-action-link">← Back to Q&A Feed</a>
+        </div>
+      </aside>
+
+      <!-- Chat Main Area -->
+      <main class="chat-main">
+        <div style="padding:16px 24px; border-bottom:1px solid rgba(5,217,232,0.2);">
+          <h2 style="color:#fff; font-family:'Rajdhani',sans-serif; font-size:22px; margin:0;">
+            # {{ channel.name }}
+          </h2>
+          <p style="color:#888; font-size:13px; margin:4px 0 0;">{{ channel.description }}</p>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Reply Preview Bar (Requested) -->
+        <div id="reply-bar" style="display:none; background:#0a1628; border-left:3px solid #05d9e8;
+          padding:8px 16px; margin:0 16px 4px; border-radius:0 6px 6px 0;
+          align-items:center; justify-content:space-between;">
+          <span style="font-size:12px; color:#888;">
+            💬 Replying to: <span id="reply-preview-text" style="color:#05d9e8;"></span>
+          </span>
+          <button onclick="cancelReply()"
+            style="background:none;border:none;color:#ff2a6d;cursor:pointer;font-size:16px;">✕</button>
+        </div>
+
+        <form class="chat-input-bar" id="chatForm" onsubmit="event.preventDefault(); sendMessage()">
+          <input type="text" id="chat-input" placeholder="Reply..." autocomplete="off" required>
+          <button type="submit" class="chat-send-btn" id="send-btn" title="Send">➤</button>
+        </form>
+      </main>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* ─── Chat Layout ─── */
+  .chat-layout { display: flex; height: calc(100vh - var(--navbar-height)); overflow: hidden; }
+  .chat-sidebar { width: 240px; min-width: 240px; background: rgba(5, 12, 25, 0.9); border-right: 2px solid var(--accent); display: flex; flex-direction: column; padding: 20px 0; overflow-y: auto; }
+  .chat-sidebar-section { padding: 0 16px; margin-bottom: 28px; }
+  .chat-sidebar-heading { font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(5, 217, 232, 0.15); opacity: 0.8; }
+  .channel-item { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; color: #aaa; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.2s; text-decoration: none; margin-bottom: 4px; border: 1px solid transparent; }
+  .channel-item:hover { background: rgba(5, 217, 232, 0.08); color: var(--accent); }
+  .channel-item.active { background: rgba(5, 217, 232, 0.12); color: var(--accent); border-color: var(--accent); font-weight: 600; box-shadow: inset 0 0 15px rgba(5, 217, 232, 0.05); }
+  .channel-hash { color: var(--accent); font-weight: 700; font-size: 14px; opacity: 0.5; }
+  .chat-action-link { display: block; padding: 10px 14px; color: #888; font-size: 12px; text-decoration: none; border-radius: 8px; transition: 0.2s; }
+  .chat-action-link:hover { color: #fff; background: rgba(255, 42, 109, 0.08); }
+  .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: rgba(1, 10, 19, 0.5); }
+  .chat-header { padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(5, 12, 25, 0.8); }
+  .chat-header h2 { font-family: 'Rajdhani', sans-serif; font-size: 18px; color: #fff; margin: 0; }
+  .chat-header p { font-size: 12px; color: #888; margin-top: 2px; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 4px; }
+  .chat-msg { padding: 8px 0; display: flex; gap: 12px; animation: msgFadeIn 0.3s ease; position: relative; }
+  .chat-msg:hover .msg-menu-btn { opacity: 1; }
+  .msg-menu-btn { opacity: 0; position: absolute; right: 8px; top: 8px; background: none; border: none; color: #05d9e8; cursor: pointer; font-size: 16px; transition: 0.2s; z-index: 10; }
+  .msg-dropdown { display: none; position: absolute; right: 0; top: 28px; background: #0d1b2a; border: 1px solid #05d9e8; border-radius: 8px; min-width: 140px; z-index: 999; padding: 4px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+  .msg-dropdown.show { display: block; }
+  .msg-dropdown a { display: block; padding: 8px 16px; color: #fff; font-size: 13px; cursor: pointer; text-decoration: none; transition: 0.2s; }
+  .msg-dropdown a:hover { background: #1a2a3a; color: #05d9e8; }
+  #reply-preview { display: none; background: #1a2a3a; border-left: 3px solid #05d9e8; padding: 8px 12px; margin: 0 0 4px; border-radius: 0 6px 6px 0; font-size: 12px; color: #aaa; position: relative; }
+  #reply-preview #reply-text { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 20px; }
+  @keyframes msgFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .msg-avatar { width: 36px; height: 36px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #010a13; flex-shrink: 0; font-family: 'Rajdhani', sans-serif; }
+  .msg-body { min-width: 0; }
+  .msg-meta { display: flex; align-items: baseline; gap: 10px; margin-bottom: 2px; }
+  .msg-author { font-weight: 700; font-size: 13px; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.5px; }
+  .msg-time { font-size: 10px; color: #666; }
+  .msg-content { font-size: 14px; color: #dfdfdf; line-height: 1.5; word-break: break-word; }
+  .chat-input-bar { display: flex; gap: 8px; padding: 12px 24px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(5, 12, 25, 0.8); }
+  .chat-input-bar input { flex: 1; padding: 12px 16px; background: #0a1628; border: 1px solid rgba(5, 217, 232, 0.2); border-radius: 8px; color: #fff; font-size: 14px; outline: none; transition: 0.2s; }
+  .chat-input-bar input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(5, 217, 232, 0.1); }
+  .chat-send-btn { width: 44px; height: 44px; border: 2px solid var(--accent); border-radius: 8px; background: transparent; color: var(--accent); font-size: 18px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+  .chat-send-btn:hover { background: rgba(5, 217, 232, 0.1); box-shadow: 0 0 15px rgba(5, 217, 232, 0.2); }
+  .msg-reply-link { background: rgba(255,255,255,0.05); border-left: 3px solid #ffaa00; padding: 8px 12px; margin-bottom: 8px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+</style>
+
+{% block scripts %}
+<span id="js-config" style="display:none"
+  data-is-admin="{% if current_user_role|lower == 'admin' %}true{% else %}false{% endif %}">
+</span>
+<script>
+  window.CHANNEL_SLUG = '{{ channel.slug }}';
+  window.PREFILL_OPP_ID = "{{ prefill_opp_id or '' }}";
+  const currentUserId = "{{ current_user_id }}";
+  const IS_ADMIN = document.getElementById('js-config').dataset.isAdmin === 'true';
+  let lastMessageId = null;
+  let replyToId = null;
+
+  async function loadChannels() {
+    try {
+      const channels = await apiFetch('/api/chat/channels');
+      const dynamicList = document.getElementById('dynamicChannels');
+      const others = channels.filter(ch => ch.slug !== 'general' && ch.slug !== 'career-internships');
+      if (others.length === 0) return;
+      dynamicList.innerHTML = others.map(ch => `
+        <a href="/community/channel/${ch.slug}" class="channel-item ${ch.slug === window.CHANNEL_SLUG ? 'active' : ''}">
+          <span class="channel-hash">#</span> ${escapeHtml(ch.name)}
+        </a>
+      `).join('');
+    } catch (err) {}
+  }
+
+  async function loadMessages() {
+    try {
+      const msgs = await apiFetch(`/api/chat/channels/${window.CHANNEL_SLUG}/messages`);
+      const container = document.getElementById('chatMessages');
+      if (!msgs || msgs.length === 0) {
+        if (container.innerHTML.includes('spinner')) {
+          container.innerHTML = '<div style="text-align:center; padding:40px; color:#555;"><p>No messages yet.</p></div>';
+        }
+        return;
+      }
+      const newLastId = msgs[msgs.length - 1]._id;
+      if (newLastId === lastMessageId) return;
+      lastMessageId = newLastId;
+
+      container.innerHTML = msgs.map(m => `
+        <div class="msg-row" style="display:flex; gap:12px; padding:10px 24px; align-items:flex-start;">
+          <div style="width:36px; height:36px; border-radius:50%; background:rgba(5,217,232,0.15);
+            border:1px solid #05d9e8; display:flex; align-items:center; justify-content:center;
+            flex-shrink:0; font-size:14px;">👤</div>
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              ${IS_ADMIN
+                ? `<span style="color:#05d9e8; font-size:12px; font-weight:600;">${escapeHtml(m.author_name || 'Anonymous')}</span><span style="font-size:10px; background:rgba(255,71,87,0.15); color:#ff4757; border:1px solid rgba(255,71,87,0.3); border-radius:4px; padding:1px 5px; margin-left:2px;">ADMIN VIEW</span>`
+                : `<span style="color:#888; font-size:12px;">Anonymous</span>`
+              }
+              <span style="color:#555; font-size:11px;">${formatDate(m.created_at)}</span>
+            </div>
+            ${m.reply_to_text ? `
+            <div style="background:rgba(5,217,232,0.08); border-left:3px solid #05d9e8;
+              padding:6px 10px; border-radius:0 6px 6px 0; margin-bottom:6px;
+              font-size:12px; color:#888;">
+              ${IS_ADMIN ? escapeHtml(m.reply_to_author_name || 'Anonymous') : 'Anonymous'}: ${escapeHtml(m.reply_to_text)}
+            </div>
+            ` : ''}
+            <p style="color:#fff; font-size:14px; margin:0; line-height:1.6;">${escapeHtml(m.content)}</p>
+          </div>
+          <div style="position:relative;">
+            <button class="msg-three-dot" data-id="${m._id}"
+              style="background:none;border:none;color:#555;cursor:pointer;font-size:16px;
+              padding:4px 8px;border-radius:4px;" onmouseover="this.style.color='#05d9e8'"
+              onmouseout="this.style.color='#555'">⋮</button>
+            <div class="msg-dropdown" id="msgmenu-${m._id}"
+              style="display:none;position:absolute;right:0;top:28px;background:#0d1b2a;
+              border:1px solid #05d9e8;border-radius:8px;min-width:130px;z-index:999;padding:4px 0;">
+              <a onclick="replyToMsg('${m._id}','${escapeHtml(m.content).substring(0, 60).replace(/'/g, "\\'")}')"
+                style="display:block;padding:8px 16px;color:#fff;font-size:13px;cursor:pointer;">
+                💬 Reply
+              </a>
+              <a onclick="reportMsg('${m._id}')"
+                style="display:block;padding:8px 16px;color:#ff2a6d;font-size:13px;cursor:pointer;">
+                🚩 Report
+              </a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      container.scrollTop = container.scrollHeight;
+    } catch (err) {}
+  }
+
+  function replyToMsg(msgId, msgText) {
+    replyToId = msgId;
+    const bar = document.getElementById('reply-bar');
+    const preview = document.getElementById('reply-preview-text');
+    if (bar && preview) {
+      preview.textContent = msgText.substring(0, 60) + (msgText.length > 60 ? '...' : '');
+      bar.style.display = 'flex';
+    }
+    document.getElementById('chat-input')?.focus();
+    closeAllMsgMenus();
+  }
+
+  function cancelReply() {
+    replyToId = null;
+    const bar = document.getElementById('reply-bar');
+    if (bar) bar.style.display = 'none';
+    const preview = document.getElementById('reply-preview-text');
+    if (preview) preview.textContent = '';
+  }
+
+  function reportMsg(msgId) {
+    if (!confirm('Report this message?')) return;
+    fetch('/api/reports', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({contentType:'channel_message', contentId: msgId, contentTitle:'Chat message', reason:'Reported by user', status:'pending'})
+    });
+    showToast('Message reported', 'success');
+    closeAllMsgMenus();
+  }
+
+  function closeAllMsgMenus() {
+    document.querySelectorAll('.msg-dropdown').forEach(d => d.style.display = 'none');
+  }
+
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.msg-three-dot');
+    closeAllMsgMenus();
+    if (btn) {
+      e.stopPropagation();
+      const menu = document.getElementById('msgmenu-' + btn.dataset.id);
+      if (menu) menu.style.display = 'block';
+    }
+  });
+
+  async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const content = input?.value?.trim();
+    if (!content) { console.warn('Empty message'); return; }
+
+    const sendBtn = document.getElementById('send-btn');
+    if (sendBtn) sendBtn.disabled = true;
+
+    try {
+      const res = await fetch('/api/channel/messages', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          content: content,
+          channel_slug: window.CHANNEL_SLUG,
+          reply_to: replyToId || null,
+          reply_to_text: replyToId ? document.getElementById('reply-preview-text')?.textContent : null,
+          prefill_opp_id: window.PREFILL_OPP_ID || null
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        input.value = '';
+        cancelReply();
+        loadMessages();
+      } else {
+        console.error('Send failed:', data);
+        showToast('Failed to send: ' + (data.error || data.message), 'error');
+      }
+    } catch(e) {
+      console.error('Send error:', e);
+      showToast('Network error. Try again.', 'error');
+    } finally {
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  }
+
+  document.getElementById('chat-input')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  function formatDate(d) {
+    const date = new Date(d);
+    return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  }
+
+  // Pre-fill Logic
+  document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const prefill = params.get('prefill');
+    if (prefill) {
+      const input = document.getElementById('chat-input');
+      if (input) {
+        input.value = decodeURIComponent(prefill).replace(/\+/g, ' ');
+        input.focus();
+      }
+    }
+  });
+
+  // Init
+  loadChannels();
+  loadMessages();
+  setInterval(loadMessages, 3000);
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,515 @@
+{% extends 'base.html' %}
+{% block title %}College Details - EDU Link Hub{% endblock %}
+
+{% block body %}
+{% include 'partials/navbar.html' %}
+
+<div class="layout slide-up">
+  {% include 'partials/sidebar.html' %}
+  
+  <main class="main-content" style="padding:0">
+    <!-- HERO SECTION -->
+    <section id="collegeHero" class="pattern-bg" style="padding: 60px 40px; background: linear-gradient(135deg, rgba(20,20,40,0.96), rgba(10,10,20,0.96)), url('/static/pattern.svg'); border-bottom: 2px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
+      <div id="loader" style="text-align: center; padding: 40px;">
+        <div class="spinner"></div><p style="margin-top:20px; color:var(--cyan); font-family:'Rajdhani'; font-weight:bold;">ACCESSING COLLEGE DATA...</p>
+      </div>
+
+      <div id="heroContent" style="display: none; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 30px;">
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+            <span id="collegeTypeBadge" class="chip chip-prominent" style="background: var(--cyan); color: #000; font-weight: 800;">GOVERNMENT</span>
+            <span id="verifiedLabel" style="color: var(--accent); font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
+               <span class="verified-icon">check_circle</span> VERIFIED CAMPUS
+            </span>
+          </div>
+          <h1 id="collegeName" style="font-size: 3.5rem; margin-bottom: 15px; line-height: 1; letter-spacing: -1px; color: #fff;">College Name</h1>
+          <div id="collegeMeta" style="color: var(--text-secondary); font-size: 1.2rem; display: flex; align-items: center; gap: 15px;">
+             <span>📍 Chennai, Tamil Nadu</span>
+             <span style="opacity: 0.3;">|</span>
+             <span>🗓️ Est. 1978</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 15px; padding-bottom: 5px;">
+           <button class="btn btn-primary" id="joinBtn" onclick="openJoinModal()" style="padding: 15px 35px; border-radius: 40px;">JOIN COMMUNITY</button>
+           <button class="btn btn-outline" onclick="openReviewModal()" style="padding: 15px 35px; border-radius: 40px;">WRITE REVIEW</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUICK STATS & RATING SUMMARY -->
+    <section id="statsStrip" style="display: none; padding: 30px 40px; background: rgba(5,15,30,0.8); border-bottom: 1px solid var(--border); display: flex; gap: 40px; align-items: center; flex-wrap: wrap;">
+
+
+
+    </section>
+
+    <!-- CONTENT SECTION (CLEAN PROFILE) -->
+    <section id="contentPanes" style="padding: 60px 40px; max-width: 1000px; margin: 0 auto;">
+          <!-- OVERVIEW (CATEGORY GRID) -->
+          <div id="pane-overview" class="tab-pane active">
+             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 600px; margin: 0 auto 40px;">
+                <!-- SQUARE COVER 1: OVERVIEW -->
+                <div class="card glass-card link-card" style="aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid var(--border); border-top: 4px solid var(--cyan); background: linear-gradient(135deg, rgba(5,217,232,0.05), transparent);">
+                   <div style="font-size: 3.5rem; margin-bottom: 10px;">🏠</div>
+                   <div style="font-size: 1.4rem; font-weight: bold; color: #fff; font-family: 'Rajdhani'; letter-spacing: 1px;">OVERVIEW</div>
+                </div>
+                <!-- SQUARE COVER 2: REVIEWS -->
+                <div class="card glass-card link-card" style="aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid var(--border); border-top: 4px solid #ffd700; background: linear-gradient(135deg, rgba(255,215,0,0.05), transparent);">
+                   <div style="font-size: 3.5rem; margin-bottom: 10px;">⭐</div>
+                   <div id="statTotalReviews" style="font-size: 2.2rem; font-weight: bold; color: #ffd700; font-family: 'Rajdhani';">0</div>
+                   <div style="color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; font-weight: 800;">REVIEWS</div>
+                </div>
+                <!-- SQUARE COVER 3: DEPARTMENTS -->
+                <div class="card glass-card link-card" style="aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid var(--border); border-top: 4px solid var(--accent); background: linear-gradient(135deg, rgba(108,99,255,0.05), transparent);">
+                   <div style="font-size: 3.5rem; margin-bottom: 10px;">🏢</div>
+                   <div id="statTotalDepts" style="font-size: 2.2rem; font-weight: bold; color: var(--accent); font-family: 'Rajdhani';">0</div>
+                   <div style="color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; font-weight: 800;">DEPARTMENTS</div>
+                </div>
+                <!-- SQUARE COVER 4: PLACEMENTS -->
+                <div class="card glass-card link-card" style="aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid var(--border); border-top: 4px solid #ff2a6d; background: linear-gradient(135deg, rgba(255,42,109,0.05), transparent);">
+                   <div style="font-size: 3.5rem; margin-bottom: 10px;">💼</div>
+                   <div id="statAvgPackage" style="font-size: 2.2rem; font-weight: bold; color: #ff2a6d; font-family: 'Rajdhani';">-</div>
+                   <div style="color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; font-weight: 800;">PLACEMENTS</div>
+                </div>
+             </div>
+          </div>
+          <div id="pane-events" class="tab-pane" style="display: none;">
+             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2>UPCOMING CAMPUS EVENTS</h2>
+                <button class="btn btn-sm btn-outline">+ PROPOSE EVENT</button>
+             </div>
+             <div id="eventsGrid" class="grid grid-2" style="gap: 25px;">
+                <!-- Event cards -->
+             </div>
+          </div>
+
+          <!-- DISCUSSIONS PANE -->
+          <div id="pane-discussions" class="tab-pane" style="display: none;">
+             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2>CAMPUS DISCUSSIONS</h2>
+                <button class="btn btn-sm btn-primary" onclick="goToCreateDiscussion()">+ NEW DISCUSSION</button>
+             </div>
+             <div id="discussionsList" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Discussion posts -->
+             </div>
+          </div>
+
+       </div>
+    </section>
+  </main>
+</div>
+
+<!-- Review Modal -->
+<div class="modal-overlay" id="reviewModal" style="display:none;" onclick="if(event.target===this) closeModal('reviewModal')">
+  <div class="modal glass-card" style="max-width: 700px; width: 95%; border: 1px solid var(--cyan); overflow: hidden;">
+    <div style="padding: 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(5,217,232,0.1);">
+       <h2 style="margin:0; color: var(--cyan);">SHARE YOUR EXPERIENCE</h2>
+       <button class="btn btn-xs btn-secondary" onclick="closeModal('reviewModal')">✕</button>
+    </div>
+    <div style="max-height: 80vh; overflow-y: auto; padding: 30px;">
+       
+       <div style="text-align: center; margin-bottom: 30px;">
+          <label style="display: block; margin-bottom: 10px; font-weight: bold; color: var(--text-secondary);">Overall satisfaction</label>
+          <div class="star-input-group" data-category="overall">
+             <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+          </div>
+          <div id="overallStarLabel" style="margin-top: 10px; color: var(--accent); font-weight: bold;">Select your rating</div>
+       </div>
+
+       <div class="grid grid-2" style="gap: 25px;">
+          <div class="form-group review-cat-input">
+             <label>Academic Quality</label>
+             <div class="star-input-small" data-category="academics">
+                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+             </div>
+          </div>
+          <div class="form-group review-cat-input">
+             <label>Placement Support</label>
+             <div class="star-input-small" data-category="placements">
+                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+             </div>
+          </div>
+          <div class="form-group review-cat-input">
+             <label>Infrastructure & Labs</label>
+             <div class="star-input-small" data-category="infrastructure">
+                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+             </div>
+          </div>
+          <div class="form-group review-cat-input">
+             <label>Faculty & Mentorship</label>
+             <div class="star-input-small" data-category="faculty">
+                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+             </div>
+          </div>
+          <div class="form-group review-cat-input">
+             <label>Campus & Social Life</label>
+             <div class="star-input-small" data-category="campus_life">
+                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+             </div>
+          </div>
+          <div class="form-group review-cat-input">
+             <label>Recommend to others?</label>
+             <select id="revRecommend" class="input glass">
+                <option value="true">Yes, Definitely</option>
+                <option value="false">No, Wouldn't recommend</option>
+             </select>
+          </div>
+       </div>
+
+       <div class="form-group" style="margin-top: 30px;">
+          <label>Public Review (Explain your ratings)</label>
+          <textarea id="revContent" class="input glass" rows="5" placeholder="What are the pros and cons? How is the campus culture?"></textarea>
+       </div>
+
+       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+             <input type="checkbox" id="revAnon" style="width:18px; height:18px;"> Post Anonymously
+          </label>
+          <button class="btn btn-primary" onclick="submitReview()" style="padding: 12px 40px;">SUBMIT REVIEW</button>
+       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Join Modal -->
+<div class="modal-overlay" id="joinModal" style="display:none;" onclick="if(event.target===this) closeModal('joinModal')">
+   <div class="modal glass-card" style="max-width: 450px; width: 95%; border: 1px solid var(--cyan);">
+      <div style="padding: 25px; border-bottom: 1px solid var(--border); background: rgba(5,217,232,0.1);">
+         <h3 style="margin:0; color: var(--cyan);">JOIN CAMPUS COMMUNITY</h3>
+      </div>
+      <div style="padding: 30px;">
+         <p style="color: var(--text-muted); margin-bottom: 25px;">Select your academic details to connect with peers and access department-specific resources.</p>
+         
+         <div class="form-group">
+            <label>Select Department</label>
+            <select id="joinDeptSelect" class="input glass">
+               <option value="">-- Choose Department --</option>
+            </select>
+         </div>
+
+         <div class="form-group">
+            <label>Year of Study</label>
+            <select id="joinYearSelect" class="input glass">
+               <option value="1">1st Year (Freshman)</option>
+               <option value="2">2nd Year (Sophomore)</option>
+               <option value="3">3rd Year (Junior)</option>
+               <option value="4">4th Year (Senior)</option>
+               <option value="5">5th Year+</option>
+               <option value="0">Alumni</option>
+            </select>
+         </div>
+
+         <button class="btn btn-primary btn-full" onclick="submitJoinRequest()" style="margin-top: 20px;">CONNECT TO COMMUNITY</button>
+      </div>
+   </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CID = "{{ college_id }}";
+let COLLEGE = null;
+let RATING_DATA = { overall: 0, academics: 0, placements: 0, infrastructure: 0, faculty: 0, campus_life: 0 };
+
+document.addEventListener('DOMContentLoaded', async () => {
+   try {
+      COLLEGE = await apiFetch(`/api/colleges/${CID}`);
+      renderHero(COLLEGE);
+      renderStats(COLLEGE);
+      setupTabs();
+      setupStarRatingInputs();
+      
+      // Auto-switch to hash tab
+      if (window.location.hash) {
+         const target = window.location.hash.substring(1);
+         if(document.querySelector(`[data-target="${target}"]`)) switchTab(target);
+      } else {
+         switchTab('overview');
+      }
+
+   } catch(e) {
+      document.getElementById('loader').innerHTML = '<div style="color:var(--danger)">FAILED TO LOAD COLLEGE DATA</div>';
+   }
+});
+
+function renderHero(c) {
+   document.getElementById('loader').style.display = 'none';
+   document.getElementById('heroContent').style.display = 'flex';
+   document.getElementById('statsStrip').style.display = 'flex';
+   
+   document.getElementById('collegeName').textContent = c.name;
+   document.getElementById('collegeTypeBadge').textContent = c.type.toUpperCase();
+   document.getElementById('collegeMeta').innerHTML = `📍 ${c.city}, ${c.state || ''} <span style="opacity:0.3">|</span> 🗓️ Est. ${c.established || ''}`;
+   
+   if (!c.is_verified) document.getElementById('verifiedLabel').style.display = 'none';
+   
+   if (c.is_member) {
+      const btn = document.getElementById('joinBtn');
+      btn.className = 'btn btn-outline';
+      btn.innerHTML = '✅ JOINED';
+      btn.onclick = null;
+   }
+}
+
+function renderStats(c) {
+
+   // Restoration of Stat Population
+   document.getElementById('statTotalReviews').textContent = c.ratings.total_reviews || 0;
+   document.getElementById('statTotalDepts').textContent = c.stats.total_departments || 0;
+   document.getElementById('statAvgPackage').textContent = c.stats.avg_package || 'N/A';
+
+   // Category bars
+   const cats = [
+      { l: 'Academics', k: 'academics', c: 'var(--cyan)' },
+      { l: 'Placements', k: 'placements', c: 'var(--primary)' },
+      { l: 'Faculty', k: 'faculty', c: 'var(--accent)' },
+      { l: 'Infrastructure', k: 'infrastructure', c: 'var(--warning)' },
+      { l: 'Social Life', k: 'campus_life', c: '#a8d8ea' }
+   ];
+   
+   document.getElementById('categoryRatings').innerHTML = cats.map(cat => {
+      const val = c.ratings[cat.k] || 0;
+      return `
+      <div style="min-width: 140px;">
+         <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:5px;">
+            <span style="color:var(--text-muted); text-transform:uppercase;">${cat.l}</span>
+            <span style="font-weight:bold;">${val.toFixed(1)}</span>
+         </div>
+         <div class="rating-bar-bg"><div class="fill" style="width:${(val/5)*100}%; background:${cat.c}"></div></div>
+      </div>
+      `;
+   }).join('');
+
+   // Populate Join Dept Select
+   const joinSelect = document.getElementById('joinDeptSelect');
+   (c.departments || []).forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d._id; opt.textContent = d.name;
+      joinSelect.appendChild(opt);
+   });
+}
+
+function setupTabs() {
+   document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.onclick = () => switchTab(btn.dataset.target);
+   });
+}
+
+function switchTab(target) {
+   document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.style.borderBottomColor = 'transparent';
+      if(b.dataset.target === target) {
+         b.classList.add('active');
+         b.style.borderBottomColor = 'var(--cyan)';
+      }
+   });
+   
+   document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+   const pane = document.getElementById(`pane-${target}`);
+   if(pane) {
+      pane.style.display = target === 'overview' ? 'grid' : 'block';
+      window.location.hash = target;
+      
+      // Lazy load tab data
+      if (pane.dataset.loaded !== 'true') {
+         if (target === 'reviews') fetchTabPosts('review', 'reviewsList', renderReviewCard);
+         if (target === 'departments') renderDepartmentsTab();
+         if (target === 'placements') fetchTabPosts('placement_info', 'placementsList', renderHorizontalPostCard);
+         if (target === 'events') fetchTabPosts('event', 'eventsGrid', renderEventCard);
+         if (target === 'discussions') fetchTabPosts('discussion', 'discussionsList', renderHorizontalPostCard);
+         pane.dataset.loaded = 'true';
+      }
+   }
+}
+
+async function fetchTabPosts(type, containerId, renderer) {
+   const container = document.getElementById(containerId);
+   container.innerHTML = '<div class="spinner"></div>';
+   try {
+      const posts = await apiFetch(`/api/colleges/${CID}/posts/?type=${type}`);
+      container.innerHTML = posts.length ? posts.map(renderer).join('') : '<div style="padding:40px; text-align:center; color:var(--text-muted)">No activity yet in this category.</div>';
+   } catch(e) { container.innerHTML = 'Error loading posts.'; }
+}
+
+function renderReviewCard(p) {
+   return `
+   <div class="card glass review-card animate-in">
+      <div class="review-header">
+         <div class="stars">${getStarsHtml(p.rating?.overall)}</div>
+         <div class="meta">${p.rating?.would_recommend ? '✅ Recommends' : '❌ No'} • ${new Date(p.created_at).toLocaleDateString()}</div>
+      </div>
+      <p class="review-content">${p.content}</p>
+      <div class="review-footer">
+         <div class="author-info">By ${p.is_anonymous ? 'Anonymous Student' : (p.author_info?.name || 'User')}</div>
+         <div class="actions">
+            <button class="btn btn-xs btn-outline" onclick="toggleUpvote('${p._id}')">👍 ${p.upvotes?.length||0}</button>
+            <button class="btn btn-xs btn-outline" onclick="viewPost('${p._id}')">💬 ${p.replies?.length||0} REPLIES</button>
+         </div>
+      </div>
+   </div>`;
+}
+
+function renderHorizontalPostCard(p) {
+   return `
+   <div class="card glass horizontal-post animate-in" onclick="viewPost('${p._id}')">
+      <div class="post-badges">
+         <span class="chip chip-outline">${p.post_type}</span>
+         ${p.is_pinned ? '📌' : ''}
+      </div>
+      <h3>${p.title}</h3>
+      <p>${p.content.substring(0, 150)}...</p>
+      <div class="post-footer">
+         <span>👤 ${p.is_anonymous ? 'Anonymous' : (p.author_info?.name || 'User')}</span>
+         <span>👍 ${p.upvotes?.length||0}</span>
+         <span>💬 ${p.replies?.length||0}</span>
+         <span>📅 ${new Date(p.created_at).toLocaleDateString()}</span>
+      </div>
+   </div>`;
+}
+
+function renderEventCard(p) {
+   return `
+   <div class="card glass event-card animate-in">
+      <div class="event-banner">${p.event_data?.event_date || 'TBD'}</div>
+      <div class="event-body">
+         <h3>${p.title}</h3>
+         <p>📍 ${p.event_data?.venue || 'Campus'}</p>
+         <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:var(--text-muted); font-size:0.8rem;">${p.event_data?.rsvp_users?.length||0} Going</span>
+            <button class="btn btn-sm btn-primary" onclick="toggleRSVP('${p._id}')">RSVP</button>
+         </div>
+      </div>
+   </div>`;
+}
+
+function renderDepartmentsTab() {
+   const grid = document.getElementById('departmentsGrid');
+   grid.innerHTML = (COLLEGE.departments || []).map(d => `
+   <div class="card glass dept-card animate-in">
+      <h3>${d.name}</h3>
+      <div class="meta">${d.short_name} • 👥 ${d.stats?.total_members||0} Members</div>
+      <a href="/colleges/${CID}/dept/${d._id}" class="btn btn-sm btn-outline btn-full" style="margin-top:15px;">ENTER COMMUNITY</a>
+   </div>`).join('');
+}
+
+function setupStarRatingInputs() {
+   const starGroups = document.querySelectorAll('.star-input-group, .star-input-small');
+   starGroups.forEach(group => {
+      const cat = group.dataset.category;
+      const stars = group.querySelectorAll('span');
+      
+      stars.forEach(star => {
+         star.onclick = () => {
+            const val = parseInt(star.dataset.v);
+            RATING_DATA[cat] = val;
+            updateStarDisplay(group, val);
+            if(cat === 'overall') updateOverallLabel(val);
+         };
+         star.onmouseover = () => updateStarDisplay(group, parseInt(star.dataset.v));
+         star.onmouseout = () => updateStarDisplay(group, RATING_DATA[cat]);
+      });
+   });
+}
+
+function updateStarDisplay(group, val) {
+   group.querySelectorAll('span').forEach(s => {
+      s.style.color = parseInt(s.dataset.v) <= val ? '#ffd700' : 'rgba(255,255,255,0.1)';
+      if(parseInt(s.dataset.v) <= val) s.classList.add('active'); else s.classList.remove('active');
+   });
+}
+
+function updateOverallLabel(val) {
+   const labels = ['', 'Terrible 😞', 'Poor 🙁', 'Average 😐', 'Good! 🙂', 'Exemplary! 🤩'];
+   document.getElementById('overallStarLabel').textContent = labels[val] || 'Select your rating';
+}
+
+async function submitReview() {
+   if(!RATING_DATA.overall) return showToast('Please select an overall rating', 'warning');
+   const content = document.getElementById('revContent').value.trim();
+   if (!content) return showToast('Please write a detailed review', 'warning');
+
+   try {
+      await apiFetch(`/api/colleges/${CID}/posts/`, {
+         method: 'POST',
+         body: {
+            post_type: 'review',
+            title: 'College Review',
+            content: content,
+            is_anonymous: document.getElementById('revAnon').checked,
+            rating: { ...RATING_DATA, would_recommend: document.getElementById('revRecommend').value === 'true' }
+         }
+      });
+      showToast('Review shared successfully!', 'success');
+      closeModal('reviewModal');
+      location.reload();
+   } catch(e) { showToast('Submission failed', 'error'); }
+}
+
+function openJoinModal() {
+   if(!requireAuth()) return;
+   openModal('joinModal');
+}
+
+async function submitJoinRequest() {
+   const deptId = document.getElementById('joinDeptSelect').value;
+   const year = document.getElementById('joinYearSelect').value;
+   
+   try {
+      await apiFetch(`/api/colleges/${CID}/join`, {
+         method: 'POST',
+         body: { department_id: deptId || null, year: parseInt(year) }
+      });
+      showToast('Welcome to the community!', 'success');
+      location.reload();
+   } catch(e) { showToast('Join failed', 'error'); }
+}
+
+function goToCreateDiscussion() {
+   window.location.href = `/colleges/${CID}/dept/all?action=create`;
+}
+
+function getStarsHtml(r) {
+   const full = Math.floor(r||0);
+   const half = (r||0) % 1 >= 0.5 ? 1 : 0;
+   return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(5 - full - half);
+}
+</script>
+
+<style>
+/* Exclusive Styles for College Detail */
+.rating-bar-bg { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
+.rating-bar-bg .fill { height: 100%; border-radius: 3px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+.activity-item { padding: 12px; border-radius: 12px; border: 1px solid var(--border); transition: all 0.2s; cursor: pointer; }
+.activity-item:hover { border-color: var(--cyan); background: rgba(5,217,232,0.05); transform: translateX(5px); }
+.activity-item .type-tag { font-size: 0.65rem; color: var(--cyan); text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+.activity-item .title { font-weight: bold; font-family: 'Rajdhani'; line-height: 1.2; font-size: 0.95rem; }
+.activity-item .meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; }
+
+.review-card { padding: 30px; border: 1px solid var(--border); border-radius: 20px; }
+.review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.review-header .stars { font-size: 1.5rem; color: #ffd700; height: 1.5rem; line-height: 1; }
+.review-header .meta { font-size: 0.85rem; color: var(--text-muted); }
+.review-content { font-size: 1.05rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 25px; }
+.review-footer { border-top: 1px solid var(--border-light); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; }
+.review-footer .author-info { font-style: italic; font-size: 0.9rem; color: var(--text-muted); }
+
+.horizontal-post { padding: 25px; border: 1px solid var(--border); transition: all 0.2s; cursor: pointer; }
+.horizontal-post:hover { border-color: var(--cyan); box-shadow: 0 0 20px rgba(5,217,232,0.1); }
+.horizontal-post h3 { margin: 10px 0; color: #fff; }
+.post-footer { display: flex; gap: 20px; font-size: 0.85rem; color: var(--text-muted); }
+
+.dept-card { padding: 25px; border-radius: 20px; transition: all 0.3s; }
+.dept-card:hover { transform: translateY(-5px); border-color: var(--cyan); box-shadow: var(--cyber-glow); }
+
+.event-card { overflow: hidden; border-radius: 20px; border: 1px solid var(--border); }
+.event-banner { height: 120px; background: linear-gradient(45deg, var(--bg-card), var(--cyan)); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: #000; font-family: 'Rajdhani'; }
+.event-body { padding: 20px; }
+
+.star-input-group span { font-size: 3rem; cursor: pointer; transition: transform 0.2s; -webkit-user-select: none; user-select: none; }
+.star-input-group span:hover, .star-input-group span.active { transform: scale(1.2); }
+.star-input-small span { font-size: 1.5rem; cursor: pointer; }
+</style>
+{% endblock %}

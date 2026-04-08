@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}Register - EDU Link Hub{% endblock %}
+
+{% block body %}
+<div class="auth-container" style="background: linear-gradient(180deg, rgba(1, 10, 19, 0.85) 0%, rgba(1, 10, 19, 0.92) 100%), url('/static/images/bg_register.png') no-repeat center center; background-size: cover; padding: 40px 0;">
+  <div class="auth-card" style="max-height: 90vh; overflow-y: auto;">
+    <div class="logo">
+      <h1>EDU Link Hub</h1>
+      <p>Secure Registration</p>
+    </div>
+
+    <!-- Anti-Bot Protections -->
+    <input type="text" id="bot_trap" style="display:none;" autocomplete="off">
+    <input type="hidden" id="form_start_time" value="{{ form_start_time }}">
+    <input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+
+    <form id="registerForm" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label for="name">Full Name <span style="color:red;">*</span></label>
+        <input type="text" id="name" placeholder="John Doe" required autocomplete="name">
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email Address <span style="color:red;">*</span></label>
+        <input type="email" id="email" placeholder="student123@college.edu" required autocomplete="email" oninput="this.value = this.value.toLowerCase().replace(/\s/g, ''); checkUserLive()">
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password <span style="color:red;">*</span></label>
+        <div style="position: relative;">
+          <input type="password" id="password" placeholder="Create strong password" required minlength="6" autocomplete="new-password" oninput="validatePasswordUI()" style="width: 100%; padding-right: 40px;">
+          <span onclick="togglePasswordVisibility('password', this)" style="position: absolute; right: 12px; top: 12px; cursor: pointer; color: var(--text-secondary); font-size: 16px; user-select: none;">👁️</span>
+        </div>
+        <div id="pwdChecklist" style="font-size: 12px; margin-top: 8px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; color: var(--text-secondary); display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+          <div id="req-len">❌ Min 6 chars</div>
+          <div id="req-upper">❌ 1 Uppercase</div>
+          <div id="req-lower">❌ 1 Lowercase</div>
+          <div id="req-num">❌ 1 Number</div>
+          <div id="req-spec" style="grid-column: span 2;">❌ 1 Special char</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm_password">Confirm Password <span style="color:red;">*</span></label>
+        <div style="position: relative;">
+          <input type="password" id="confirm_password" placeholder="Re-enter your password" required minlength="6" autocomplete="new-password" style="width: 100%; padding-right: 40px;">
+          <span onclick="togglePasswordVisibility('confirm_password', this)" style="position: absolute; right: 12px; top: 12px; cursor: pointer; color: var(--text-secondary); font-size: 16px; user-select: none;">👁️</span>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="college">College <span style="color:red;">*</span></label>
+        <input type="text" id="college" placeholder="Your college name" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="department">Department <span style="color:red;">*</span></label>
+        <input type="text" id="department" placeholder="Computer Science, etc." required>
+      </div>
+      
+      <div class="form-group" style="width: 100%; box-sizing: border-box; overflow: hidden;">
+        <label>Phone Number <span style="color:red;">*</span></label>
+        <input type="text" id="phone" placeholder="+91 98765 87654" required style="width: 100%; box-sizing: border-box;" oninput="formatPhoneInput(this); checkUserLive()" maxlength="17">
+        <div id="duplicateMsg" style="font-size: 13px; color: #ef4444; margin-top: 5px; display: none;"></div>
+      </div>
+      
+      <button type="submit" class="btn btn-primary btn-full" id="regBtn">
+        Create Account
+      </button>
+    </form>
+
+    <p style="text-align:center;margin-top:20px;font-size:14px;color:var(--text-secondary)">
+      Already have an account? <a href="/login">Sign in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  if (getUser()) window.location.href = '/dashboard';
+
+  let isUserDuplicate = false;
+  
+  function formatPhoneInput(input) {
+    let val = input.value;
+    
+    // Auto convert 91... to +91...
+    if (val.startsWith("91") && val.length > 2) {
+      val = "+" + val;
+    }
+    
+    // Auto remove spaces
+    val = val.replace(/\s+/g, "");
+    
+    // Remove duplicate +
+    val = val.replace(/\++/g, "+");
+    
+    // Reject letters/symbols
+    val = val.replace(/[^0-9+]/g, "");
+    
+    // Ensure only leading +
+    if (val.includes("+", 1)) {
+        val = val[0] + val.slice(1).replace(/\+/g, "");
+    }
+    
+    // Auto format 10 digits to +91
+    if (val.length === 10 && !val.startsWith("+") && !val.startsWith("91")) {
+      val = "+91" + val;
+    }
+
+    // Auto visual spacing for +91 numbers
+    if (val.startsWith("+91") && val.length > 3) {
+      let code = val.substring(0, 3);
+      let rest = val.substring(3);
+      if (rest.length > 5) {
+        val = `${code} ${rest.substring(0, 5)} ${rest.substring(5)}`;
+      } else {
+        val = `${code} ${rest}`;
+      }
+    }
+
+    input.value = val;
+  }
+  
+  async function checkUserLive() {
+    const phone = document.getElementById('phone').value;
+    const email = document.getElementById('email').value;
+    const msgEl = document.getElementById('duplicateMsg');
+    const sendBtn = document.getElementById('sendOtpBtn');
+    
+    // Require valid-looking inputs
+    if (phone.replace(/[^0-9]/g, '').length < 10 && !email.includes('@')) {
+      msgEl.style.display = 'none';
+      isUserDuplicate = false;
+      if (sendBtn) sendBtn.disabled = false;
+      return;
+    }
+    
+    try {
+      const res = await apiFetch('/api/auth/check-user', {
+        method: 'POST',
+        body: JSON.stringify({ phone, email })
+      });
+      
+      if (res && res.exists) {
+        msgEl.innerHTML = '❌ ' + (res.message || 'Account already exists. Please try a different phone number or email.');
+        msgEl.style.display = 'block';
+        isUserDuplicate = true;
+        if (sendBtn) sendBtn.disabled = true;
+      } else {
+        msgEl.style.display = 'none';
+        isUserDuplicate = false;
+        if (sendBtn) sendBtn.disabled = false;
+      }
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  function togglePasswordVisibility(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.textContent = '🔒';
+    } else {
+      input.type = 'password';
+      icon.textContent = '👁️';
+    }
+  }
+
+  function validatePasswordUI() {
+    const p = document.getElementById('password').value;
+    document.getElementById('req-len').innerHTML = p.length >= 6 ? '✅ Min 6 chars' : '❌ Min 6 chars';
+    document.getElementById('req-upper').innerHTML = /[A-Z]/.test(p) ? '✅ 1 Uppercase' : '❌ 1 Uppercase';
+    document.getElementById('req-lower').innerHTML = /[a-z]/.test(p) ? '✅ 1 Lowercase' : '❌ 1 Lowercase';
+    document.getElementById('req-num').innerHTML = /\d/.test(p) ? '✅ 1 Number' : '❌ 1 Number';
+    document.getElementById('req-spec').innerHTML = /[^A-Za-z0-9]/.test(p) ? '✅ 1 Special char' : '❌ 1 Special char';
+  }
+  
+  function checkAllValid() {
+    const btn = document.getElementById('regBtn');
+    if (isUserDuplicate) {
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+    } else {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  }
+
+  setInterval(checkAllValid, 1000);
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value.trim();
+    
+    const btn = document.getElementById('regBtn');
+    btn.textContent = 'Creating...';
+    btn.disabled = true;
+
+    try {
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm_password').value;
+
+      if (password !== confirmPassword) {
+        showToast('Passwords do not match!', 'error');
+        btn.textContent = 'Create Account';
+        btn.disabled = false;
+        return;
+      }
+
+      const data = await apiFetch('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: document.getElementById('name').value,
+          email: document.getElementById('email').value,
+          password: password,
+          college: document.getElementById('college').value,
+          department: document.getElementById('department').value,
+          phone: document.getElementById('phone').value,
+          bot_trap: document.getElementById('bot_trap').value || '',
+          form_start_time: document.getElementById('form_start_time').value || 0,
+          csrf_token: document.getElementById('csrf_token').value || ''
+        }),
+      });
+
+      if (data) {
+        setAuth(data.user);
+        showToast('Account created securely!', 'success');
+        setTimeout(() => window.location.href = '/dashboard', 500);
+      }
+    } catch (err) {
+      showToast(err.message, 'error');
+      btn.textContent = 'Create Account';
+      btn.disabled = false;
+    }
+  }
+</script>
+{% endblock %}

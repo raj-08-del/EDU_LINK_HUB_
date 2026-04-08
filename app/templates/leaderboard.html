@@ -1,0 +1,552 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard - EDU Link Hub{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content leaderboard-page">
+      <div class="page-header" style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+        <h1 class="glow-heading" style="justify-content:center;">
+          <span class="emoji-icon">🏆</span>
+          <span class="text-gradient-animated">Elite Contributors</span>
+        </h1>
+        <div class="glow-line" style="margin: 16px auto; width: 300px; background: linear-gradient(90deg, transparent, #05d9e8, transparent);"></div>
+        <p class="header-subtitle" style="max-width:600px; margin: 0 auto 24px auto; color: #05d9e8; font-family: 'Share Tech Mono', monospace;">
+          LEVEL UP YOUR ENGAGEMENT. EARN POINTS. CLIMB THE RANKS.
+        </p>
+
+        <!-- Your Stats Card -->
+        <div id="yourStatsContainer" style="max-width:800px; width:100%; margin: 0 auto 32px auto;"></div>
+
+        <!-- Period Toggle -->
+        <div class="filter-bar" style="margin-bottom: 40px; justify-content:center; background: rgba(5,217,232,0.05); padding: 6px; border-radius: 30px; border: 1px solid rgba(5,217,232,0.2);">
+          <button class="filter-chip active" id="btnWeekly" onclick="setPeriod('weekly')" style="border-radius: 20px;">LAST 7 DAYS</button>
+          <button class="filter-chip" id="btnMonthly" onclick="setPeriod('monthly')" style="border-radius: 20px;">LAST 30 DAYS</button>
+        </div>
+      </div>
+
+      <div id="leaderboardContainer" style="max-width:800px; margin:0 auto; position:relative; min-height:400px;">
+        <div class="spinner" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);"></div>
+        
+        <!-- UI areas for leaderboard -->
+        <div id="topThree" class="top-three-grid"></div>
+        <div id="rankList" class="rank-list"></div>
+        
+        <!-- Current user separate rank if outside top 20 -->
+        <div id="currentUserRankCard" class="current-user-rank-card" style="display:none;"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  .leaderboard-page {
+    background: radial-gradient(circle at top center, rgba(30,20,50,0.4) 0%, rgba(1,10,19,1) 80%);
+  }
+
+  /* Top 3 Grid Layout */
+  .top-three-grid {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 20px;
+    margin-bottom: 40px;
+    padding-top: 40px; /* space for avatars popping out */
+  }
+
+  /* ── Podium Cards ──────────────────────────────── */
+  .podium {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px 20px 12px 12px;
+    padding: 16px 16px 20px;
+    text-align: center;
+    position: relative;
+    width: 200px;
+    transition: transform 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+  }
+  .podium:hover { transform: translateY(-6px); }
+
+  /* Heights now auto — no fixed height that clips content */
+  .podium-1 {
+    border-color: rgba(255,215,0,0.4);
+    box-shadow: 0 10px 40px rgba(255,215,0,0.15);
+    background: linear-gradient(180deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.02) 100%);
+    order: 2; z-index: 3;
+    padding-bottom: 24px;
+  }
+  .podium-2 {
+    border-color: rgba(192,192,192,0.4);
+    box-shadow: 0 10px 30px rgba(192,192,192,0.1);
+    background: linear-gradient(180deg, rgba(192,192,192,0.1) 0%, rgba(192,192,192,0.02) 100%);
+    order: 1; z-index: 2;
+  }
+  .podium-3 {
+    border-color: rgba(205,127,50,0.4);
+    box-shadow: 0 10px 30px rgba(205,127,50,0.1);
+    background: linear-gradient(180deg, rgba(205,127,50,0.1) 0%, rgba(205,127,50,0.02) 100%);
+    order: 3; z-index: 1;
+  }
+
+  .podium-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    position: absolute;
+    top: -36px;
+    border: 4px solid #1a1a2e;
+    background: #1a1a2e;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 28px; overflow: hidden;
+    left: 50%; transform: translateX(-50%);
+  }
+  .podium-1 .podium-avatar { border-color: gold; width: 88px; height: 88px; top: -44px; font-size:36px; }
+  .podium-2 .podium-avatar { border-color: silver; }
+  .podium-3 .podium-avatar { border-color: #cd7f32; }
+
+  /* spacer pushes content below the avatar */
+  .podium-spacer { display: block; }
+  .podium-1 .podium-spacer { height: 52px; }
+  .podium-2 .podium-spacer { height: 42px; }
+  .podium-3 .podium-spacer { height: 42px; }
+
+  .podium-medal { font-size: 28px; margin-bottom: 6px; }
+  .podium-1 .podium-medal { font-size: 36px; }
+
+  .podium-name {
+    font-size: 15px; font-weight: 800;
+    color: white;
+    margin: 6px 0 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    width: 100%;
+  }
+  .podium-college {
+    font-size: 11px; color: var(--text-secondary);
+    margin-bottom: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    width: 100%;
+  }
+  .podium-score {
+    font-size: 22px; font-weight: 800; color: var(--accent);
+  }
+  .podium-hint {
+    font-size: 11px; color: var(--text-muted); margin-top: 6px;
+    opacity: 0.7;
+  }
+
+  /* ── Rank List (4+) ─────────────────────────────── */
+  .rank-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .rank-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    gap: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 16px 24px;
+    transition: all 0.2s;
+    cursor: pointer;
+    overflow: visible; /* Fix: allow dropdowns to float outside card boundary */
+  }
+  .rank-row:hover { background: rgba(255,255,255,0.06); transform: scale(1.01); }
+  .rank-row.is-me {
+    background: linear-gradient(90deg, rgba(108,99,255,0.15) 0%, rgba(108,99,255,0.05) 100%);
+    border-color: rgba(108,99,255,0.4);
+    box-shadow: 0 0 20px rgba(108,99,255,0.1);
+  }
+
+  .rank-number { font-size: 20px; font-weight: 800; color: var(--text-muted); width: 40px; text-align: center; margin-right: 16px; }
+  .rank-avatar { width: 48px; height: 48px; border-radius: 50%; margin-right: 16px; background: rgba(255,255,255,0.1); display: flex; justify-content: center; align-items: center; font-size: 20px; overflow: hidden; }
+  .rank-details { flex: 1; min-width: 0; }
+  .rank-name { font-size: 16px; font-weight: 600; color: white; margin: 0 0 4px 0; }
+  .rank-college { 
+    font-size: 13px; 
+    color: var(--text-secondary); 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rank-score { 
+    font-size: 22px; 
+    font-weight: 800; 
+    color: var(--primary); 
+    min-width: 70px; /* Fix: prevent overlap with name/dropdown */
+    text-align: right; 
+    white-space: nowrap;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .leaderboard-card-menu-trigger {
+    min-width: 32px;
+    flex-shrink: 0;
+  }
+
+  /* ── Current User Fallback ─────────────────────── */
+  .current-user-rank-card {
+    margin-top: 32px;
+    background: rgba(108,99,255,0.1);
+    border: 2px dashed rgba(108,99,255,0.3);
+    border-radius: 16px; padding: 24px; text-align: center;
+  }
+
+  /* ── Click-to-reveal Breakdown Drawer ──────────── */
+  .breakdown-drawer {
+    display: none;
+    background: rgba(10,5,20,0.92);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 12px;
+    width: 100%;
+    text-align: left;
+    font-size: 12px;
+    line-height: 1.8;
+    animation: fadeSlideDown 0.25s ease;
+  }
+  .breakdown-drawer.open { display: block; }
+  @keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .breakdown-drawer strong { color: var(--accent); display: block; margin-bottom: 6px; font-size: 13px; }
+
+  /* ─── Leaderboard Dropdown Panel ─── */
+  .leaderboard-dropdown-panel {
+    background: #1a1a2e;
+    min-width: 220px;
+    max-width: 260px;
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px 20px;
+    border-radius: 12px;
+    color: white;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+  .panel-header {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .score-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 14px; /* Adjusted padding as requested */
+    white-space: nowrap;
+    gap: 16px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+  }
+  .score-row span:last-child {
+    font-weight: 700;
+    color: #05d9e8;
+  }
+  .score-dropdown-divider {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin: 8px 0;
+  }
+  .panel-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 16px;
+    font-weight: 900;
+    color: #f7ea22; /* Gold accent */
+  }
+
+  /* Force absolute overlay for the dropdown menu */
+  .leaderboard-card-menu {
+    position: absolute !important;
+    z-index: 999 !important; /* Fix: float above other rows */
+    top: 40px !important;
+    right: 0 !important;
+    min-width: 220px;
+    background: #1a1a2e;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    left: auto !important;
+    padding: 0;
+    border: none;
+  }
+
+  .rank-row .card-dropdown-container, 
+  .podium .card-dropdown-container {
+    top: 12px !important;
+    right: 12px !important;
+  }
+  
+  /* Standardized trigger for leaderboard */
+  .leaderboard-menu-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .leaderboard-menu-btn:hover {
+    background: rgba(255,255,255,0.15);
+    transform: scale(1.1);
+  }
+
+  @media (max-width: 600px) {
+    .top-three-grid { display: none; }
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<div id="leaderboard-meta" data-is-admin="{{ (user.role == 'admin') | tojson if user else 'false' }}" style="display:none;"></div>
+<script>
+  if (!requireAuth()) {}
+
+  let currentPeriod = 'weekly';
+  const currentUser = getUser();
+  const leaderMetaEl = document.getElementById('leaderboard-meta');
+  const isAdmin = leaderMetaEl ? leaderMetaEl.dataset.isAdmin === 'true' : false;
+
+  function setPeriod(period) {
+    currentPeriod = period;
+    document.getElementById('btnWeekly').classList.remove('active');
+    document.getElementById('btnMonthly').classList.remove('active');
+    
+    if(period === 'weekly') document.getElementById('btnWeekly').classList.add('active');
+    else document.getElementById('btnMonthly').classList.add('active');
+    
+    loadLeaderboard();
+  }
+
+  let leaderboardInterval;
+
+  async function loadLeaderboard() {
+    const spinner = document.querySelector('#leaderboardContainer .spinner');
+    if (spinner && !leaderboardInterval) spinner.style.display = 'block';
+
+    try {
+      const data = await apiFetch(`/api/leaderboard/?period=${currentPeriod}`);
+      renderLeaderboard(data.rankings, data.current_user_rank, data.current_user_points);
+      
+      // Auto-refresh every 30 seconds
+      if (!leaderboardInterval) {
+        leaderboardInterval = setInterval(loadLeaderboard, 30000);
+      }
+    } catch(err) {
+      console.error('Leaderboard refresh error:', err);
+    } finally {
+      if (spinner) spinner.style.display = 'none';
+    }
+  }
+
+  function renderYourStats(rank, points) {
+    const container = document.getElementById('yourStatsContainer');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="your-stats-neon">
+        <div class="stat-item">
+          <div class="stat-label">Your Rank</div>
+          <div class="stat-value stat-rank">#${rank || '—'}</div>
+        </div>
+        <div class="stat-item" style="border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); padding: 0 40px;">
+          <div class="stat-label">Total Points</div>
+          <div class="stat-value highlight">${points || 0}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Status</div>
+          <div class="stat-value" style="font-size: 14px; color: var(--accent);">${rank <= 10 ? 'ELITE GENIUS' : rank <= 50 ? 'RISING STAR' : 'COMMUNITY MEMBER'}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderLeaderboard(rankings, currentUserRank, currentUserPoints) {
+    const topThreeContainer = document.getElementById('topThree');
+    const rankListContainer = document.getElementById('rankList');
+
+    // Render Your Stats Card
+    renderYourStats(currentUserRank, currentUserPoints);
+
+    if (!rankings || rankings.length === 0) {
+      document.getElementById('leaderboardContainer').innerHTML = `
+        <div class="empty-state" style="text-align:center; padding: 40px;">
+          <div class="empty-icon" style="font-size:48px; margin-bottom:16px;">🤷</div>
+          <h3 style="color:white; margin-bottom:8px;">No Activity Yet</h3>
+          <p style="color:var(--text-secondary);">Be the first to score points this ${currentPeriod === 'weekly' ? 'week' : 'month'}!</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Is mobile?
+    const isMobile = window.innerWidth <= 600;
+
+    // Split top 3
+    const top3 = rankings.slice(0, 3);
+    const rest = isMobile ? rankings : rankings.slice(3);
+
+    // Setup Top 3 only on Desktop
+    if (!isMobile) {
+      // Create Podium array correctly mapped (2, 1, 3 for center display)
+      const podiumHtmls = [];
+      
+      // Rank 2
+      if (top3[1]) podiumHtmls.push(buildPodiumHTML(top3[1], 2, '🥈'));
+      // Rank 1
+      if (top3[0]) podiumHtmls.push(buildPodiumHTML(top3[0], 1, '🥇'));
+      // Rank 3
+      if (top3[2]) podiumHtmls.push(buildPodiumHTML(top3[2], 3, '🥉'));
+      
+      topThreeContainer.innerHTML = podiumHtmls.join('');
+    } else {
+      topThreeContainer.style.display = 'none';
+    }
+
+    // Render ranks 4+ (or all if mobile)
+    rankListContainer.innerHTML = rest.map((user, index) => {
+      const realRank = isMobile ? index + 1 : index + 4;
+      return buildRankRow(user, realRank);
+    }).join('');
+
+    // Handle current user completely outside top 20
+    if (currentUserRank && currentUserRank > 20) {
+      const cuCard = document.getElementById('currentUserRankCard');
+      cuCard.style.display = 'block';
+      // Construct a fake user object for the rank row
+      const cuData = {
+        user_id: currentUser._id,
+        name: currentUser.name,
+        college: currentUser.college,
+        avatar: currentUser.avatar,
+        total_points: currentUserPoints,
+        breakdown: {} // We don't have it here but that's okay for the bottom row
+      };
+      cuCard.innerHTML = `
+        <div style="font-size:18px; color:white; font-weight:700; margin-bottom:8px;">You are ranked #${currentUserRank}</div>
+        <div style="color:var(--text-secondary); margin-bottom:16px;">Keep posting and helping to climb the leaderboard!</div>
+        ${buildRankRow(cuData, currentUserRank, true)}
+      `;
+    } else {
+      document.getElementById('currentUserRankCard').style.display = 'none';
+    }
+  }
+
+  function getAvatarHtml(user) {
+    if (user.avatar && user.avatar !== 'null') {
+      return `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;">`;
+    }
+    return user.name[0].toUpperCase();
+  }
+
+  function buildScoreDropdownMenu(user) {
+    const bd = user.breakdown || {};
+    const uid = user.user_id;
+
+    return `
+      <div class="card-dropdown-container">
+        <button class="card-dropdown-trigger leaderboard-menu-btn" data-id="${uid}">⋮</button>
+        <div class="card-dropdown-menu leaderboard-card-menu" data-id="${uid}">
+          <div class="leaderboard-dropdown-panel">
+            <div class="panel-header">📊 Point Breakdown</div>
+            
+            <div class="score-dropdown-divider"></div>
+            <div style="font-size:11px; color:#555; margin-bottom:8px; text-transform:uppercase;">Point Sources</div>
+            <div class="score-row"><span>📝 Posts</span><span>+${(bd.posts_created || 0) * 5}</span></div>
+            <div class="score-row"><span>💬 Post Likes</span><span>+${(bd.post_likes || 0) * 1}</span></div>
+            <div class="score-row"><span>🔄 Replies</span><span>+${(bd.replies_posted || 0) * 2}</span></div>
+            <div class="score-row"><span>❤️ Upvotes Recv.</span><span>+${(bd.upvotes_received || 0) * 1}</span></div>
+            <div class="score-row"><span>📅 Events</span><span>+${(bd.events_created || 0) * 3}</span></div>
+            <div class="score-row"><span>💼 Opportunities</span><span>+${(bd.opportunities_approved || 0) * 10}</span></div>
+            <div class="score-row"><span>🎓 College Reviews</span><span>+${(bd.college_reviews || 0) * 3}</span></div>
+            <div class="score-row"><span>📊 Polls</span><span>+${(bd.polls_created || 0) * 4}</span></div>
+
+            <div class="panel-total">
+              <span style="display:flex; align-items:center; gap:8px;">🏆 Total Points</span>
+              <span>${user.total_points || 0}</span>
+            </div>
+
+            ${isAdmin ? `
+              <div class="score-dropdown-divider"></div>
+              <div class="menu-item danger" data-action="delete" data-id="${uid}" data-type="leaderboard_user" style="padding:10px 16px; margin:0; border-radius:8px; font-weight:600;">
+                <span>🗑️</span> Remove User
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildPodiumHTML(user, rank, medal) {
+    const isMe = currentUser && currentUser._id === user.user_id;
+    const uid = user.user_id || Math.random().toString(36).slice(2);
+    return `
+      <div class="podium podium-${rank} ${isMe ? 'is-me' : ''}" style="${isMe ? 'box-shadow:0 0 20px rgba(108,99,255,0.4);' : ''}">
+        ${buildScoreDropdownMenu(user)}
+        <div class="podium-avatar">${getAvatarHtml(user)}</div>
+        <span class="podium-spacer"></span>
+        <div class="podium-medal">${medal}</div>
+        <div class="podium-name">${escapeHtml(user.name)}${isMe ? ' <span style="font-size:11px;color:#6c63ff">(You)</span>' : ''}</div>
+        <div class="podium-college">${escapeHtml(user.college || '&nbsp;')}</div>
+        <div class="podium-score">${user.total_points || 0} pts</div>
+      </div>
+    `;
+  }
+
+  function buildRankRow(user, rank, enforceHighlight = false) {
+    const isMe = currentUser && currentUser._id === user.user_id;
+    const uid = user.user_id || Math.random().toString(36).slice(2);
+    const growth = user.growth || 0;
+    const streak = user.streak || 1;
+
+    return `
+      <div class="rank-row ${isMe || enforceHighlight ? 'is-me' : ''}">
+        <div class="rank-number" style="color: ${rank <= 3 ? '#05d9e8' : '#555'}">#${rank}</div>
+        <div class="rank-avatar" style="border: 2px solid ${rank === 1 ? '#ffd700' : rank === 2 ? '#c0c0c0' : rank === 3 ? '#cd7f32' : 'transparent'}">
+          ${getAvatarHtml(user)}
+        </div>
+        <div class="rank-details">
+          <div class="rank-name" style="display:flex; align-items:center; gap:8px;">
+            ${escapeHtml(user.name)} 
+            ${isMe ? '<span style="background:#6c63ff; color:white; font-size:10px; padding:2px 6px; border-radius:4px; text-transform:uppercase;">YOU</span>' : ''}
+          </div>
+          <div class="rank-stats" style="display:flex; gap:12px; font-size:11px; margin-top:4px;">
+            <span style="color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px;">Active Contributor</span>
+          </div>
+        </div>
+        <div class="rank-score" style="display:flex; flex-direction:column; align-items:flex-end;">
+          <span style="color:#05d9e8; font-size:20px;" class="point-value">⭐ ${user.total_points || 0}</span>
+          <span style="font-size:10px; color:#555; text-transform:uppercase; letter-spacing:1px;">TOTAL POINTS</span>
+        </div>
+        <div class="leaderboard-card-menu-trigger">
+          ${buildScoreDropdownMenu(user)}
+        </div>
+      </div>
+    `;
+  }
+
+  loadLeaderboard();
+</script>
+{% endblock %}

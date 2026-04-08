@@ -1,0 +1,1815 @@
+{% extends "base.html" %}
+{% block title %}Explore Hub - EDU Link Hub{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content">
+      <div class="page-header">
+        <div class="header-title-wrapper">
+          <h1 class="glow-heading">
+            <span class="emoji-icon">🎪</span>
+            <span class="text-gradient-animated">Explore Hub</span>
+          </h1>
+          <div class="glow-line"></div>
+          <p class="header-subtitle">Discover campus events, workshops, and festivals through the interactive timeline</p>
+        </div>
+        <button id="new-event-btn" onclick="openCreateEventModal()"
+          style="margin-right:16px; margin-top:4px;">
+          + NEW EVENT
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="filterEvents('all', this)">All</button>
+        <button class="filter-chip" onclick="filterEvents('workshop', this)">🔧 Workshops</button>
+        <button class="filter-chip" onclick="filterEvents('technical', this)">💻 Technical</button>
+        <button class="filter-chip" onclick="filterEvents('non-technical', this)">🎨 Non-Technical</button>
+        <button class="filter-chip" onclick="filterEvents('hackathon', this)">🏆 Hackathons</button>
+        <button class="filter-chip" onclick="filterEvents('festival', this)">🎉 Festivals</button>
+      </div>
+
+      <!-- Light Trails BG -->
+      <div class="light-trails"></div>
+
+      <!-- Events Timeline -->
+      <div class="timeline-container" id="eventsGrid">
+        <div class="spinner"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Hide Confirmation Popover (Fix 3) -->
+<div id="hideConfirmPopover" class="hide-confirm-popover">
+  <h4>🙈 Hide this event?</h4>
+  <p>It will be moved to your Archive and hidden from the public feed.</p>
+  <div class="hide-confirm-btns">
+    <button class="btn-cancel-hide" onclick="closeHidePopover()">Cancel</button>
+    <button class="btn-confirm-hide" id="confirmHideBtn">Hide Now</button>
+  </div>
+</div>
+
+<!-- Edit Event Modal -->
+<div class="modal-overlay" id="editEventModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Edit Event</h2>
+      <button class="modal-close" onclick="closeModal('editEventModal')">&times;</button>
+    </div>
+    <form id="editEventForm" onsubmit="submitEditEvent(event)">
+      <input type="hidden" id="eev_id">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="eev_title" required>
+      </div>
+      <div class="form-group">
+        <label>College Name</label>
+        <input type="text" id="eev_college" required>
+      </div>
+      <div class="form-group">
+        <label>Student Group Link <span style="color:var(--text-secondary);font-size:12px;">(optional)</span></label>
+        <input type="url" id="eev_group_link" placeholder="https://...">
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="eev_category" required>
+          <option value="workshop">Workshop</option>
+          <option value="technical">Technical Event</option>
+          <option value="non-technical">Non-Technical Event</option>
+          <option value="hackathon">Hackathon</option>
+          <option value="festival">College Festival</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date & Time</label>
+      <div style="position: relative;">
+        <input type="datetime-local" id="eev_date" required style="color-scheme: dark;">
+      </div>
+      </div>
+      <div class="form-group">
+        <label>Media (Image / Video) <span style="color:var(--text-secondary);font-size:12px;">(optional)</span></label>
+        
+        <!-- File Upload Button -->
+        <div class="img-upload-area" id="eev_imgUploadArea" onclick="document.getElementById('eev_file').click()">
+          <input type="file" id="eev_file" accept="image/png, image/jpeg, image/jpg, image/gif, image/webp" style="display:none">
+          <div id="eev_uploadPlaceholder">
+            <div style="font-size:28px;">🖼️</div>
+            <div style="font-size:13px;margin-top:6px;color:var(--text-secondary)">Click to upload PNG / JPG</div>
+          </div>
+            <div id="eev_preview_container" style="display:none;width:100%;border-radius:6px;overflow:hidden;background:rgba(0,0,0,0.2);"></div>
+          </div>
+
+        <!-- OR divider -->
+        <div style="display:flex;align-items:center;gap:8px;margin:8px 0;">
+          <hr style="flex:1;border-color:rgba(255,255,255,0.1)">
+          <span style="font-size:12px;color:var(--text-secondary)">Media Link</span>
+          <hr style="flex:1;border-color:rgba(255,255,255,0.1)">
+        </div>
+        <input type="url" id="eev_image" placeholder="https://unsplash.com/.../image.jpg">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="eev_description" rows="4" required></textarea>
+      </div>
+      <div class="form-group">
+        <label>Registration Link (optional)</label>
+        <input type="url" id="eev_reglink">
+      </div>
+      <div class="form-group">
+        <label>Tags / Keywords <span style="color:var(--text-secondary);font-size:12px;">(Comma separated)</span></label>
+        <input type="text" id="eev_tags" placeholder="e.g. AI, Workshop, Python">
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+<!-- Report Event Modal (Fix 3) -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal" style="max-width: 500px;">
+    <div class="modal-header">
+      <h2>Report this event</h2>
+      <button class="modal-close" onclick="closeModal('reportModal')">&times;</button>
+    </div>
+    <form id="reportForm" onsubmit="submitReport(event)">
+      <input type="hidden" id="rep_id">
+      <input type="hidden" id="rep_type">
+      <input type="hidden" id="rep_title">
+      <div class="form-group">
+        <label>Reason for reporting</label>
+        <select id="rep_reason" required>
+          <option value="Spam or misleading">Spam or misleading</option>
+          <option value="Inappropriate content">Inappropriate content</option>
+          <option value="False information">False information</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Description (optional)</label>
+        <textarea id="rep_desc" rows="3" placeholder="Tell us more about the issue..."></textarea>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:10px;">
+        <button type="button" class="btn btn-secondary" style="flex:1" onclick="closeModal('reportModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="flex:1; background:#ff4757; border-color:#ff4757;">Submit Report</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Event Details Modal -->
+<div class="modal-overlay" id="eventDetailModal" onclick="if(event.target===this) closeModal('eventDetailModal')">
+  <div class="modal" style="max-width: 1100px; width: 95%; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-header">
+      <h2 id="det_title">Event Details</h2>
+      <button class="modal-close" onclick="closeModal('eventDetailModal')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 32px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;">
+        <!-- Left: Poster -->
+        <div id="det_media_container" style="width: 100%; max-height: 500px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.6); overflow: hidden; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;"></div>
+        
+        <!-- Right: Info -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div>
+            <div id="det_category" class="card-badge" style="display: inline-block; margin-bottom: 8px;"></div>
+            <div id="det_date" style="font-weight: 700; color: var(--primary-light); font-size: 20px; letter-spacing: 0.5px;"></div>
+          </div>
+          <h1 id="det_full_title" style="margin: 0; font-size: 40px; font-weight: 800; color: white; line-height: 1.1;"></h1>
+          <div style="display:flex; flex-direction:column; gap:4px">
+            <h3 id="det_college" style="margin: 0; color: var(--text-secondary); font-size: 18px; font-weight: 500;"></h3>
+            <div id="det_group_link_wrapper" style="display:none; font-size: 13px;">
+              <span style="color:var(--text-muted)">Group: </span>
+              <a id="det_group_link" href="#" target="_blank" style="color:var(--accent); text-decoration:none;">Join Student Group</a>
+            </div>
+          </div>
+          
+          <div id="det_tags" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+          
+          <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+          
+          <div style="padding-right: 5px;">
+            <p id="det_desc" style="font-size: 18px; color: rgba(255,255,255,1); line-height: 1.8; white-space: pre-wrap; margin: 0;"></p>
+          </div>
+          
+          <div id="det_actions" style="margin-top: 30px; display: flex; flex-wrap: wrap; gap: 15px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .page-content {
+    background: linear-gradient(180deg, rgba(1, 10, 19, 0.75) 0%, rgba(1, 10, 19, 0.85) 100%),
+      url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1920&auto=format') no-repeat center center;
+    background-size: cover;
+    background-attachment: fixed;
+    transition: background-image 0.6s ease-in-out;
+  }
+  
+  /* ─── Premium Heading Styles ─── */
+  .header-title-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+
+  .glow-heading {
+    font-size: 36px !important;
+    font-weight: 800;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+  }
+
+  .emoji-icon {
+    display: inline-block;
+    animation: floatEmoji 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
+  }
+
+  @keyframes floatEmoji {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-6px) rotate(5deg); }
+  }
+
+  .text-gradient-animated {
+    background: linear-gradient(
+      to right,
+      #ffbe0b,
+      #ff006e,
+      var(--primary-light),
+      var(--accent),
+      #ffbe0b
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: auroraShift 6s linear infinite;
+    text-shadow: 0 0 30px rgba(180, 81, 252, 0.4);
+  }
+
+  @keyframes auroraShift {
+    0% { background-position: 0% center; }
+    100% { background-position: 300% center; }
+  }
+
+  .glow-line {
+    height: 4px;
+    width: 60%;
+    margin-top: 6px;
+    background: linear-gradient(90deg, var(--accent), var(--primary-light), transparent);
+    border-radius: 4px;
+    box-shadow: 0 0 15px var(--accent), 0 0 30px var(--primary-light);
+    animation: linePulse 2s alternate infinite ease-in-out;
+  }
+
+  @keyframes linePulse {
+    0% { width: 40%; opacity: 0.7; }
+    100% { width: 85%; opacity: 1; }
+  }
+
+  .header-subtitle {
+    font-size: 15px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    margin-top: 12px !important;
+    letter-spacing: 0.3px;
+    font-weight: 400;
+  }
+
+  .light-trails {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background: 
+      linear-gradient(180deg, transparent, rgba(0, 245, 212, 0.4) 50%, transparent),
+      linear-gradient(180deg, transparent, rgba(180, 81, 252, 0.2) 50%, transparent),
+      linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.1) 50%, transparent);
+    background-size: 2px 200%, 3px 200%, 1px 200%;
+    background-position: 15% 0, 80% 50%, 45% 100%;
+    background-repeat: no-repeat;
+    animation: trailsMove 8s linear infinite;
+  }
+  @keyframes trailsMove {
+    0% { background-position: 15% -200%, 80% -100%, 45% -50%; }
+    100% { background-position: 15% 200%, 80% 300%, 45% 250%; }
+  }
+
+  .img-upload-area {
+    border: 2px dashed rgba(255,255,255,0.18);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .img-upload-area:hover {
+    border-color: rgba(130,100,255,0.7);
+    background: rgba(130,100,255,0.06);
+  }
+
+  /* ─── Timeline UI (Base line only) ─── */
+  .timeline-container {
+    position: relative;
+    max-width: 800px;
+    margin: 40px auto;
+    padding-left: 50px;
+    z-index: 1;
+    min-height: 400px;
+  }
+  .timeline-container::before {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: 15px;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, var(--primary), var(--accent), transparent);
+    box-shadow: 0 0 15px var(--primary);
+  }
+
+  /* ─── Event Card Styling ─── */
+  .event-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    position: relative;
+    margin-bottom: 24px;
+    overflow: visible !important; /* Critical: allow dropdown to overflow card */
+    transition: border 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    backdrop-filter: blur(5px);
+  }
+
+  .event-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Explore Hub event card images - FULL image, no crop */
+  .event-card img,
+  .event-card-image,
+  .explore-card img,
+  .tc-image {
+    width: 100% !important;
+    height: 450px !important; /* Increased from 300px per user request */
+    object-fit: contain !important;
+    object-position: center !important;
+    background-color: #0d1b2a !important;
+    display: block !important;
+    border-radius: 12px 12px 0 0 !important;
+    transform: none !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .like-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 8px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.5px;
+  }
+  
+  .like-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+
+  .like-btn.liked {
+    color: #ff2a6d;
+    background: rgba(255, 42, 109, 0.12);
+    border-color: rgba(255, 42, 109, 0.3);
+    box-shadow: 0 0 20px rgba(255, 42, 109, 0.15);
+    text-shadow: 0 0 10px rgba(255, 42, 109, 0.4);
+  }
+
+  .like-btn.liked .like-icon {
+    animation: thumbPop 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+  }
+
+  @keyframes thumbPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+  }
+
+
+  .tc-media-wrapper {
+    overflow: visible !important;
+    transform: none !important;
+  }
+  
+  .event-card:hover .tc-image,
+  .event-card:hover img {
+    transform: none !important;
+    scale: none !important;
+  }
+
+  /* Redesigned Modal Theme */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); z-index: 9999;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(10px);
+  }
+  .modal-overlay.show { display: flex; }
+
+  .modal-card {
+    background: #0d1b2a; border: 1px solid #05d9e8;
+    border-radius: 16px; padding: 32px; width: 680px;
+    max-width: 95vw; max-height: 90vh; overflow-y: auto;
+    position: relative;
+    animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn {
+    from { opacity:0; transform:scale(0.95) translateY(-10px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+  }
+
+  .modal-card input, .modal-card select, .modal-card textarea {
+    width: 100%; background: #0a1628;
+    border: 1px solid rgba(5, 217, 232, 0.3); border-radius: 8px;
+    padding: 12px 14px; color: #ffffff;
+    font-family: 'Share Tech Mono', monospace; font-size: 14px;
+    outline: none; box-sizing: border-box; transition: all 0.3s;
+  }
+  .modal-card input:focus, .modal-card select:focus, .modal-card textarea:focus {
+    border-color: #ff2a6d;
+    box-shadow: 0 0 10px rgba(255,42,109,0.3);
+  }
+  .modal-card label {
+    display: block; font-size: 11px; color: #05d9e8;
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px;
+    font-family: 'Rajdhani', sans-serif; font-weight: 600;
+  }
+  .modal-card select option { background: #0d1b2a; color: #fff; }
+
+
+  .timeline-node {
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: nodeEntrance 0.6s forwards ease-out;
+    position: relative;
+    margin-bottom: 30px;
+  }
+
+  @keyframes nodeEntrance {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -42px;
+    top: 30px;
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border: 3px solid var(--bg-dark);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent);
+    z-index: 2;
+  }
+
+  .tc-image {
+    width: 100%;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+  }
+
+  /* ═══ Fix 2: Create Event Modal Reset (Cyberpunk Theme) ═══ */
+  #create-event-modal .modal-card,
+  #new-event-modal .modal-card {
+    background: #0d1b2a !important;
+    border: 1px solid #05d9e8 !important;
+    border-radius: 16px !important;
+    padding: 32px !important;
+    box-shadow: 0 0 40px rgba(5, 217, 232, 0.2) !important;
+  }
+  #create-event-modal input,
+  #create-event-modal select,
+  #create-event-modal textarea,
+  #new-event-modal input,
+  #new-event-modal select,
+  #new-event-modal textarea {
+    background: #0a1628 !important;
+    border: 1px solid rgba(5, 217, 232, 0.4) !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    outline: none !important;
+    transition: border-color 0.2s !important;
+  }
+  #create-event-modal input:focus,
+  #create-event-modal select:focus,
+  #create-event-modal textarea:focus,
+  #new-event-modal input:focus,
+  #new-event-modal select:focus,
+  #new-event-modal textarea:focus {
+    border-color: #ff2a6d !important;
+    box-shadow: 0 0 10px rgba(255, 42, 109, 0.3) !important;
+  }
+  #create-event-modal label,
+  .create-event-modal label,
+  #new-event-modal label {
+    color: #05d9e8 !important;
+    text-shadow: 0 0 8px rgba(5, 217, 232, 0.4) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    display: block !important;
+    margin-bottom: 6px !important;
+    font-family: 'Rajdhani', sans-serif !important;
+  }
+
+  /* Make the required star * red */
+  #create-event-modal label .required,
+  #new-event-modal label .required,
+  #create-event-modal label *[data-required],
+  #create-event-modal label:after {
+    color: #ff2a6d !important;
+  }
+
+  /* Fix: Edit Event Modal Theme */
+  #editEventModal .modal {
+    background: #0d1b2a !important;
+    border: 1px solid #05d9e8 !important;
+    border-radius: 16px !important;
+    padding: 32px !important;
+    width: 680px !important;
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    position: relative;
+    animation: modalIn 0.25s ease;
+  }
+  #editEventModal h2 {
+    color: #ffffff !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    margin: 0 0 24px !important;
+  }
+  #editEventModal input,
+  #editEventModal select,
+  #editEventModal textarea {
+    width: 100% !important;
+    background: #0a1628 !important;
+    border: 1px solid #05d9e8 !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    color: #ffffff !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    font-size: 14px !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+  }
+  #editEventModal input:focus,
+  #editEventModal select:focus,
+  #editEventModal textarea:focus {
+    border-color: #ff2a6d !important;
+    box-shadow: 0 0 8px rgba(255,42,109,0.3) !important;
+  }
+  #editEventModal label {
+    display: block !important;
+    font-size: 11px !important;
+    color: #05d9e8 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.07em !important;
+    margin-bottom: 6px !important;
+  }
+  #editEventModal select option { background: #0d1b2a !important; color: #fff !important; }
+  #editEventModal .btn-primary {
+    padding: 12px 32px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    background: linear-gradient(135deg, #ff2a6d, #05d9e8) !important;
+    color: #fff !important;
+    font-weight: bold !important;
+    font-size: 15px !important;
+    cursor: pointer !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    letter-spacing: 0.05em !important;
+    width: 100% !important;
+    margin-top: 8px !important;
+  }
+
+  /* ═══ Fix 4: Premium + NEW EVENT Button ═══ */
+  #new-event-btn,
+  .new-event-btn,
+  button[onclick*="createEvent"],
+  a[onclick*="openCreateModal"] {
+    background: linear-gradient(135deg, #ff2a6d, #05d9e8) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 10px 22px !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em !important;
+    cursor: pointer !important;
+    box-shadow: 0 0 16px rgba(255, 42, 109, 0.4) !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+  }
+  #new-event-btn:hover,
+  .new-event-btn:hover {
+    transform: scale(1.04) !important;
+    box-shadow: 0 0 24px rgba(5, 217, 232, 0.5) !important;
+  }
+</style>
+<div id="new-event-modal"
+     style="display:none;
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,0.85);
+            align-items:center;
+            justify-content:center;
+            z-index:10000;
+            overflow-y:auto;
+            padding:20px;">
+  <div style="background:#1a1a2e;
+              border:1px solid #6c63ff;
+              border-radius:16px;
+              width:100%;
+              max-width:580px;
+              max-height:90vh;
+              overflow-y:auto;
+              padding:28px;
+              position:relative;
+              margin:auto;">
+    
+    <!-- Header -->
+    <div style="display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:24px;">
+      <h2 style="color:#f0f0f0;
+                 margin:0;
+                 font-size:1.3rem;">
+        🎪 Create New Event
+      </h2>
+      <button onclick="closeNewEventModal()"
+              style="background:none;
+                     border:none;
+                     color:#888;
+                     font-size:1.5rem;
+                     cursor:pointer;
+                     line-height:1;">
+        ✕
+      </button>
+    </div>
+    
+    <!-- Form -->
+    <div style="display:flex;
+                flex-direction:column;
+                gap:16px;">
+      
+      <!-- Title -->
+      <div>
+        <label>EVENT TITLE <span class="required">*</span></label>
+        <input id="new-event-title"
+               type="text"
+               placeholder="e.g. National Hackathon 2026"
+               style="width:100%;
+                      background:#0d0d0d;
+                      border:1px solid #333;
+                      color:#f0f0f0;
+                      padding:12px 14px;
+                      border-radius:8px;
+                      font-size:0.95rem;
+                      box-sizing:border-box;
+                      outline:none;">
+      </div>
+      
+      <!-- Organizer -->
+      <div>
+        <label>ORGANIZER / CLUB NAME <span style="color:#888; font-size:10px; text-transform:none; font-weight:normal">(optional)</span></label>
+        <input id="new-event-organizer"
+               type="text"
+               placeholder="e.g. TechFest Club"
+               style="width:100%;
+                      background:#0d0d0d;
+                      border:1px solid #333;
+                      color:#f0f0f0;
+                      padding:12px 14px;
+                      border-radius:8px;
+                      font-size:0.95rem;
+                      box-sizing:border-box;
+                      outline:none;">
+      </div>
+      
+      <!-- Category + Date row -->
+      <div style="display:grid;
+                  grid-template-columns:1fr 1fr;
+                  gap:12px;">
+        <div>
+          <label>CATEGORY <span class="required">*</span></label>
+          <select id="new-event-category"
+                  style="width:100%;
+                         background:#0d0d0d;
+                         border:1px solid #333;
+                         color:#f0f0f0;
+                         padding:12px 14px;
+                         border-radius:8px;
+                         font-size:0.95rem;
+                         box-sizing:border-box;
+                         outline:none;">
+            <option value="workshop">Workshop</option>
+            <option value="technical">Technical</option>
+            <option value="non-technical">
+              Non-Technical</option>
+            <option value="hackathon">Hackathon</option>
+            <option value="festival">Festival</option>
+          </select>
+        </div>
+        <div>
+          <label>EVENT DATE <span class="required">*</span></label>
+          <input id="new-event-date"
+                 type="date"
+                 style="width:100%;
+                        background:#0d0d0d;
+                        border:1px solid #333;
+                        color:#f0f0f0;
+                        padding:12px 14px;
+                        border-radius:8px;
+                        font-size:0.95rem;
+                        box-sizing:border-box;
+                        outline:none;">
+        </div>
+      </div>
+      
+      <!-- Location -->
+      <div>
+        <label>LOCATION</label>
+        <input id="new-event-location"
+               type="text"
+               placeholder="e.g. Chennai / Online"
+               style="width:100%;
+                      background:#0d0d0d;
+                      border:1px solid #333;
+                      color:#f0f0f0;
+                      padding:12px 14px;
+                      border-radius:8px;
+                      font-size:0.95rem;
+                      box-sizing:border-box;
+                      outline:none;">
+      </div>
+      
+      <!-- Description -->
+      <div>
+        <label>DESCRIPTION <span class="required">*</span></label>
+        <textarea id="new-event-description"
+                  placeholder="Describe your event..."
+                  rows="4"
+                  style="width:100%;
+                         background:#0d0d0d;
+                         border:1px solid #333;
+                         color:#f0f0f0;
+                         padding:12px 14px;
+                         border-radius:8px;
+                         font-size:0.95rem;
+                         box-sizing:border-box;
+                         resize:vertical;
+                         outline:none;
+                         font-family:inherit;">
+        </textarea>
+      </div>
+      
+      <!-- Registration Link -->
+      <div>
+        <label>REGISTRATION LINK</label>
+        <input id="new-event-reg-link"
+               type="url"
+               placeholder="https://forms.google.com/..."
+               style="width:100%;
+                      background:#0d0d0d;
+                      border:1px solid #333;
+                      color:#f0f0f0;
+                      padding:12px 14px;
+                      border-radius:8px;
+                      font-size:0.95rem;
+                      box-sizing:border-box;
+                      outline:none;">
+      </div>
+      
+      <!-- IMAGE UPLOAD FIELD -->
+      <div style="grid-column:1/-1;">
+        <label style="color:#05d9e8;font-size:11px;text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">
+          EVENT IMAGE (OPTIONAL)
+        </label>
+        <div id="ev-upload-box" onclick="document.getElementById('ev-image-input').click()"
+          style="border:2px dashed #05d9e8;border-radius:10px;padding:20px;text-align:center;
+          cursor:pointer;background:#0a1628;color:#05d9e8;transition:border-color 0.2s;">
+          <div id="ev-upload-placeholder">
+            <p style="margin:0;font-size:13px;">📷 Click to upload event image</p>
+            <p style="margin:4px 0 0;font-size:11px;color:#888;">PNG, JPG, WEBP — Max 5MB</p>
+          </div>
+          <img id="ev-image-preview" src="" style="display:none;max-height:140px;
+            border-radius:8px;margin-top:10px;max-width:100%;object-fit:cover;">
+        </div>
+        <input type="file" id="ev-image-input" accept="image/png,image/jpeg,image/webp"
+          style="display:none;" onchange="previewEventImage(this)">
+      </div>
+
+      <!-- MEDIA LINK FIELD -->
+      <div style="grid-column:1/-1;">
+        <label style="color:#05d9e8;font-size:11px;text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:6px;">
+          MEDIA LINK (OPTIONAL)
+        </label>
+        <input id="ev-media-link" type="url"
+          placeholder="e.g. https://youtube.com/... or https://instagram.com/..."
+          style="width:100%;background:#0a1628;border:1px solid #05d9e8;border-radius:8px;
+          padding:10px 14px;color:#fff;font-family:'Share Tech Mono',monospace;
+          font-size:14px;outline:none;box-sizing:border-box;">
+        <p style="font-size:11px;color:#888;margin:4px 0 0;">YouTube, Instagram, LinkedIn or any promo link</p>
+      </div>
+      
+      <!-- Tags -->
+      <div>
+        <label>TAGS (COMMA SEPARATED)</label>
+        <input id="new-event-tags"
+               type="text"
+               placeholder="e.g. coding, hackathon, prize"
+               style="width:100%;
+                      background:#0d0d0d;
+                      border:1px solid #333;
+                      color:#f0f0f0;
+                      padding:12px 14px;
+                      border-radius:8px;
+                      font-size:0.95rem;
+                      box-sizing:border-box;
+                      outline:none;">
+      </div>
+      
+    </div>
+    
+    <!-- Error message area -->
+    <div id="new-event-error"
+         style="display:none;
+                color:#ff4757;
+                background:rgba(255,71,87,0.1);
+                border:1px solid #ff4757;
+                border-radius:8px;
+                padding:10px 14px;
+                margin-top:16px;
+                font-size:0.9rem;">
+    </div>
+    
+    <!-- Footer buttons -->
+    <div style="display:flex;
+                gap:12px;
+                justify-content:flex-end;
+                margin-top:24px;">
+      <button onclick="closeNewEventModal()"
+              id="new-event-cancel-btn"
+              style="background:transparent;
+                     border:1px solid #555;
+                     color:#aaa;
+                     padding:12px 24px;
+                     border-radius:8px;
+                     cursor:pointer;
+                     font-size:0.9rem;">
+        Cancel
+      </button>
+      <button onclick="submitNewEvent()"
+              id="new-event-submit-btn"
+              style="background:linear-gradient(
+                       135deg, #6c63ff, #4ecca3);
+                     border:none;
+                     color:white;
+                     padding:12px 28px;
+                     border-radius:8px;
+                     cursor:pointer;
+                     font-size:0.9rem;
+                     font-weight:600;">
+        🎪 Create Event
+      </button>
+    </div>
+    
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ── NEW EVENT MODAL FUNCTIONS ──
+  const openCreateEventModal = openNewEventModal;
+  
+  function openNewEventModal() {
+    console.log('Opening new event modal...');
+    const modal = document.getElementById(
+      'new-event-modal'
+    );
+    if (!modal) {
+      console.error('Modal not found in DOM!');
+      showToast('❌ Modal not found. Reload page.');
+      return;
+    }
+    // Clear all fields
+    [
+      'new-event-title',
+      'new-event-organizer', 
+      'new-event-location',
+      'new-event-description',
+      'new-event-reg-link',
+      'new-event-image',
+      'new-event-tags'
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    
+    // Hide error
+    const errDiv = document.getElementById(
+      'new-event-error'
+    );
+    if (errDiv) errDiv.style.display = 'none';
+    
+    // Reset submit button
+    const btn = document.getElementById(
+      'new-event-submit-btn'
+    );
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '🎪 Create Event';
+    }
+    
+    modal.style.display = 'flex';
+    
+    // Focus title field
+    setTimeout(() => {
+      const titleField = document.getElementById(
+        'new-event-title'
+      );
+      if (titleField) titleField.focus();
+    }, 100);
+  }
+  
+  function closeNewEventModal() {
+    const modal = document.getElementById(
+      'new-event-modal'
+    );
+    if (modal) modal.style.display = 'none';
+  }
+  
+  // Close modal when clicking backdrop
+  document.addEventListener('click', function(e) {
+    const modal = document.getElementById(
+      'new-event-modal'
+    );
+    if (modal && e.target === modal) {
+      closeNewEventModal();
+    }
+  });
+  
+  // Close modal with Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeNewEventModal();
+    }
+  });
+  
+  async function submitNewEvent() {
+    console.log('=== SUBMIT NEW EVENT ===');
+    
+    // Collect values
+    const title = document.getElementById(
+      'new-event-title'
+    )?.value?.trim();
+    const organizer = document.getElementById(
+      'new-event-organizer'
+    )?.value?.trim();
+    const category = document.getElementById(
+      'new-event-category'
+    )?.value;
+    const date = document.getElementById(
+      'new-event-date'
+    )?.value;
+    const location = document.getElementById(
+      'new-event-location'
+    )?.value?.trim() || '';
+    const description = document.getElementById(
+      'new-event-description'
+    )?.value?.trim();
+    const regLink = document.getElementById(
+      'new-event-reg-link'
+    )?.value?.trim() || '';
+    const image = document.getElementById(
+      'new-event-image'
+    )?.value?.trim() || '';
+    const tagsRaw = document.getElementById(
+      'new-event-tags'
+    )?.value || '';
+    const tags = tagsRaw.split(',')
+      .map(t => t.trim())
+      .filter(t => t);
+    
+    // Validate required fields
+    const errDiv = document.getElementById(
+      'new-event-error'
+    );
+    
+    function showFormError(msg) {
+      if (errDiv) {
+        errDiv.textContent = msg;
+        errDiv.style.display = 'block';
+        errDiv.scrollIntoView({behavior: 'smooth'});
+      }
+      showToast('❌ ' + msg);
+    }
+    
+    if (!title) {
+      showFormError('Event title is required');
+      document.getElementById(
+        'new-event-title'
+      )?.focus();
+      return;
+    }
+    if (!date) {
+      showFormError('Event date is required');
+      document.getElementById(
+        'new-event-date'
+      )?.focus();
+      return;
+    }
+    if (!description) {
+      showFormError('Description is required');
+      document.getElementById(
+        'new-event-description'
+      )?.focus();
+      return;
+    }
+    
+    // Hide error
+    if (errDiv) errDiv.style.display = 'none';
+    
+    // Build payload
+    const payload = {
+      title: title,
+      organizer: organizer,
+      category: category,
+      date: date,
+      location: location,
+      description: description,
+      registration_link: regLink,
+      image: image,
+      tags: tags
+    };
+    
+    console.log('Payload:', JSON.stringify(payload));
+    
+    // Show loading state
+    const submitBtn = document.getElementById(
+      'new-event-submit-btn'
+    );
+    const cancelBtn = document.getElementById(
+      'new-event-cancel-btn'
+    );
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ Creating...';
+    }
+    if (cancelBtn) cancelBtn.disabled = true;
+    
+    try {
+      const result = await apiFetch(
+        '/api/events/',
+        {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        }
+      );
+      
+      console.log('Server response:', result);
+      
+      if (result && !result.error && 
+          !result.message?.includes('error')) {
+        closeNewEventModal();
+        showToast('✅ Event created successfully!');
+        
+        // Reload events list after 1 second
+        setTimeout(() => {
+          loadEvents(currentFilter); // or location.reload()
+        }, 1000);
+        
+      } else {
+        const errMsg = result?.error || 
+                       result?.message || 
+                       'Failed to create event';
+        console.error('Create event error:', errMsg);
+        showFormError(errMsg);
+        
+        // Reset button
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '🎪 Create Event';
+        }
+        if (cancelBtn) cancelBtn.disabled = false;
+      }
+      
+    } catch(e) {
+      console.error('submitNewEvent error:', e);
+      showFormError(
+        'Network error. Check your connection.'
+      );
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🎪 Create Event';
+      }
+      if (cancelBtn) cancelBtn.disabled = false;
+    }
+  }
+
+  if (!requireAuth()) {}
+
+  const currentUserId = "{{ user._id if user else '' }}";
+  let currentFilter = 'all';
+  let userEventBookmarks = new Set();
+  window.currentEvents = [];
+
+  const categoryBackgrounds = {
+    'all': 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1920&auto=format',
+    'workshop': 'https://images.unsplash.com/photo-1540317580384-e5d43616b9aa?q=80&w=1920&auto=format',
+    'technical': 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1920&auto=format',
+    'non-technical': 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=1920&auto=format',
+    'hackathon': 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1920&auto=format',
+    'festival': 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1920&auto=format'
+  };
+
+  /**
+   * handleImageError - Sets a high-quality fallback image based on category.
+   */
+  function handleImageError(img, category) {
+    const fallback = categoryBackgrounds[category] || categoryBackgrounds['all'];
+    img.src = fallback;
+    img.onerror = null; 
+    img.style.opacity = '0.7';
+  }
+
+  async function loadEvents(category) {
+    currentFilter = category || currentFilter;
+    const grid = document.getElementById('eventsGrid');
+    if (!grid) return;
+    
+    // Always show spinner at start
+    grid.innerHTML = '<div class="spinner"></div>';
+    
+    try {
+      let url = '/api/events';
+      if (currentFilter && currentFilter !== 'all') url += `?category=${currentFilter}`;
+      
+      const data = await apiFetch(url);
+      
+      // Robustly handle response shapes (Fix 3)
+      const events = Array.isArray(data) ? data : 
+                     data?.events ? data.events : 
+                     data?.data ? data.data : [];
+
+      // Only fetch bookmarks if events exist
+      let userEventBookmarks = new Set();
+      try {
+        const bookmarkIds = await apiFetch('/api/bookmarks/ids');
+        userEventBookmarks = new Set(bookmarkIds.filter(b => b.item_type === 'event').map(b => String(b.item_id)));
+      } catch (bErr) {
+        console.warn('Could not load bookmarks:', bErr);
+      }
+
+      window.currentEvents = events;
+
+      if (!events || events.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🎪</div>
+            <h3>No events found</h3>
+            <p>Be the first to create an event!</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = events.map((e, index) => {
+        const isCreator = String(e.created_by) === String(currentUserId);
+        const userRole = "{{ current_user_role }}";
+        const isAdmin = userRole.toLowerCase() === 'admin';
+        return `
+        <div class="timeline-node" id="node-${e._id}" style="animation-delay: ${index * 0.1}s">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="event-card" id="card-${e._id}" data-event-id="${e._id}">
+              <div class="card-dropdown-container">
+                <button class="card-dropdown-trigger" data-id="${e._id}">⋮</button>
+                <div class="card-dropdown-menu" id="menu-${e._id}">
+                  <!-- Bookmark (All) -->
+                  <div class="menu-item" onclick="toggleEventBookmark('${e._id}', this, \`${e.title.replace(/"/g, '&quot;')}\`)">
+                    <span>🔖</span> ${userEventBookmarks.has(String(e._id)) ? 'Remove Bookmark' : 'Bookmark Event'}
+                  </div>
+                  
+                  <!-- Share Event -->
+                  <div class="menu-item" onclick="shareEvent('${e._id}', \`${e.title.replace(/"/g, '&quot;')}\`)">
+                    <span>🔗</span> Share Event
+                  </div>
+
+                  <!-- Edit (Owner, Admin, Mod) -->
+                  ${(isCreator || isAdmin) ? `
+                    <div class="menu-item" onclick="editEvent('${e._id}')">
+                      <span>✏️</span> Edit Event
+                    </div>
+                  ` : ''}
+
+                  <!-- Hide (Owner, Admin, Mod) -->
+                  ${(isCreator || isAdmin) ? `
+                    <div class="menu-item" onclick="hideEvent('${e._id}')">
+                      <span>🙈</span> Hide Event
+                    </div>
+                  ` : ''}
+
+                  <!-- Delete (Owner, Admin, Mod) -->
+                  ${(isCreator || isAdmin) ? `
+                    <div class="menu-item danger" onclick="deleteEvent('${e._id}')" style="color:#ff2a6d;">
+                      <span>🗑️</span> Delete Event
+                    </div>
+                  ` : ''}
+
+                  <!-- Report (Everyone except Owner) -->
+                  ${!isCreator ? `
+                    <div class="menu-item" onclick="openReportModal('${e._id}', 'event', \`${e.title.replace(/"/g, '&quot;')}\`)">
+                      <span>🚩</span> Report Event
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div class="tc-header" style="padding-right: 30px;">
+                <span class="tc-date">${formatDate(e.date)}</span>
+                <span class="card-badge badge-${e.category}">${e.category.replace('-', ' ')}</span>
+              </div>
+              <h2 class="tc-title">${escapeHtml(e.title)}</h2>
+              <h3 class="tc-org">🎓 ${escapeHtml(e.college_name || e.organizer || 'College')}</h3>
+              ${isAdmin && e.creator_name ? `
+                <div style="font-size:11px; color:#05d9e8; margin: 4px 0 12px; font-weight:600; line-height: 1.4;">
+                  👤 Posted by: ${escapeHtml(e.creator_name)}
+                  <span style="background:rgba(255,71,87,0.15);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:3px;padding:1px 5px;font-size:9px;margin-left:4px;">ADMIN VIEW</span>
+                </div>
+              ` : ''}
+              
+              <div class="tc-media-wrapper" style="position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 20px; cursor: pointer; box-shadow: 0 8px 16px rgba(0,0,0,0.2);" onclick="viewEventDetails('${e._id}')">
+                ${renderMedia(e.image_url || e.image || (categoryBackgrounds[e.category] || categoryBackgrounds['all']), 'tc-image', 'margin-bottom: 0;')}
+              </div>
+              <div class="tc-tags-container">
+                ${e.tags && e.tags.length > 0 ? `
+                  <div class="tc-tags" style="margin-top: 10px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    ${e.tags.map(t => `<span class="suggest-chip" style="background: rgba(180,81,252,0.1); color: var(--primary-light); border: 1px solid rgba(255,217,232,0.1); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight:600;">#${escapeHtml(t)}</span>`).join('')}
+                  </div>
+                ` : ''}
+              </div>
+              <div class="tc-desc" style="margin-bottom: 24px; color: rgba(255,255,255,0.7);">${escapeHtml(e.description)}</div>
+              <div class="tc-footer" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: auto;">
+                <div class="tc-actions" style="display: flex; gap: 10px;">
+                  <button onclick="viewEventDetails('${e._id}')" class="btn btn-primary btn-sm" style="background: var(--accent); border-color: var(--accent); color: white; border-radius: 8px; font-weight: 800; padding: 10px 20px;">View Details</button>
+                  ${e.registration_link ? `<a href="${escapeHtml(e.registration_link)}" target="_blank" class="btn btn-primary btn-sm" style="border-radius: 8px; font-weight: 800; padding: 10px 20px;">Register →</a>` : ''}
+                </div>
+                
+                <button class="like-btn ${e.has_liked ? 'liked' : ''}" id="like-btn-${e._id}" onclick="toggleLike('${e._id}')">
+                  <span class="like-icon" style="font-size: 18px;">👍</span>
+                  <span class="like-count" id="like-count-${e._id}">${e.total_reactions || 0}</span>
+                  <span style="margin-left: 4px; font-size: 12px; font-weight: 800;">LIKES</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        `;
+      }).join('');
+      
+      // Fix 3: Hide all spinners/loading indicators after load
+      setTimeout(() => {
+        document.querySelectorAll('.spinner, .loading-dot, .pulse-dot').forEach(el => {
+          if (el) el.style.display = 'none';
+        });
+      }, 500);
+    } catch (err) {
+      console.error('FAILED TO LOAD EVENTS:', err);
+      showError('Could not load events timeline. Please check your connection.');
+    }
+  }
+
+  function showError(msg) {
+    const grid = document.getElementById('eventsGrid');
+    if (!grid) return;
+    grid.innerHTML = `
+      <div class="load-error">
+        <span>⚠️</span>
+        <p>${msg}</p>
+        <button class="btn btn-secondary" onclick="loadEvents(currentFilter)">
+          🔄 Try Again
+        </button>
+      </div>
+    `;
+  }
+
+  function filterEvents(category, btn) {
+    currentFilter = category;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    const bgUrl = categoryBackgrounds[category] || categoryBackgrounds['all'];
+    const pc = document.querySelector('.page-content');
+    if (pc) pc.style.backgroundImage = 
+      `linear-gradient(180deg, rgba(1, 10, 19, 0.92) 0%, rgba(1, 10, 19, 0.97) 100%), url('${bgUrl}')`;
+    loadEvents(category);
+  }
+
+  function openModal(id) { 
+    const m = document.getElementById(id);
+    if (m) m.classList.add('show'); 
+  }
+  function closeModal(id) { 
+    const m = document.getElementById(id);
+    if (m) m.classList.remove('show'); 
+  }
+
+  // Global Event Delegation for 3-Dot Menus
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('card-dropdown-trigger')) {
+      e.stopPropagation();
+      const id = e.target.getAttribute('data-id');
+      const menu = document.getElementById(`menu-${id}`);
+      const wasOpen = menu && menu.classList.contains('show');
+      document.querySelectorAll('.card-dropdown-menu').forEach(m => m.classList.remove('show'));
+      if (menu && !wasOpen) menu.classList.add('show');
+      return;
+    }
+    if (!e.target.closest('.card-dropdown-container')) {
+      document.querySelectorAll('.card-dropdown-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  function openReportModal(id, type, title) {
+    const rid = document.getElementById('rep_id');
+    const rtype = document.getElementById('rep_type');
+    const rtitle = document.getElementById('rep_title');
+    if (rid) rid.value = id;
+    if (rtype) rtype.value = type;
+    if (rtitle) rtitle.value = title;
+    openModal('reportModal');
+  }
+
+  async function submitReport(e) {
+    e.preventDefault();
+    const id = document.getElementById('rep_id').value;
+    const type = document.getElementById('rep_type').value;
+    const title = document.getElementById('rep_title').value;
+    const reason = document.getElementById('rep_reason').value;
+    const desc = document.getElementById('rep_desc').value;
+    
+    try {
+      await apiFetch('/api/reports/', {
+        method: 'POST',
+        body: JSON.stringify({
+          contentId: id,
+          contentType: type,
+          contentTitle: title,
+          reason: reason,
+          description: desc
+        })
+      });
+      showToast('Report submitted. Our team will review it.', 'info');
+      closeModal('reportModal');
+      document.getElementById('reportForm').reset();
+    } catch (err) {
+      showToast(err.message || 'Failed to submit report', 'error');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    ['ev', 'eev'].forEach(prefix => {
+      const fileInput = document.getElementById(`${prefix}_file`);
+      if (fileInput) {
+        fileInput.addEventListener('change', function() {
+          const file = this.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const container = document.getElementById(`${prefix}_preview_container`);
+            const placeholder = document.getElementById(`${prefix}_uploadPlaceholder`);
+            if (container) {
+              container.innerHTML = `<img src="${ev.target.result}" style="width:100%; max-height:180px; object-fit:cover;">`;
+              container.style.display = 'block';
+            }
+            if (placeholder) placeholder.style.display = 'none';
+            const li = document.getElementById(`${prefix}_image`);
+            if (li) li.value = '';
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+      const linkInput = document.getElementById(`${prefix}_image`);
+      if (linkInput) {
+        linkInput.addEventListener('input', function() {
+          const container = document.getElementById(`${prefix}_preview_container`);
+          const placeholder = document.getElementById(`${prefix}_uploadPlaceholder`);
+          if (this.value) {
+            if (container) {
+              container.innerHTML = renderMedia(this.value, '', 'max-height: 180px; object-fit: cover;');
+              container.style.display = 'block';
+            }
+            if (placeholder) placeholder.style.display = 'none';
+            const fi = document.getElementById(`${prefix}_file`);
+            if (fi) fi.value = '';
+          } else {
+            if (container) container.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'block';
+          }
+        });
+      }
+    });
+
+    const commonFpConfig = {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      altInput: true,
+      altFormat: "F j, Y - h:i K",
+      theme: "dark",
+      plugins: [new confirmDatePlugin({ confirmText: "OK", showAlways: true, theme: "dark" })],
+    };
+    if (document.getElementById('ev_date')) flatpickr("#ev_date", commonFpConfig);
+    if (document.getElementById('eev_date')) flatpickr("#eev_date", commonFpConfig);
+
+    loadEventBookmarkIds().then(() => {
+      loadEvents('all').then(() => {
+        // Auto-open detail if ?id= present
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('id');
+        if (eventId) {
+          viewEventDetails(eventId);
+        }
+      });
+    });
+  });
+
+  async function uploadFileIfChosen(fileInputId) {
+    const fileInput = document.getElementById(fileInputId);
+    if (!fileInput || !fileInput.files[0]) return null;
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    const resp = await fetch('/api/upload/image', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.message || 'Upload failed');
+    return data.url;
+  }
+
+  function previewEventImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image must be under 5MB', 'error');
+      input.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('ev-image-preview');
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      document.getElementById('ev-upload-placeholder').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function createEvent() {
+    console.log('=== CREATE EVENT START ===');
+    
+    // Select elements
+    const title = document.getElementById('new-event-title')?.value?.trim();
+    const organizer = document.getElementById('new-event-organizer')?.value?.trim();
+    const category = document.getElementById('new-event-category')?.value;
+    const date = document.getElementById('new-event-date')?.value;
+    const locationVal = document.getElementById('new-event-location')?.value?.trim();
+    const description = document.getElementById('new-event-description')?.value?.trim();
+    const regLink = document.getElementById('new-event-reg-link')?.value?.trim();
+    const tags = document.getElementById('new-event-tags')?.value?.trim();
+    const mediaLink = document.getElementById('ev-media-link')?.value?.trim();
+
+    // Validation
+    if (!title || !organizer || !date || !description) {
+      showToast('❌ Please fill all required fields', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('new-event-submit-btn');
+    if (btn) { btn.textContent = '🚀 Creating...'; btn.disabled = true; }
+
+    try {
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('organizer', organizer);
+      formData.append('category', category);
+      formData.append('date', date);
+      formData.append('location', locationVal);
+      formData.append('description', description);
+      formData.append('registration_link', regLink);
+      formData.append('tags', JSON.stringify(tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : []));
+      formData.append('media_link', mediaLink || '');
+      
+      const imgInput = document.getElementById('ev-image-input');
+      if (imgInput?.files[0]) {
+        formData.append('image', imgInput.files[0]);
+      }
+
+      console.log('Sending FormData...');
+
+      const resp = await fetch('/api/events/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('access_token')}`
+        },
+        body: formData
+      });
+
+      const data = await resp.json();
+      console.log('Server Response:', data);
+
+      if (resp.ok && !data.error) {
+        showToast('✅ Event created successfully!', 'success');
+        closeNewEventModal();
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        showToast('❌ Error: ' + (data?.error || data?.message || 'Failed to create'), 'error');
+        if (btn) { btn.textContent = '🎪 CREATE EVENT'; btn.disabled = false; }
+      }
+    } catch(e) {
+      console.error('Request Exception:', e);
+      showToast('❌ Network error. Check console.', 'error');
+      if (btn) { btn.textContent = '🎪 CREATE EVENT'; btn.disabled = false; }
+    }
+  }
+
+  async function submitNewEvent() {
+    createEvent();
+  }
+
+  async function submitEvent(e) {
+    e.preventDefault();
+    createEvent();
+  }
+
+  async function loadEventBookmarkIds() {
+    try {
+      const data = await apiFetch('/api/bookmarks/ids');
+      userEventBookmarks = new Set(data.filter(b => b.item_type === 'event').map(b => String(b.item_id)));
+    } catch(e) {}
+  }
+
+  async function toggleEventBookmark(eventId, btn, title) {
+    const isActive = userEventBookmarks.has(String(eventId));
+    try {
+      if (isActive) {
+        await apiFetch(`/api/bookmarks/${eventId}`, { method: 'DELETE' });
+        userEventBookmarks.delete(String(eventId));
+        if (btn) btn.innerHTML = '<span>🔖</span> Bookmark Event';
+        showToast('Removed from Saved Items', 'info');
+      } else {
+        await apiFetch('/api/bookmarks/', { 
+          method: 'POST', 
+          body: JSON.stringify({ contentId: eventId, contentType: 'event', contentTitle: title || 'Event' }) 
+        });
+        userEventBookmarks.add(String(eventId));
+        if (btn) btn.innerHTML = '<span>🔖</span> Remove Bookmark';
+        showToast('Saved to your Items!', 'success');
+      }
+    } catch(e) { showToast(e.message, 'error'); }
+  }
+
+  async function hideEvent(id) {
+    console.log(`=== HIDE EVENT DEBUG: ${id} ===`);
+    if (!id) return;
+    
+    try {
+      const data = await apiFetch(`/api/events/${id}/hide`, {
+        method: 'POST',
+        body: JSON.stringify({ hide: true })
+      });
+
+      console.log('Hide Response:', data);
+
+      if (data && !data.error) {
+        const node = document.getElementById(`node-${id}`);
+        if (node) {
+          node.classList.add('card-fade-out');
+          setTimeout(() => node.remove(), 400);
+        }
+        showToast('🙈 Event hidden and moved to archive', 'success');
+      } else {
+        showToast('❌ Error: ' + (data?.error || data?.message || 'Failed to hide'), 'error');
+      }
+    } catch(e) {
+      console.error('Hide Network Error:', e);
+      showToast('❌ Network error. Try again.', 'error');
+    }
+  }
+
+  async function deleteEvent(id) {
+    if (!confirm('Are you sure you want to permanently delete this?')) return;
+    try {
+      await apiFetch(`/api/events/${id}`, { method: 'DELETE' });
+      showToast('Permanently deleted', 'success');
+      const node = document.getElementById(`node-${id}`);
+      if (node) {
+        node.classList.add('card-fade-out');
+        setTimeout(() => node.remove(), 400);
+      }
+    } catch (err) { showToast(err.message, 'error'); }
+  }
+
+  function viewEventDetails(id) {
+    const e = window.currentEvents.find(x => x._id === id);
+    if (!e) return;
+    const dft = document.getElementById('det_full_title');
+    if (dft) dft.textContent = e.title;
+    const dc = document.getElementById('det_college');
+    if (dc) dc.textContent = `🎓 ${e.college_name || e.organizer || 'College'}`;
+    const glw = document.getElementById('det_group_link_wrapper');
+    if (e.student_group_link) {
+      const gl = document.getElementById('det_group_link');
+      if (gl) gl.href = e.student_group_link;
+      if (glw) glw.style.display = 'block';
+    } else { if (glw) glw.style.display = 'none'; }
+    const dd = document.getElementById('det_date');
+    if (dd) dd.textContent = formatDate(e.date);
+    const dds = document.getElementById('det_desc');
+    if (dds) dds.textContent = e.description;
+    const cat = document.getElementById('det_category');
+    if (cat) {
+      cat.textContent = e.category.replace('-', ' ');
+      cat.className = `card-badge badge-${e.category}`;
+    }
+    const mediaContainer = document.getElementById('det_media_container');
+    if (mediaContainer) {
+      const mediaUrl = e.image_url || e.image || (categoryBackgrounds[e.category] || categoryBackgrounds['all']);
+      mediaContainer.innerHTML = renderMedia(mediaUrl, 'det-media');
+    }
+    const tags = document.getElementById('det_tags');
+    if (tags) tags.innerHTML = (e.tags || []).map(t => `<span class="suggest-chip" style="background: rgba(180,81,252,0.15); color: var(--primary-light); border: 1px solid var(--border); padding: 4px 10px; border-radius: 12px; font-size: 11px;">#${escapeHtml(t)}</span>`).join('');
+    const actions = document.getElementById('det_actions');
+    if (actions) actions.innerHTML = `${e.registration_link ? `<a href="${escapeHtml(e.registration_link)}" target="_blank" class="btn btn-primary">Register Now →</a>` : ''}`;
+    openModal('eventDetailModal');
+  }
+
+  async function editEvent(id) {
+    try {
+      const e = window.currentEvents.find(x => x._id === id) || await apiFetch(`/api/events/${id}`);
+      if (!e) return;
+      
+      const fields = {
+        'eev_id': e._id,
+        'eev_title': e.title,
+        'eev_college': e.college_name || e.organizer || '',
+        'eev_group_link': e.student_group_link || '',
+        'eev_category': e.category,
+        'eev_image': e.media_link || '', // Fix 1: Map external link here
+        'eev_description': e.description || '',
+        'eev_reglink': e.registration_link || '',
+        'eev_tags': (e.tags || []).join(', ')
+      };
+      
+      for (const [fid, val] of Object.entries(fields)) {
+        const el = document.getElementById(fid);
+        if (el) el.value = val;
+      }
+      
+      const ed = document.getElementById('eev_date');
+      if (ed) {
+        ed.value = new Date(e.date).toISOString().slice(0,16);
+      }
+      
+      const container = document.getElementById('eev_preview_container');
+      const placeholder = document.getElementById('eev_uploadPlaceholder');
+      if (e.image) {
+        if (container) {
+          container.innerHTML = renderMedia(e.image, '', 'max-height: 180px; object-fit: cover;');
+          container.style.display = 'block';
+        }
+        if (placeholder) placeholder.style.display = 'none';
+      } else {
+        if (container) container.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'block';
+      }
+      openModal('editEventModal');
+    } catch (err) { showToast('Failed to load event data', 'error'); }
+  }
+
+  async function submitEditEvent(e) {
+    e.preventDefault();
+    const btn = e.submitter || e.target.querySelector('[type=submit]');
+    const originalText = btn ? btn.textContent : 'Save';
+    if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
+    try {
+      const id = document.getElementById('eev_id').value;
+      let imageUrl = await uploadFileIfChosen('eev_file');
+      if (!imageUrl) {
+        const li = document.getElementById('eev_image');
+        imageUrl = li ? li.value.trim() : '';
+      }
+      const updatedData = {
+        title: document.getElementById('eev_title').value,
+        college_name: document.getElementById('eev_college').value,
+        student_group_link: document.getElementById('eev_group_link').value,
+        category: document.getElementById('eev_category').value,
+        date: document.getElementById('eev_date').value,
+        image: imageUrl || (e?.image?.startsWith('/static/') ? e.image : ''), // Maintain file path
+        media_link: document.getElementById('eev_image').value.trim(),      // Fix 1: Split field
+        description: document.getElementById('eev_description').value,
+        registration_link: document.getElementById('eev_reglink').value,
+        tags: document.getElementById('eev_tags').value.split(',').map(t => t.trim()).filter(t => t),
+      };
+      await apiFetch(`/api/events/${id}`, { method: 'PUT', body: JSON.stringify(updatedData) });
+      showToast('Event updated successfully!', 'success');
+      closeModal('editEventModal');
+      loadEvents(currentFilter);
+    } catch (err) { showToast('Failed to save changes.', 'error'); }
+    finally { if (btn) { btn.textContent = originalText; btn.disabled = false; } }
+  }
+  function shareEvent(id, title) {
+    document.querySelectorAll('.card-dropdown-menu').forEach(d => d.classList.remove('show'));
+    const url = window.location.origin + '/explore?highlight=' + id;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => showToast('Event link copied! 🔗', 'success'));
+    } else {
+      prompt('Copy this link:', url);
+    }
+  }
+
+  async function toggleLike(eventId) {
+    if (!requireAuth()) {
+      showToast('Please log in to like events 🎪', 'info');
+      return;
+    }
+    
+    const btn = document.getElementById(`like-btn-${eventId}`);
+    const countEl = document.getElementById(`like-count-${eventId}`);
+    
+    // Optimistic UI
+    const currentlyLiked = btn.classList.contains('liked');
+    const currentCount = parseInt(countEl.textContent) || 0;
+    
+    btn.classList.toggle('liked');
+    // We keep the 👍 icon consistent now, just toggle the count and colors
+    countEl.textContent = btn.classList.contains('liked') ? currentCount + 1 : Math.max(0, currentCount - 1);
+    
+    try {
+      const data = await apiFetch(`/api/events/${eventId}/react`, { 
+        method: 'POST' 
+      });
+      
+      // Update with server truth
+      if (data.action === 'added') {
+        btn.classList.add('liked');
+      } else {
+        btn.classList.remove('liked');
+      }
+      countEl.textContent = data.total_reactions;
+      
+    } catch (err) {
+      // Revert on error
+      btn.classList.toggle('liked', currentlyLiked);
+      countEl.textContent = currentCount;
+      showToast('Could not update like. Please try again.', 'error');
+    }
+  }
+
+
+</script>
+{% endblock %}

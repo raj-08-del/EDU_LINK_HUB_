@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Moderate - EDU Link Hub{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content">
+      <div class="page-header">
+        <div>
+        <div class="header-title-wrapper">
+          <h1 class="glow-heading">
+            <span class="emoji-icon">✅</span>
+            <span class="text-gradient-animated">Moderator Queue</span>
+          </h1>
+          <div class="glow-line"></div>
+          <p class="header-subtitle">Review and approve submitted opportunities</p>
+        </div>
+      </div>
+
+      <div id="pendingList">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .badge-pending { 
+    background: rgba(255, 190, 11, 0.15); 
+    color: var(--warning); 
+    border: 1px solid rgba(255, 190, 11, 0.4); 
+    box-shadow: 0 0 10px rgba(255, 190, 11, 0.2); 
+    border-radius: 20px; 
+    padding: 4px 12px; 
+    font-size: 11px; 
+    font-weight: 600; 
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  if (!requireAuth()) {}
+
+  const user = getUser();
+  if (!user || (user.role !== 'moderator' && user.role !== 'admin')) {
+    showToast('Access denied', 'error');
+    window.location.href = '/dashboard';
+  }
+
+  async function loadPending() {
+    const container = document.getElementById('pendingList');
+    try {
+      const opps = await apiFetch('/api/opportunities/pending');
+      if (!opps || opps.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><h3>All caught up!</h3><p>No pending opportunities to review</p></div>';
+        return;
+      }
+
+      container.innerHTML = opps.map(o => `
+        <div class="card" style="margin-bottom:16px;cursor:default">
+          <div class="card-header">
+            <div class="card-title">${escapeHtml(o.company)} — ${escapeHtml(o.role)}</div>
+            <span class="card-badge badge-pending">Pending</span>
+          </div>
+          <div class="card-meta">
+            <span>📂 ${o.category.replace('-', ' ')}</span>
+            <span>📍 ${escapeHtml(o.location)}</span>
+            <span>📅 Deadline: ${formatDate(o.deadline)}</span>
+            <span>🎓 ${escapeHtml(o.eligibility)}</span>
+          </div>
+          ${o.description ? `<div class="card-description">${escapeHtml(o.description)}</div>` : ''}
+          <div style="margin-top:4px;font-size:13px;color:var(--text-muted)">
+            🔗 <a href="${escapeHtml(o.apply_link)}" target="_blank">${escapeHtml(o.apply_link)}</a>
+          </div>
+          <div style="margin-top:8px;font-size:13px;color:var(--text-muted)">
+            Submitted by: ${o.creator ? escapeHtml(o.creator.name) : 'Unknown'} ${o.creator ? '(' + escapeHtml(o.creator.college) + ')' : ''}
+          </div>
+          <div class="card-actions" style="margin-top:16px">
+            <button class="btn btn-success btn-sm" onclick="reviewOpp('${o._id}', 'approved')">✓ Approve</button>
+            <button class="btn btn-danger btn-sm" onclick="reviewOpp('${o._id}', 'rejected')">✗ Reject</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      container.innerHTML = '<div class="empty-state"><p>Error loading pending items</p></div>';
+    }
+  }
+
+  async function reviewOpp(id, status) {
+    try {
+      await apiFetch(`/api/opportunities/${id}/review`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      });
+      showToast(`Opportunity ${status}!`, status === 'approved' ? 'success' : 'info');
+      loadPending();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  loadPending();
+</script>
+{% endblock %}

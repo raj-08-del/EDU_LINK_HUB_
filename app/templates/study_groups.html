@@ -1,0 +1,467 @@
+{% extends "base.html" %}
+{% block title %}Study Groups - EDU Link Hub{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content">
+      <div class="page-header">
+        <div class="header-title-wrapper">
+          <h1 class="glow-heading">
+            <span class="emoji-icon">👥</span>
+            <span class="text-gradient-animated">Study Groups</span>
+          </h1>
+          <div class="glow-line"></div>
+          <p class="header-subtitle">Join study groups or create your own to collaborate with peers.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('createGroupModal')">+ Create Group</button>
+      </div>
+
+      <!-- Filters & Search -->
+      <div class="filter-bar" style="display:flex; gap: 10px; align-items: center; margin-bottom: 24px;">
+        <button class="filter-chip active" onclick="filterGroups('all', this)">All Groups</button>
+        <button class="filter-chip" onclick="filterGroups('my', this)">My Groups</button>
+        <input type="text" id="groupSearch" placeholder="Search groups..." class="form-control" style="max-width:300px; margin-left:auto; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; padding:8px 16px; border-radius:20px;">
+      </div>
+
+      <!-- Groups Container -->
+      <div id="groupsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+        {% for group in groups %}
+          {% set is_creator = (current_user_id == group.created_by|string) %}
+          {% set is_admin = (current_user_role|lower == 'admin') %}
+          {% set is_member = current_user_id in group.members %}
+
+          {% if not group.is_private or is_creator or is_admin or is_member %}
+          <div class="group-card" data-group-id="{{ group._id }}" data-members="{{ group.members|join(',') }}" style="position:relative; padding-top: 40px;">
+            <div style="position:relative;">
+              <button class="group-three-dot" data-id="{{ group._id }}"
+                style="background:none;border:none;color:#888;font-size:20px;
+                cursor:pointer;padding:4px 8px;border-radius:4px;position:absolute;top:12px;right:12px;"
+                onmouseover="this.style.color='#05d9e8'" onmouseout="this.style.color='#888'">⋮</button>
+
+              <div class="group-dropdown" id="gmenu-{{ group._id }}"
+                style="display:none;position:absolute;top:40px;right:12px;
+                background:#0d1b2a;border:1px solid #05d9e8;border-radius:10px;
+                min-width:175px;z-index:9999;padding:4px 0;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+
+                <!-- Show for ALL users -->
+                <a onclick="reportGroup('{{ group._id }}','{{ group.name }}')"
+                  style="display:flex;align-items:center;gap:10px;padding:10px 16px;
+                  color:#fff;font-size:13px;cursor:pointer;text-decoration:none;"
+                  onmouseover="this.style.background='#1a2a3a'"
+                  onmouseout="this.style.background='transparent'">
+                  🚩 Report Group
+                </a>
+
+                <a onclick="shareGroup('{{ group._id }}','{{ group.name }}')"
+                  style="display:flex;align-items:center;gap:10px;padding:10px 16px;
+                  color:#fff;font-size:13px;cursor:pointer;text-decoration:none;"
+                  onmouseover="this.style.background='#1a2a3a'"
+                  onmouseout="this.style.background='transparent'">
+                  🔗 Share Group
+                </a>
+
+                <!-- Show for Creator or Admin -->
+                {% if is_creator or is_admin %}
+                  <div style="border-top:0.5px solid rgba(255,255,255,0.1);margin:4px 0;"></div>
+                  <a href="/study-groups/{{ group._id }}"
+                    style="display:flex;align-items:center;gap:10px;padding:10px 16px;
+                    color:#05d9e8;font-size:13px;cursor:pointer;text-decoration:none;"
+                    onmouseover="this.style.background='#1a2a3a'"
+                    onmouseout="this.style.background='transparent'">
+                    👥 Show Members
+                  </a>
+                {% endif %}
+
+                <!-- Show Privacy Toggle ONLY for creator/admin -->
+                {% if is_creator or is_admin %}
+                  <div style="border-top:0.5px solid rgba(255,255,255,0.1);margin:4px 0;"></div>
+                  {% if group.is_private %}
+                    <a onclick="togglePrivacy('{{ group._id }}', false)"
+                      style="display:flex;align-items:center;gap:10px;padding:10px 16px;
+                      color:#fff;font-size:13px;cursor:pointer;text-decoration:none;"
+                      onmouseover="this.style.background='#1a2a3a'"
+                      onmouseout="this.style.background='transparent'">
+                      🌐 Make Public
+                    </a>
+                  {% else %}
+                    <a onclick="togglePrivacy('{{ group._id }}', true)"
+                      style="display:flex;align-items:center;gap:10px;padding:10px 16px;
+                      color:#fff;font-size:13px;cursor:pointer;text-decoration:none;"
+                      onmouseover="this.style.background='#1a2a3a'"
+                      onmouseout="this.style.background='transparent'">
+                      🔒 Make Private
+                    </a>
+                  {% endif %}
+                {% endif %}
+
+                <!-- Show Delete ONLY for creator/admin -->
+                {% if is_creator or is_admin %}
+                  <div style="border-top:0.5px solid rgba(255,255,255,0.1);margin:4px 0;"></div>
+                  <a onclick="deleteGroup('{{ group._id }}','{{ group.name }}')"
+                    style="display:flex;align-items:center;gap:10px;padding:10px 16px;
+                    color:#ff2a6d;font-size:13px;cursor:pointer;text-decoration:none;"
+                    onmouseover="this.style.background='rgba(255,42,109,0.1)'"
+                    onmouseout="this.style.background='transparent'">
+                    🗑️ Delete Group
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="group-header">
+              <h3 class="group-title">{{ group.name }}</h3>
+              {% if group.is_private %}
+                <span title="Private Group" style="margin-left:8px">🔒</span>
+              {% endif %}
+            </div>
+            <div style="margin-bottom: 12px;"><span class="group-subject">{{ group.subject }}</span></div>
+            <div class="group-desc">{{ group.description or 'No description provided.' }}</div>
+            
+            {% if is_admin and group.creator_name %}
+            <div style="font-size:11px; color:#05d9e8; margin: 4px 0 16px; font-weight:600; line-height: 1.4;">
+              👤 Created by: {{ group.creator_name }}
+              <span style="background:rgba(255,71,87,0.15);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:3px;padding:1px 5px;font-size:9px;margin-left:4px;">ADMIN VIEW</span>
+            </div>
+            {% endif %}
+            
+            
+            <div class="group-footer" style="padding-top:16px; margin-top:auto;">
+              {% if is_member %}
+                <button class="btn btn-secondary btn-sm" onclick="goToGroup('{{ group._id }}')">Go to Group</button>
+              {% else %}
+                <button class="btn btn-primary btn-sm" onclick="joinGroup('{{ group._id }}')">Join</button>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+        {% if not groups %}
+          <div class="empty-state" style="grid-column: 1 / -1; padding: 40px; text-align: center;">
+            <div class="empty-icon" style="font-size:48px; margin-bottom:16px;">👥</div>
+            <h3 style="color:white; margin-bottom:8px;">No study groups yet</h3>
+            <p style="color:var(--text-secondary);">Be the first to create one!</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Create Group Modal -->
+      <div class="modal-overlay" id="createGroupModal">
+        <div class="modal">
+          <div class="modal-header">
+            <h2>Create Study Group</h2>
+            <button class="modal-close" onclick="closeModal('createGroupModal')">&times;</button>
+          </div>
+          <form id="groupForm" onsubmit="submitGroup(event)">
+            <div class="form-group">
+              <label>Group Name</label>
+              <input type="text" id="group_name" placeholder="e.g. Advanced Python Study" required class="form-control" style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white;">
+            </div>
+            <div class="form-group">
+              <label>Subject</label>
+              <input type="text" id="group_subject" placeholder="e.g. Computer Science" required class="form-control" style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white;">
+            </div>
+            <div class="form-group">
+              <label>Description (Optional)</label>
+              <textarea id="group_description" rows="3" placeholder="What will this group focus on?" class="form-control" style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white;"></textarea>
+            </div>
+            <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+              <input type="checkbox" id="group_is_private" style="width:18px; height:18px;">
+              <label for="group_is_private" style="margin:0;">Make Group Private</label>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Private groups won't appear in the public search.</p>
+            <button type="submit" class="btn btn-primary btn-full">Create Group</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Edit Group Modal -->
+      <div class="modal-overlay" id="editGroupModal">
+        <div class="modal">
+          <div class="modal-header">
+            <h2>Edit Study Group</h2>
+            <button class="modal-close" onclick="closeModal('editGroupModal')">&times;</button>
+          </div>
+          <form id="editGroupForm" onsubmit="submitEditGroup(event)">
+            <input type="hidden" id="edit_group_id">
+            <div class="form-group">
+              <label>Group Name</label>
+              <input type="text" id="edit_group_name" required class="form-control" style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white;">
+            </div>
+            <div class="form-group">
+              <label>Subject</label>
+              <input type="text" id="edit_group_subject" required class="form-control" style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white;">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="edit_group_description" rows="3" class="form-control" style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white;"></textarea>
+            </div>
+            <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+              <input type="checkbox" id="edit_group_is_private" style="width:18px; height:18px;">
+              <label for="edit_group_is_private" style="margin:0;">Private Group</label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  .group-card {
+    background: linear-gradient(135deg, rgba(30, 20, 50, 0.6) 0%, rgba(15, 10, 30, 0.8) 100%);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: visible !important; /* Ensure menu is visible */
+  }
+  .group-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(180, 81, 252, 0.3), 0 0 20px rgba(5, 217, 232, 0.1);
+    border-color: var(--accent);
+    background: rgba(30, 20, 60, 0.7);
+  }
+  .group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .group-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+  }
+  .group-subject {
+    font-size: 13px;
+    color: var(--accent);
+    background: rgba(180, 81, 252, 0.1);
+    padding: 3px 8px;
+    border-radius: 12px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+  .group-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    flex-grow: 1;
+  }
+  .group-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 16px;
+  }
+  .group-members {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  /* ─── Standardized Card Menus ─── */
+  .group-card { position: relative !important; }
+  .card-menu-container { position: absolute !important; top: 15px !important; right: 20px !important; z-index: 100 !important; }
+  .menu-trigger { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; width: 32px !important; height: 32px !important; border-radius: 50% !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; transition: all 0.3s !important; font-size: 18px !important; }
+  .menu-trigger:hover { background: rgba(5,217,232,0.2) !important; color: var(--accent) !important; border-color: var(--accent) !important; transform: rotate(90deg) !important; }
+  .menu-dropdown { position: absolute !important; top: 40px !important; right: 0 !important; background: rgba(10, 5, 25, 0.98) !important; backdrop-filter: blur(20px) !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 12px !important; width: 200px !important; display: none; flex-direction: column !important; padding: 8px !important; box-shadow: 0 15px 45px rgba(0,0,0,0.85) !important; z-index: 1000 !important; gap: 4px !important; }
+  .menu-dropdown.show { display: flex !important; }
+  .menu-item { padding: 10px 14px !important; border-radius: 8px !important; font-size: 13px !important; color: white !important; cursor: pointer !important; display: flex !important; align-items: center !important; gap: 10px !important; transition: all 0.2s !important; }
+  .menu-item:hover { background: rgba(255,255,255,0.1) !important; color: var(--accent) !important; transform: translateX(5px) !important; }
+  .menu-item.danger:hover { background: rgba(255,71,87,0.1) !important; color: #ff4757 !important; }
+
+  .members-badge {
+    position: absolute;
+    bottom: 85px; /* Above the main button */
+    right: 24px;
+    background: rgba(5, 217, 232, 0.1);
+    border: 1px solid rgba(5, 217, 232, 0.2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const currentUserId = "{{ current_user_id }}";
+
+  // Menu Toggle Handler
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.group-three-dot');
+    const isMenuClick = e.target.closest('.group-dropdown');
+    
+    if (!btn && !isMenuClick) {
+      document.querySelectorAll('.group-dropdown').forEach(d => d.style.display = 'none');
+    }
+
+    if (btn) {
+      e.stopPropagation();
+      const menu = document.getElementById('gmenu-' + btn.dataset.id);
+      const isVisible = menu.style.display === 'block';
+      document.querySelectorAll('.group-dropdown').forEach(d => d.style.display = 'none');
+      if (menu) menu.style.display = isVisible ? 'none' : 'block';
+    }
+  });
+
+  function reportGroup(groupId, groupName) {
+    document.querySelectorAll('.group-dropdown').forEach(d => d.style.display = 'none');
+    const reason = prompt('Reason for reporting "' + groupName + '"? (optional)');
+    if (reason === null) return; // User cancelled
+    
+    fetch('/api/reports/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        contentType: 'study_group',
+        contentId: groupId,
+        contentTitle: groupName,
+        reason: reason || 'No reason provided',
+        status: 'pending'
+      })
+    }).then(r => {
+      if (r.ok) showToast('Group reported. Our team will review it.', 'success');
+      else showToast('Failed to report. Try again.', 'error');
+    });
+  }
+
+  function shareGroup(groupId, groupName) {
+    document.querySelectorAll('.group-dropdown').forEach(d => d.style.display = 'none');
+    const url = window.location.origin + '/study-groups/' + groupId;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Group link copied to clipboard!', 'success');
+      });
+    } else {
+      prompt('Copy this link:', url);
+    }
+  }
+
+  async function deleteGroup(groupId, groupName) {
+    document.querySelectorAll('.group-dropdown').forEach(d => d.style.display = 'none');
+    if (!confirm('Are you sure you want to delete "' + groupName + '"? This cannot be undone.')) return;
+    try {
+      const res = await fetch('/api/study-groups/' + groupId, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok) {
+        document.querySelector('[data-group-id="' + groupId + '"]')?.remove();
+        showToast('Group deleted successfully.', 'success');
+      } else {
+        showToast('Error: ' + (data.error || data.message), 'error');
+      }
+    } catch(e) {
+      showToast('Network error. Try again.', 'error');
+    }
+  }
+
+  async function togglePrivacy(groupId, makePrivate) {
+    document.querySelectorAll('.group-dropdown').forEach(d => d.style.display = 'none');
+    try {
+      const res = await fetch('/api/study-groups/' + groupId + '/privacy', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({is_private: makePrivate})
+      });
+      if (res.ok) {
+        showToast(makePrivate ? 'Group is now private 🔒' : 'Group is now public 🌐', 'success');
+        setTimeout(() => location.reload(), 800);
+      } else {
+        const data = await res.json();
+        showToast('Error: ' + (data.error || 'Failed to update privacy'), 'error');
+      }
+    } catch(e) {
+      showToast('Network error. Try again.', 'error');
+    }
+  }
+
+  // Filtering and Search
+  function filterGroups(type, btn) {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    
+    const cards = document.querySelectorAll('.group-card');
+    cards.forEach(card => {
+      const members = card.dataset.members.split(',');
+      if (type === 'my') {
+        card.style.display = members.includes(currentUserId) ? 'flex' : 'none';
+      } else {
+        card.style.display = 'flex';
+      }
+    });
+  }
+
+  document.getElementById('groupSearch').addEventListener('input', function(e) {
+    const term = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.group-card');
+    cards.forEach(card => {
+      const title = card.querySelector('.group-title').textContent.toLowerCase();
+      const subject = card.querySelector('.group-subject').textContent.toLowerCase();
+      const matches = title.includes(term) || subject.includes(term);
+      card.style.display = matches ? 'flex' : 'none';
+    });
+  });
+
+  async function joinGroup(id) {
+    try {
+      const res = await apiFetch(`/api/study-groups/${id}/join`, { method: 'POST' });
+      showToast('Joined group successfully!', 'success');
+      location.reload(); 
+    } catch(err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  function goToGroup(id) {
+    window.location.href = `/study-groups/${id}`;
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('show'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+  async function submitGroup(e) {
+    e.preventDefault();
+    const btn = e.submitter || e.target.querySelector('[type=submit]');
+    const originalText = btn.textContent;
+    btn.textContent = 'Creating...';
+    btn.disabled = true;
+
+    try {
+      const g = await apiFetch('/api/study-groups/', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: document.getElementById('group_name').value,
+          subject: document.getElementById('group_subject').value,
+          description: document.getElementById('group_description').value,
+          is_private: document.getElementById('group_is_private').checked
+        })
+      });
+      showToast('Group created!', 'success');
+      if (g && g._id) goToGroup(g._id);
+      else location.reload();
+    } catch(err) {
+      showToast(err.message, 'error');
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  }
+</script>
+{% endblock %}

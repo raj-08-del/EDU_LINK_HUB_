@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+{% block title %}Resource Library - {{ dept.name }} - EDU Link Hub{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content resources-page-wrapper">
+      
+      <!-- HEADER SECTION -->
+      <div class="resources-header" style="max-width: 1200px; margin: 0 auto 30px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:20px;">
+          <div class="header-info">
+            <h1 class="glow-heading">
+              <span class="emoji-icon">📚</span>
+              <span class="text-gradient-animated">RESOURCE LIBRARY</span>
+            </h1>
+            <p style="font-size:1.1rem; color:#888;">{{ dept.name }} — {{ college.name }}</p>
+            <div class="stats-pills" style="display:flex; gap:12px; margin-top:10px;">
+              <span class="stat-pill">45 resources</span>
+              <span class="stat-pill">1,234 downloads</span>
+            </div>
+          </div>
+          <button onclick="openModal('upload-modal')" class="btn-primary" style="padding:12px 24px;">📥 Upload Resource</button>
+        </div>
+      </div>
+
+      <!-- SEARCH & FILTERS -->
+      <div class="filters-container" style="max-width: 1200px; margin: 0 auto 30px;">
+        <div class="search-bar" style="margin-bottom:20px;">
+          <input type="text" id="resource-search" placeholder="🔍 Search resources by title or subject..." oninput="fetchResources()">
+        </div>
+        <div class="filter-row" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+          <label style="color:#aaa; font-weight:600;">Type:</label>
+          <button class="filter-chip active" data-type="all" onclick="setFilter('type', 'all')">All</button>
+          <button class="filter-chip" data-type="notes" onclick="setFilter('type', 'notes')">Notes</button>
+          <button class="filter-chip" data-type="previous_paper" onclick="setFilter('type', 'previous_paper')">Papers</button>
+          <button class="filter-chip" data-type="syllabus" onclick="setFilter('type', 'syllabus')">Syllabus</button>
+          <button class="filter-chip" data-type="lab_manual" onclick="setFilter('type', 'lab_manual')">Lab Manual</button>
+          <button class="filter-chip" data-type="reference" onclick="setFilter('type', 'reference')">Reference</button>
+          
+          <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
+            <label style="color:#aaa; font-weight:600;">Semester:</label>
+            <select id="semester-filter" onchange="fetchResources()" style="padding:6px 12px; border-radius:12px; background:#1a1a2e; color:#fff; border:1px solid #333;">
+              <option value="all">All Semesters</option>
+              <option value="1">Semester 1</option>
+              <option value="2">Semester 2</option>
+              <option value="3">Semester 3</option>
+              <option value="4">Semester 4</option>
+              <option value="5">Semester 5</option>
+              <option value="6">Semester 6</option>
+              <option value="7">Semester 7</option>
+              <option value="8">Semester 8</option>
+              <option value="0">General</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESOURCES LIST -->
+      <div id="resources-list" class="resources-grouped-list" style="max-width: 1200px; margin: 0 auto;">
+        <!-- Grouped resources dynamic load -->
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div id="upload-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
+        <h2 class="modal-title">📥 Upload Resource</h2>
+        <button class="btn-close-modal" onclick="closeModal('upload-modal')">✕</button>
+        
+        <form id="upload-form" onsubmit="handleUpload(event)">
+            <input type="hidden" name="college_id" value="{{ college._id }}">
+            <div class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div style="grid-column:1/-1;">
+                    <label>Resource Title</label>
+                    <input type="text" name="title" placeholder="e.g. Engineering Maths Unit 1 Notes" required>
+                </div>
+                <div style="grid-column:1/-1;">
+                    <label>Description</label>
+                    <textarea name="description" placeholder="Briefly describe what's in this resource..."></textarea>
+                </div>
+                <div>
+                    <label>Semester</label>
+                    <select name="semester">
+                        <option value="0">General / All</option>
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                        <option value="3">Semester 3</option>
+                        <option value="4">Semester 4</option>
+                        <option value="5">Semester 5</option>
+                        <option value="6">Semester 6</option>
+                        <option value="7">Semester 7</option>
+                        <option value="8">Semester 8</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Subject</label>
+                    <input type="text" name="subject" placeholder="e.g. Mathematics" required>
+                </div>
+                <div>
+                    <label>Resource Type</label>
+                    <select name="resource_type">
+                        <option value="notes">Notes</option>
+                        <option value="previous_paper">Previous Year Paper</option>
+                        <option value="syllabus">Syllabus</option>
+                        <option value="lab_manual">Lab Manual</option>
+                        <option value="reference">Reference Material</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Academic Year</label>
+                    <input type="text" name="academic_year" placeholder="e.g. 2023-24">
+                </div>
+            </div>
+
+            <div class="file-upload-zone" id="drop-zone" style="margin-top:20px; border:2px dashed #333; border-radius:12px; padding:30px; text-align:center;">
+                <div id="file-info" style="display:none; margin-bottom:15px;">
+                    <span id="filename-display" style="font-weight:700; color:#05d9e8;"></span>
+                    <button type="button" onclick="clearFile()" class="btn-text" style="color:#ff2a6d; margin-left:10px;">✕</button>
+                </div>
+                <div id="upload-prompt">
+                    <span style="font-size:2rem; display:block; margin-bottom:10px;">📎</span>
+                    <p>Drop file here or <label for="file-input" style="color:#05d9e8; cursor:pointer;">Browse</label></p>
+                    <p style="font-size:0.8rem; color:#555;">PDF, DOC, PPT, Images, Videos, Audio (Max 100MB)</p>
+                </div>
+                <input type="file" id="file-input" name="file" style="display:none;" onchange="handleFileSelect(this)">
+            </div>
+
+            <div style="grid-column:1/-1; margin-top:15px;">
+                <label>Tags (Comma separated)</label>
+                <input type="text" name="tags" placeholder="e.g. exam, unit-1, important">
+            </div>
+
+            <div class="modal-footer" style="margin-top:30px; display:flex; gap:12px; justify-content:flex-end;">
+                <button type="button" onclick="closeModal('upload-modal')" class="btn-soft">Cancel</button>
+                <button type="submit" id="submit-btn" class="btn-primary" style="padding:10px 30px;">📤 Upload Resource</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let currentFilters = { type: 'all', semester: 'all', search: '' };
+  const FILE_ICONS = {
+    'pdf':   { icon: '📄', color: '#ff4757' },
+    'doc':   { icon: '📝', color: '#54a0ff' },
+    'docx':  { icon: '📝', color: '#54a0ff' },
+    'ppt':   { icon: '📊', color: '#ff9f43' },
+    'pptx':  { icon: '📊', color: '#ff9f43' },
+    'jpg':   { icon: '🖼️', color: '#1dd1a1' },
+    'png':   { icon: '🖼️', color: '#1dd1a1' },
+    'mp4':   { icon: '🎥', color: '#a29bfe' },
+    'mp3':   { icon: '🎵', color: '#f368e0' },
+    'other': { icon: '📁', color: '#8395a7' }
+  };
+
+  async function fetchResources() {
+    const list = document.getElementById('resources-list');
+    list.innerHTML = '<div class="skeleton-card"></div>'.repeat(3);
+    
+    try {
+        currentFilters.search = document.getElementById('resource-search').value;
+        currentFilters.semester = document.getElementById('semester-filter').value;
+        
+        let url = `/api/resources/dept/{{ dept._id }}?page=1`;
+        if (currentFilters.type !== 'all') url += `&type=${currentFilters.type}`;
+        if (currentFilters.semester !== 'all') url += `&semester=${currentFilters.semester}`;
+        if (currentFilters.search) url += `&search=${encodeURIComponent(currentFilters.search)}`;
+
+        const data = await apiFetch(url);
+        if (!data || data.error) throw new Error(data.error);
+
+        if (Object.keys(data).length === 0) {
+            list.innerHTML = '<div class="empty-state">No resources found matching filters.</div>';
+            return;
+        }
+
+        let html = '';
+        const sortedSemesters = Object.keys(data).sort((a, b) => {
+            if (a === 'General') return 1;
+            if (b === 'General') return -1;
+            return a.localeCompare(b);
+        });
+
+        for (const sem of sortedSemesters) {
+            html += `
+                <div class="semester-group">
+                    <h3 class="sem-header">${sem.toUpperCase()} (${data[sem].length})</h3>
+                    <div class="resources-grid">
+                        ${data[sem].map(r => renderResourceCard(r)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        list.innerHTML = html;
+    } catch(err) {
+        list.innerHTML = `<p class="error">Failed to load resources: ${err.message}</p>`;
+    }
+  }
+
+  function renderResourceCard(r) {
+    const ext = r.file?.file_type?.toLowerCase() || 'other';
+    const config = FILE_ICONS[ext] || FILE_ICONS['other'];
+    const formattedSize = (r.file?.file_size / (1024 * 1024)).toFixed(1) + ' MB';
+    const isOwner = "{{ current_user._id|string }}" === r.uploaded_by;
+    
+    return `
+      <div class="resource-card" data-id="${r._id}">
+        <div class="card-left">
+           <div class="file-icon" style="background:${config.color}11; color:${config.color}">
+             ${config.icon}
+           </div>
+        </div>
+        <div class="card-main">
+          <div class="card-top">
+            <h4>${r.title}</h4>
+            <span class="type-badge">${r.resource_type.toUpperCase()}</span>
+          </div>
+          <p class="card-desc">${r.description || 'No description provided.'}</p>
+          <div class="card-details">
+             <span>📖 ${r.subject}</span>
+             <span>📅 ${formatDate(r.created_at)}</span>
+             <span>👤 ${r.is_anonymous ? 'Anonymous' : 'Uploader'}</span>
+          </div>
+          <div class="card-stats">
+             <span class="stat">👍 <span class="up-count">${r.upvotes?.length || 0}</span></span>
+             <span class="stat">⬇️ ${r.download_count || 0} downloads</span>
+             <span class="stat">💾 ${formattedSize}</span>
+          </div>
+        </div>
+        <div class="card-actions">
+           <button onclick="handleDownload('${r._id}')" class="btn btn-action" title="Download">⬇️</button>
+           <button onclick="handleUpvote('${r._id}')" class="btn btn-action" title="Upvote">👍</button>
+           ${isOwner ? `<button onclick="handleDelete('${r._id}')" class="btn btn-action btn-danger" title="Delete">🗑️</button>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+      document.getElementById('filename-display').textContent = input.files[0].name;
+      document.getElementById('file-info').style.display = 'block';
+      document.getElementById('upload-prompt').style.display = 'none';
+      document.getElementById('drop-zone').style.borderColor = '#05d9e8';
+    }
+  }
+
+  function clearFile() {
+    document.getElementById('file-input').value = '';
+    document.getElementById('file-info').style.display = 'none';
+    document.getElementById('upload-prompt').style.display = 'block';
+    document.getElementById('drop-zone').style.borderColor = '#333';
+  }
+
+  async function handleUpload(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = '🚀 Uploading...';
+
+    const formData = new FormData(e.target);
+    try {
+      const res = await fetch(`/api/resources/dept/{{ dept._id }}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: formData
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      
+      showToast('✅ Resource uploaded successfully!', 'success');
+      closeModal('upload-modal');
+      fetchResources();
+    } catch(err) {
+      showToast('❌ Upload failed: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '📤 Upload Resource';
+    }
+  }
+
+  async function handleDownload(id) {
+    window.location.href = `/api/resources/${id}/download`;
+    // Refresh counts after a short delay
+    setTimeout(fetchResources, 2000);
+  }
+
+  async function handleUpvote(id) {
+    try {
+        const res = await apiFetch(`/api/resources/${id}/upvote`, { method: 'PATCH' });
+        if (res && !res.error) {
+            const card = document.querySelector(`.resource-card[data-id="${id}"]`);
+            card.querySelector('.up-count').textContent = res.count;
+            showToast(res.active ? '👍 Upvoted' : 'Vote removed');
+        }
+    } catch(err) { showToast('Login required to upvote'); }
+  }
+
+  async function handleDelete(id) {
+    if (!confirm('Are you sure you want to delete this resource permanently?')) return;
+    try {
+        const res = await apiFetch(`/api/resources/${id}`, { method: 'DELETE' });
+        if (res && !res.error) {
+            showToast('🗑️ Deleted successfully');
+            fetchResources();
+        }
+    } catch(err) { showToast('Delete failed'); }
+  }
+
+  function setFilter(key, val) {
+    if (key === 'type') {
+        currentFilters.type = val;
+        document.querySelectorAll('.filter-chip').forEach(b => b.classList.toggle('active', b.dataset.type === val));
+    }
+    fetchResources();
+  }
+
+  function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+    if (id === 'upload-modal') {
+        document.getElementById('upload-form').reset();
+        clearFile();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', fetchResources);
+</script>
+{% endblock %}

@@ -1,0 +1,126 @@
+12:21 
+CATCH 2025...tements final 
+MAHENDRA ENGINEERING COLLEGE 
+Autonomous Accredited by NAAC with 'A++ Grade (Cycle-2) 
+Accredited by NBA Tier-I (WA) UG: CSE, ECE, EEE Mahendhirapuri, Mallasamudram (W), Namakkal (Dt)-637 503, Tamil Nadu 
+04388-386 300/3211522|www. 
+CATCH 2025-Hackathon 
+Problem Statements 
+Software-Based Problem Statements 
+1. Virtual Health Assistant: Create a chat bot for diagnosing common illnesses and suggesting remedies. 
+3. Al-Powered Traffic Management System: Develop a real-time traffic monitoring and optimization system using Al. 
+3. Smart Attendance System Build a facial recognition-based attendance system for schools/colleges. 
+4. E-Waste Management App: Design an app to connect users with e-waste recycling 
+centres. 
+5. Personalized Learning Platform: Develop an Al-based platform that adapts to students' learning styles. 
+6. Farm Management Software: Create a tool for farmers to track crop growth, weather, and market prices. 
+7. Blockchain-Based Voting System: Build a secure and transparent online voting platform. 8. Mental Health Tracker: Develop an app te moniter mental health and suggest coping mechanisms. 
+9. Language Translation Toof: Create a real-time translation app for regional languages. 
+10. Carbon Footprint Calculator: Build an app to track and reduce personal carbon emissions. 
+Hardware-Based Problem Statements 
+11. Solar-Powered Water Purifier: Design a low-cost, portable water purification system. 
+12. Smart Irrigation System: Develop an lot based system for automated farm irrigation. 
+13. Wearable Health Monitor: Create a wearable device to track heart rate, blood pressure, and Sp02. 
+14. Autonomous Cleaning Robot Build a robot for cleaning public spaces like parks or beaches. 
+15. Portable ECG Machine: Design a compact and affordable ECG device for rural areas. 
+16. Smart Helmet for Workers: Develop a helmet with sensors to monitor environmental conditions and worker safety. 
+12. Energy Efficient LED Lighting: Create a smart lighting system that adjusts based on occupancy and daylight. 
+18. Drone for Disaster Relief: Build a drone to deliver supplies during natural disasters. 
+19. 3D-Printed Prosthetics: Design affordable and customizable prosthetic lumbs using 310 printing. 
+20. Air Quality Monitoring Device: Develop a portable device to measure and report air quality in real-time. 
+Word Count: 2032
+
+
+
+
+
+**AI-Powered Career Guidance and Learning Assistant**
+
+---
+
+**Abstract:**
+The AI-powered Career Guidance and Learning Assistant is designed to help students explore career options after completing their degree. The chatbot-based system provides personalized career suggestions, roadmaps for government exams, topic-based searches, quizzes, and a book-shopping assistant. This platform ensures students make informed decisions and have access to the best learning resources.
+
+---
+
+**Idea/Approach:**
+- **Career Guidance Chatbot:** Students chat with the AI to get career suggestions based on their degree.
+- **Roadmap Generation:** AI suggests paths for exams like Group 1 (IAS, IPS, etc.) and displays structured preparation plans.
+- **Smart Search Engine:** Finds relevant websites and study materials for selected topics and provides URLs.
+- **Quiz & Learning System:** Generates quizzes, analyzes mistakes, and offers feedback.
+- **Shopping Assistant:** Helps students find books by showing store names, locations, and availability.
+
+---
+
+**Flowchart:**
+1. Student logs in and chats with AI
+2. AI provides career options based on qualifications
+3. Student selects an exam/career path
+4. AI generates a roadmap
+5. AI searches for relevant study materials
+6. Student requests quizzes to test knowledge
+7. AI provides feedback and improvement suggestions
+8. Student searches for books; AI suggests purchase locations
+
+---
+
+**Tech Stack & Dependencies:**
+- **Backend:** Python (Django/FastAPI), Node.js
+- **Frontend:** React.js, Next.js
+- **Database:** PostgreSQL, Firebase
+- **AI/ML Models:** OpenAI APIs, TensorFlow, PyTorch
+- **Web Scraping:** BeautifulSoup, Scrapy for website searching
+- **E-commerce Integration:** APIs for book store data retrieval
+- **Cloud Services:** AWS/GCP/Azure
+
+---
+
+**Methodologies/Algorithms Focused:**
+- **Natural Language Processing (NLP):** Understands student queries and provides career guidance.
+- **Machine Learning Recommendation System:** Suggests careers and roadmaps based on user data.
+- **Web Scraping & Aggregation:** Retrieves relevant study materials and website links.
+- **Automated Quiz Generation:** Creates topic-based quizzes and analyzes mistakes.
+
+---
+
+**Analysis of the Project:**
+- Data-driven insights into student career preferences.
+- Comparison of AI recommendations vs. traditional career counseling.
+- Quiz performance tracking and learning curve improvement.
+
+---
+
+**Module List:**
+1. User Authentication & Profile Management
+2. AI-powered Career Guidance Chatbot
+3. Roadmap Generator for Exams & Careers
+4. Smart Search for Study Materials & URLs
+5. Quiz Generator & Learning Analytics
+6. Book Shopping Assistant
+7. Educator Dashboard & Analytics
+
+---
+
+**Expected Outcome:**
+- Clear career paths for students.
+- AI-powered study guidance and assessment.
+- Easy access to learning materials and books.
+- Personalized quizzes and feedback for continuous improvement.
+
+---
+
+**Social Relevance:**
+- Helping students make informed career choices.
+- Bridging the knowledge gap through AI-driven recommendations.
+- Reducing dependency on expensive career counseling services.
+- Ensuring equal access to resources for all learners.
+
+---
+
+**Conclusion & Future Work:**
+- Expansion to multiple educational domains.
+- AI-driven mentorship program integration.
+- Voice-based AI assistant for better accessibility.
+- Collaborations with bookstores and online learning platforms.
+- Continuous improvement of the AI model for better recommendations.
+

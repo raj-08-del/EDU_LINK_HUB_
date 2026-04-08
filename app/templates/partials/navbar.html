@@ -1,0 +1,14 @@
+<!-- Navbar Component -->
+<header class="navbar">
+  <div class="navbar-left">
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <h2>{% if page_title_override %}{{ page_title_override }}{% else %}{% block page_title %}Dashboard{% endblock %}{% endif %}</h2>
+  </div>
+  <div class="navbar-right">
+    <!-- F11: Theme Toggle -->
+    <button id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">☀️</button>
+    <!-- F10: PWA Install -->
+    <button id="pwa-install-btn" onclick="pwaInstall()">📲 Install App</button>
+  </div>
+</header>
+

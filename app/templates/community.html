@@ -1,0 +1,1237 @@
+{% extends "base.html" %}
+{% block title %}Community Q&A - EDU Link Hub{% endblock %}
+{% block page_title %}💬 Community Q&A{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content community-page-wrapper">
+      <!-- HEADER -->
+      <div class="page-header community-header" style="margin-bottom: 24px;">
+        <div class="header-title-wrapper" style="margin-bottom: 24px;">
+          <h1 class="glow-heading">
+            <span class="emoji-icon">💬</span>
+            <span class="text-gradient-animated">Community Q&A</span>
+          </h1>
+          <p class="header-subtitle" style="color:rgba(255,255,255,0.7);font-size:1.1rem;">Ask questions anonymously and help peers</p>
+        </div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <!-- Left: filter tabs -->
+          <div style="display:flex; gap:8px;">
+            <button id="btn-newest" onclick="setSort('newest')"
+              style="padding:8px 20px; border-radius:20px; border:1px solid #ff2a6d;
+              background:#ff2a6d; color:#fff; font-size:13px; font-weight:700;
+              cursor:pointer; font-family:'Rajdhani',sans-serif; letter-spacing:0.05em;">
+              🟢 Newest
+            </button>
+            <button id="btn-popular" onclick="setSort('popular')"
+              style="padding:8px 20px; border-radius:20px; border:1px solid #444;
+              background:transparent; color:#888; font-size:13px; font-weight:600;
+              cursor:pointer; font-family:'Rajdhani',sans-serif; letter-spacing:0.05em;">
+              🔥 Popular
+            </button>
+            <button onclick="window.location.href='/community/channel/general'"
+              style="padding:9px 18px; background:transparent;
+              border:1px solid #05d9e8; border-radius:20px;
+              color:#05d9e8; font-size:13px; font-weight:600;
+              cursor:pointer; font-family:'Rajdhani',sans-serif;
+              letter-spacing:0.05em; display:flex; align-items:center; gap:6px;
+              transition:all 0.2s; white-space:nowrap;"
+              onmouseover="this.style.background='rgba(5,217,232,0.1)'; this.style.boxShadow='0 0 10px rgba(5,217,232,0.3)'"
+              onmouseout="this.style.background='transparent'; this.style.boxShadow='none'">
+              💬 Chat Channels
+            </button>
+          </div>
+          
+          <!-- Right: search + ask button -->
+          <div style="display:flex; gap:12px; align-items:center;">
+            <div style="position:relative; width:280px;">
+              <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%);
+                color:#05d9e8; font-size:14px; pointer-events:none;">🔍</span>
+              <input type="text" id="community-search" placeholder="Search posts, topics, tags..."
+                oninput="searchPosts(this.value)"
+                style="width:100%; background:#0a1628; border:1px solid #05d9e8;
+                border-radius:24px; padding:9px 16px 9px 36px; color:#fff;
+                font-family:'Share Tech Mono',monospace; font-size:13px;
+                outline:none; box-sizing:border-box; transition:border-color 0.2s;"
+                onfocus="this.style.borderColor='#ff2a6d'; this.style.boxShadow='0 0 8px rgba(255,42,109,0.3)'"
+                onblur="this.style.borderColor='#05d9e8'; this.style.boxShadow='none'">
+            </div>
+            
+            <button onclick="openModal('ask-question-modal')"
+              style="padding:9px 20px; background:linear-gradient(135deg,#ff2a6d,#d4006e);
+              border:none; border-radius:10px; color:#fff; font-weight:700; font-size:14px;
+              cursor:pointer; font-family:'Rajdhani',sans-serif; letter-spacing:0.05em;
+              white-space:nowrap;">
+              + ASK QUESTION
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAYOUT GRID -->
+      <div class="community-layout">
+        <!-- LEFT: POSTS (70%) -->
+        <div class="community-main">
+          <div id="posts-container">
+            <!-- Shimmer/Skeletons load here initially -->
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+          <!-- Pagination -->
+          <div class="pagination-container" id="pagination" style="display:none; margin-top:20px;">
+            <button class="btn btn-soft" id="prevPage" onclick="changePage(-1)">← Previous</button>
+            <span id="pageInfo" style="color: rgba(255,255,255,0.5); font-size: 14px; align-self: center;"></span>
+            <button class="btn btn-soft" id="nextPage" onclick="changePage(1)">Next →</button>
+          </div>
+        </div>
+        
+        <!-- RIGHT: SIDEBAR (30%) -->
+        <div class="community-sidebar">
+          
+
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Ask a Question Modal -->
+<div class="modal-overlay" id="ask-question-modal" style="display:none">
+  <div class="modal-card">
+    <h2 style="color:#fff; font-family:'Rajdhani'; font-size:22px; margin:0 0 24px; text-transform:uppercase; letter-spacing:1px;">
+      💬 ASK A QUESTION
+    </h2>
+    <button class="btn-close-modal" onclick="closeModal('ask-question-modal')">✕</button>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+      <div style="grid-column:1/-1;">
+        <label>POST TITLE</label>
+        <input id="q-title" placeholder="e.g. Which programming language is easiest?">
+      </div>
+      <div style="grid-column:1/-1;">
+        <label>CONTENT / DESCRIPTION</label>
+        <textarea id="q-content" placeholder="Describe your question in detail..."></textarea>
+      </div>
+      <div style="grid-column:1/-1;">
+        <label>POST TYPE</label>
+        <select id="q-type" onchange="togglePollSection()">
+          <option value="Question">Question</option>
+          <option value="Poll">Poll</option>
+          <option value="Discussion">Discussion</option>
+        </select>
+      </div>
+
+      <!-- POLL SECTION — hidden by default, shown when type=poll -->
+      <div id="poll-section" style="grid-column:1/-1; display:none; margin-top:16px;">
+        <label>POLL QUESTION</label>
+        <input id="poll-question" placeholder="e.g. Which is easiest to learn?"
+          style="width:100%; background:#0a1628; border:1px solid #05d9e8; border-radius:8px; 
+          padding:10px 14px; color:#fff; font-family:'Share Tech Mono',monospace; font-size:14px; 
+          outline:none; box-sizing:border-box; margin-bottom:12px;">
+        <label>POLL OPTIONS (MIN 2, MAX 6)</label>
+        <div id="poll-options-list">
+          <!-- Dynamically populated -->
+        </div>
+        <button type="button" onclick="addPollOption()" 
+          style="background:transparent; border:1px dashed #05d9e8; color:#05d9e8; 
+          padding:6px 16px; border-radius:6px; cursor:pointer; font-size:13px; margin-top:4px;">
+          + Add Option
+        </button>
+      </div>
+
+      <div style="grid-column:1/-1;">
+        <label>TAGS (COMMA SEPARATED)</label>
+        <input id="q-tags" placeholder="e.g. python, beginners, coding">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px;">
+      <button onclick="closeModal('ask-question-modal')" 
+        style="padding:10px 24px; border:1px solid #444; border-radius:8px; 
+        background:transparent; color:#aaa; cursor:pointer; font-size:14px; 
+        transition:0.2s;">
+        Cancel
+      </button>
+      <button onclick="submitPost()" 
+        id="submit-post-btn"
+        style="padding:10px 32px; border:none; border-radius:8px; 
+        background:linear-gradient(135deg,#ff2a6d,#05d9e8); 
+        color:#fff; font-weight:bold; font-size:14px; cursor:pointer; 
+        font-family:'Rajdhani',sans-serif; letter-spacing:0.05em; 
+        box-shadow:0 0 15px rgba(5,217,232,0.2);">
+        Post Anonymously
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Post Modal -->
+<div id="edit-post-modal" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <h2 style="color:#fff; font-family:'Rajdhani'; font-size:22px; margin:0 0 24px; text-transform:uppercase; letter-spacing:1px;">
+      ✏️ EDIT POST
+    </h2>
+    <button class="btn-close-modal" onclick="closeModal('edit-post-modal')">✕</button>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+      <div style="grid-column:1/-1;">
+        <label>POST TITLE</label>
+        <input id="edit-q-title" placeholder="Post title">
+      </div>
+      <div style="grid-column:1/-1;">
+        <label>CONTENT / DESCRIPTION</label>
+        <textarea id="edit-q-content" placeholder="Content..."></textarea>
+      </div>
+      <div style="grid-column:1/-1;">
+        <label>POST TYPE</label>
+        <select id="edit-q-type" onchange="togglePollSection('edit')">
+          <option value="Question">Question</option>
+          <option value="Poll">Poll</option>
+          <option value="Discussion">Discussion</option>
+        </select>
+      </div>
+
+      <div id="edit-poll-section" style="grid-column:1/-1; display:none;">
+        <label>POLL QUESTION</label>
+        <input id="edit-poll-question" placeholder="Poll question">
+        <label style="margin-top:12px;">POLL OPTIONS</label>
+        <div id="edit-poll-options-list"></div>
+        <button onclick="addPollOption('edit')"
+          style="background:transparent;border:1px dashed #05d9e8;color:#05d9e8;
+          padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;margin-top:4px;">
+          + Add Option
+        </button>
+      </div>
+
+      <div style="grid-column:1/-1;">
+        <label>TAGS</label>
+        <input id="edit-q-tags" placeholder="Tags">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px;">
+      <button onclick="closeModal('edit-post-modal')" class="btn-cancel">Cancel</button>
+      <button onclick="saveEditPost()" class="btn-save">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Report Modal -->
+<div id="report-modal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>🚩 Report Content</h3>
+      <button onclick="closeModal('report-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:#aaa; margin-bottom:12px">Help us keep the platform safe.</p>
+      <select id="report-reason">
+        <option value="">Select a reason...</option>
+        <option value="spam">Spam or misleading</option>
+        <option value="inappropriate">Inappropriate content</option>
+        <option value="misleading">False information</option>
+        <option value="harassment">Harassment</option>
+        <option value="other">Other</option>
+      </select>
+      <textarea id="report-description" placeholder="Describe the issue (optional)" rows="3" style="margin-top:12px"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeModal('report-modal')" class="btn-cancel">Cancel</button>
+      <button onclick="submitReport()" class="btn-report">Submit Report</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let currentSort = 'newest';
+  let currentPage = 1;
+  let currentSearch = '';
+  let currentTag = '';
+  let userBookmarkIds = new Set();
+  let searchTimeout = null;
+
+
+
+  function setSort(sortType) {
+    currentSort = sortType;
+    document.querySelectorAll('#btn-newest, #btn-popular').forEach(b => {
+      b.style.background = 'transparent';
+      b.style.color = '#888';
+      b.style.borderColor = '#444';
+      b.style.fontWeight = '600';
+    });
+    const activeBtn = document.getElementById(`btn-${sortType}`);
+    activeBtn.style.background = '#ff2a6d';
+    activeBtn.style.color = '#fff';
+    activeBtn.style.borderColor = '#ff2a6d';
+    activeBtn.style.fontWeight = '700';
+
+    currentPage = 1;
+    loadPosts();
+  }
+
+  function filterByTag(tag) {
+    currentTag = tag;
+    const searchInput = document.getElementById('community-search');
+    if (searchInput) {
+      searchInput.value = '';
+      currentSearch = '';
+    }
+    currentPage = 1;
+    loadPosts();
+  }
+
+  async function loadPosts() {
+    const container = document.getElementById('posts-container');
+    container.innerHTML = `
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    `;
+    
+    try {
+      let url = `/api/community/?sort=${currentSort}&page=${currentPage}`;
+      if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
+      if (currentTag) url += `&tag=${encodeURIComponent(currentTag)}`;
+
+      const res = await apiFetch(url);
+      
+      if (!res || res.error) {
+        container.innerHTML = `<div class="empty-state">💬 <br> Failed to load posts</div>`;
+        return;
+      }
+      
+      const posts = res.posts || [];
+      if (posts.length === 0) {
+        if (currentSearch || currentTag) {
+          container.innerHTML = `
+            <div class="empty-community-state">
+              <div style="font-size:4rem; margin-bottom:10px;">🔍</div>
+              <h3 style="color:#fff; margin-bottom:8px;">No posts match criteria</h3>
+              <button class="btn btn-secondary" onclick="currentSearch=''; currentTag=''; document.getElementById('community-search').value=''; loadPosts();">Clear Filters</button>
+            </div>
+          `;
+        } else {
+          container.innerHTML = `
+            <div class="empty-community-state">
+              <div style="font-size:4rem; margin-bottom:10px;">💬</div>
+              <h3 style="color:#fff; margin-bottom:8px;">No posts yet</h3>
+              <p style="color:#888; margin-bottom:16px;">Be the first to start a discussion!</p>
+              <button class="btn btn-primary" onclick="openModal('ask-question-modal')">+ Ask a Question</button>
+            </div>
+          `;
+        }
+        document.getElementById('pagination').style.display = 'none';
+        return;
+      }
+
+      container.innerHTML = posts.map(post => renderPostCard(post, res.current_user_id)).join('');
+      
+      const pag = document.getElementById('pagination');
+      if (pag) {
+        pag.style.display = 'flex';
+        document.getElementById('pageInfo').textContent = `Page ${res.page}`;
+        document.getElementById('prevPage').style.display = res.page > 1 ? 'block' : 'none';
+        document.getElementById('nextPage').style.display = res.has_more ? 'block' : 'none';
+      }
+
+    } catch(err) {
+      console.error(err);
+      container.innerHTML = '<div class="empty-community-state">Network error. Please refresh.</div>';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === '1') {
+      showToast('✅ Posted successfully!', 'success');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    // Live Search Setup
+    const sInput = document.getElementById('community-search');
+    if (sInput) {
+      sInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          currentSearch = e.target.value.trim();
+          currentTag = '';
+          currentPage = 1;
+          loadPosts();
+        }, 300);
+      });
+    }
+
+
+    await loadPosts();
+  });
+
+  function searchPosts(query) {
+    const rows = document.querySelectorAll('.post-card');
+    const q = query.toLowerCase().trim();
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.style.display = (!q || text.includes(q)) ? 'block' : 'none';
+    });
+    
+    // Show empty state if nothing found locally
+    const visible = Array.from(rows).filter(r => r.style.display === 'block').length;
+    const container = document.getElementById('posts-container');
+    const existingEmpty = document.getElementById('search-empty-state');
+    if (visible === 0 && q) {
+      if (!existingEmpty) {
+        const empty = document.createElement('div');
+        empty.id = 'search-empty-state';
+        empty.innerHTML = `
+          <div style="text-align:center; padding:40px; color:#888;">
+            <div style="font-size:32px; margin-bottom:12px;">🔍</div>
+            <h3>No results for "${query}"</h3>
+            <p>Try searching for something else.</p>
+          </div>`;
+        container.appendChild(empty);
+      }
+    } else if (existingEmpty) {
+      existingEmpty.remove();
+    }
+  }
+
+  function renderPostCard(post, authUserId) {
+    const postId = post._id || post.id;
+    const isOwner = post.is_owner === true || post.created_by === authUserId;
+    const userRole = "{{ current_user.role|lower if current_user else 'student' }}";
+    const isAdmin = userRole === 'admin';
+    const canManage = isOwner || isAdmin;
+    
+    const postType = (post.post_type || post.type || 'Discussion').toUpperCase();
+    const formattedDate = new Date(post.created_at).toLocaleDateString();
+
+    return `
+      <div class="post-card" data-post-id="${postId}" style="background:#0d1b2a; border:1px solid rgba(5,217,232,0.15);
+        border-radius:14px; padding:20px 24px; margin-bottom:16px;
+        transition:border-color 0.2s; position:relative;"
+        onmouseover="this.style.borderColor='rgba(5,217,232,0.4)'"
+        onmouseout="this.style.borderColor='rgba(5,217,232,0.15)'">
+
+        <!-- Top row: type badge + three dot -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <span style="background:rgba(255,42,109,0.15); border:1px solid rgba(255,42,109,0.4);
+            color:#ff2a6d; padding:3px 12px; border-radius:20px; font-size:11px; font-weight:700;
+            text-transform:uppercase; letter-spacing:0.06em;">
+            ${postType}
+          </span>
+            <button class="post-three-dot" data-id="${postId}"
+              style="background:none;border:none;color:#555;cursor:pointer;
+              font-size:18px;padding:4px 8px;border-radius:4px;"
+              onmouseover="this.style.color='#05d9e8'"
+              onmouseout="this.style.color='#555'"
+              onclick="event.stopPropagation(); toggleMenu('${postId}')">⋮</button>
+            <ul class="dropdown-menu" id="menu-${postId}" style="top:40px; right:0;">
+              <li onclick="bookmarkPost('${postId}')">🔖 Bookmark Post</li>
+              <li onclick="sharePost('${postId}', '${escapeHtml(post.title)}')">🔗 Share Post</li>
+              ${canManage ? `
+                <li onclick="editPost('${postId}')">✏️ Edit Post</li>
+                <li onclick="hidePost('${postId}')" class="warning-item">👁️ Hide Post</li>
+                <li onclick="deletePost('${postId}')" class="danger-item">🗑️ Delete Post</li>
+              ` : ''}
+              <li onclick="reportContent('${postId}')">🚩 Report</li>
+            </ul>
+        </div>
+
+        <!-- Title -->
+        <h3 style="color:#fff; font-family:'Rajdhani',sans-serif; font-size:19px;
+          font-weight:700; margin:0 0 8px; line-height:1.3; letter-spacing:0.02em; cursor:pointer;"
+          onclick="location.href='/community/${postId}'">
+          ${escapeHtml(post.title)}
+        </h3>
+
+        <!-- Content preview -->
+        ${post.content ? `
+          <p style="color:#888; font-size:13px; margin:0 0 12px; line-height:1.6;">
+            ${escapeHtml(post.content).substring(0, 140)}${post.content.length > 140 ? '...' : ''}
+          </p>
+        ` : ''}
+
+        <!-- Tags -->
+        ${post.tags && post.tags.length ? `
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;">
+            ${post.tags.map(tag => `
+              <span style="background:rgba(5,217,232,0.08); border:1px solid rgba(5,217,232,0.25);
+                color:#05d9e8; padding:2px 10px; border-radius:20px; font-size:11px; cursor:pointer;"
+                onclick="filterByTag('${tag}')">
+                #${tag}
+              </span>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        <!-- Bottom row: reactions + replies + date -->
+        <div style="display:flex; align-items:center; gap:10px; padding-top:12px;
+          border-top:0.5px solid rgba(255,255,255,0.06); flex-wrap:wrap;">
+
+          <!-- 👍 Like button - circle pill -->
+          <button onclick="likePost('${postId}', this)"
+            style="display:flex; align-items:center; gap:6px; padding:6px 14px;
+            background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.4);
+            border-radius:20px; color:#f59e0b; font-size:13px; font-weight:600;
+            cursor:pointer; transition:all 0.2s;"
+            onmouseover="this.style.background='rgba(245,158,11,0.25)'"
+            onmouseout="this.style.background='rgba(245,158,11,0.12)'">
+            👍 <span id="reaction-count-${postId}">${post.total_reactions || 0}</span>
+          </button>
+
+          <!-- 💬 Chat button - links to General channel with prefill context - circle pill -->
+          <a href="/community/channel/general?prefill=Discussing%3A%20${encodeURIComponent(post.title)}%20-%20"
+            style="display:flex; align-items:center; gap:6px; padding:6px 14px;
+            background:rgba(5,217,232,0.10); border:1px solid rgba(5,217,232,0.35);
+            border-radius:20px; color:#05d9e8; font-size:13px; font-weight:600;
+            text-decoration:none; transition:all 0.2s;"
+            onmouseover="this.style.background='rgba(5,217,232,0.22)'"
+            onmouseout="this.style.background='rgba(5,217,232,0.10)'">
+            💬 Chat
+          </a>
+
+          <!-- Replies - circle pill -->
+          <button onclick="location.href='/community/${postId}'"
+            style="display:flex; align-items:center; gap:6px; padding:6px 14px;
+            background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12);
+            border-radius:20px; color:#888; font-size:13px; font-weight:600;
+            cursor:pointer; transition:all 0.2s;"
+            onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+            onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            🗨️ ${post.reply_count || 0} Replies
+          </button>
+
+          <!-- Date + admin author tag - pushed to right -->
+          <span style="color:#555; font-size:12px; margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
+            ${formattedDate}
+            ${isAdmin && post.author_name ? `<span style="font-size:10px; color:#05d9e8; font-weight:600;">👤 ${escapeHtml(post.author_name)} <span style="background:rgba(255,71,87,0.15);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:3px;padding:0 4px;font-size:9px;">ADMIN VIEW</span></span>` : ''}
+          </span>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPollUI(post) {
+    const poll = post.poll;
+    if (!poll) return '';
+    
+    const hasVoted = poll.user_vote !== null;
+    
+    let optionsHtml = '';
+    poll.options.forEach(opt => {
+      const isMyVote = poll.user_vote === opt.id;
+      if (hasVoted) {
+        optionsHtml += `
+          <div class="poll-opt-card-mini voted ${isMyVote ? 'voted-this' : ''}">
+            <div class="poll-bar-container-mini" style="width: ${opt.pct}%"></div>
+            <div class="poll-opt-content-mini">
+              <span class="poll-opt-label">${escapeHtml(opt.text)} ${isMyVote ? '✓' : ''}</span>
+              <span class="poll-opt-stats">${opt.pct}%</span>
+            </div>
+          </div>
+        `;
+      } else {
+        optionsHtml += `
+          <div class="poll-opt-card-mini" onclick="submitVote('${post.id}', '${opt.id}')">
+            <div class="poll-opt-content-mini">
+              <span class="poll-opt-label">${escapeHtml(opt.text)}</span>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    return `
+      <div class="poll-ui-container-mini">
+        <div class="poll-opts-group">
+          ${optionsHtml}
+        </div>
+        <div class="poll-stats-footer-mini">
+          <span>🗳️ ${poll.total_votes || 0} votes · ${poll.is_closed ? 'CLOSED' : 'Tap to vote'}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  async function submitVote(postId, optionId) {
+    try {
+      const res = await apiFetch(`/api/community/${postId}/vote`, {
+        method: 'PATCH',
+        body: { option_id: optionId }
+      });
+      if (res && !res.error) {
+        showToast('✅ Vote recorded!', 'success');
+        // Instantly update this specific post card
+        const newHtml = renderPostCard(res, "{{ current_user._id|string if current_user else '' }}");
+        const card = document.querySelector(`[data-post-id="${postId}"]`);
+        if (card) {
+          card.outerHTML = newHtml;
+        }
+      } else {
+        showToast(res?.error || 'Failed to vote', 'error');
+      }
+    } catch(err) {
+      showToast('Login required to vote', 'info');
+    }
+  }
+
+  async function likePost(postId, btnEl) {
+    console.log('=== LIKE POST ===', postId);
+    await reactToPost(postId, btnEl);
+  }
+  
+  async function reactToPost(postId, btnEl) {
+    try {
+      console.log('Reacting to post:', postId);
+      const res = await fetch('/api/community/posts/' + postId + '/react', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({reaction: 'like'})
+      });
+
+      const data = await res.json();
+      console.log('React response:', res.status, data);
+
+      if (res.ok) {
+        const countEl = document.getElementById('reaction-count-' + postId);
+        if (countEl) countEl.textContent = data.total_reactions || 0;
+        if (btnEl) {
+          btnEl.style.background = data.action === 'added'
+            ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.1)';
+        }
+        showToast(data.action === 'added' ? '👍 Liked!' : '👎 Unliked', 'success');
+      } else {
+        console.error('React failed:', data);
+        showToast('Error: ' + (data.error || 'Failed to react'), 'error');
+      }
+    } catch(e) {
+      console.error('React network error:', e);
+      showToast('Network error. Please try again.', 'error');
+    }
+  }
+
+  async function bookmarkPost(postId) {
+    console.log('[Bookmark] Requesting for ID:', postId);
+    try {
+      const result = await apiFetch('/api/bookmarks/', {
+        method: 'POST',
+        body: JSON.stringify({ 
+          contentId: postId, 
+          contentType: 'post' 
+        })
+      });
+      
+      if (result && (result.success || !result.error)) {
+        showToast('✅ Saved to bookmarks', 'success');
+        // Refresh posts to show bookmarked state if any
+        if (typeof loadPosts === 'function') loadPosts();
+      } else {
+        showToast(result?.error || result?.message || 'Failed to bookmark', 'warning');
+      }
+    } catch(e) {
+      console.error('[Bookmark Error]', e);
+      showToast('Error saving bookmark', 'error');
+    }
+  }
+
+  async function sharePost(id, title) {
+    // Close dropdown
+    const menu = document.getElementById(`menu-${id}`);
+    if (menu) menu.classList.remove('open');
+
+    const shareUrl = `${window.location.origin}/community/${id}`;
+    
+    // Fallback: If clipboard fails, try to show at least the URL
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'EDU Link Hub: ' + title,
+          url: shareUrl
+        });
+        showToast('🔗 Shared successfully!', 'success');
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        showToast('🔗 Post link copied!', 'success');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        const tempInput = document.createElement('input');
+        tempInput.value = shareUrl;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        showToast('🔗 Post link copied!', 'success');
+      }
+    }
+  }
+
+  async function hidePost(postId) {
+    // Immediately close dropdown
+    const menu = document.getElementById(`menu-${postId}`);
+    if (menu) menu.classList.remove('open');
+
+    if (!confirm('Hide this post?\nIt will move to your Archive.')) return;
+    try {
+      const result = await apiFetch(`/api/community/${postId}/hide`, {
+        method: 'PATCH',
+        body: { hide: true }
+      });
+      if (result && !result.error) {
+        showToast('🙈 Hidden. Find it in Saved Items → Archive', 'success');
+        const card = document.querySelector(`[data-post-id="${postId}"]`);
+        if (card) {
+          card.classList.add('card-exit-active');
+          setTimeout(() => card.remove(), 400);
+        }
+      } else { showToast(result?.error || 'Failed to hide', 'error'); }
+    } catch(e) { showToast('Error hiding post', 'error'); }
+  }
+
+  async function editPost(postId) {
+    try {
+      openModal('edit-post-modal');
+      const data = await apiFetch(`/api/community/${postId}`);
+      if (!data || data.error) {
+        showToast('Could not load post data');
+        closeModal('edit-post-modal');
+        return;
+      }
+      document.getElementById('edit-q-title').value = data.title || '';
+      document.getElementById('edit-q-content').value = data.content || '';
+      document.getElementById('edit-q-tags').value = (data.tags || []).join(', ');
+      document.getElementById('edit-q-type').value = data.post_type || 'Question';
+      
+      const pollSection = document.getElementById('edit-poll-section');
+      const pollList = document.getElementById('edit-poll-options-list');
+      pollList.innerHTML = '';
+      
+      if (data.post_type === 'Poll' && data.poll) {
+        pollSection.style.display = 'block';
+        document.getElementById('edit-poll-question').value = data.poll.question || '';
+        (data.poll.options || []).forEach((opt, idx) => {
+          const row = createPollOptionRow(`Option ${idx + 1}`, opt.text, 'edit');
+          pollList.appendChild(row);
+        });
+      } else {
+        pollSection.style.display = 'none';
+      }
+      
+      document.getElementById('edit-post-modal').setAttribute('data-id', postId);
+    } catch(e) { showToast('Error loading post'); }
+  }
+
+  async function saveEditPost() {
+    const modal = document.getElementById('edit-post-modal');
+    const postId = modal.getAttribute('data-id');
+    const type = document.getElementById('edit-q-type').value;
+    
+    let pollData = null;
+    if (type === 'Poll') {
+      const optionInputs = document.querySelectorAll('#edit-poll-options-list .poll-option');
+      const options = [];
+      optionInputs.forEach((inp, i) => {
+        const val = inp.value.trim();
+        if (val) options.push({ id: String(i+1), text: val, votes: [] });
+      });
+      pollData = {
+        question: document.getElementById('edit-poll-question').value.trim(),
+        options: options
+      };
+    }
+
+    const payload = {
+      title: document.getElementById('edit-q-title').value.trim(),
+      content: document.getElementById('edit-q-content').value.trim(),
+      tags: document.getElementById('edit-q-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+      post_type: type,
+      poll: pollData
+    };
+    
+    try {
+      const result = await apiFetch(`/api/community/${postId}`, {
+        method: 'PUT',
+        body: payload
+      });
+      if (result && !result.error) {
+        closeModal('edit-post-modal');
+        showToast('✅ Post updated');
+        loadPosts(currentSort);
+      } else { showToast(result?.error || 'Save failed'); }
+    } catch(e) { showToast('Error saving changes'); }
+  }
+
+  async function deletePost(postId) {
+    // Immediately close dropdown
+    const menu = document.getElementById(`menu-${postId}`);
+    if (menu) menu.classList.remove('open');
+
+    if (!confirm('Delete this post permanently?')) return;
+    try {
+      const result = await apiFetch(`/api/community/${postId}`, { method: 'DELETE' });
+      if (result && !result.error) {
+        showToast('🗑️ Post deleted', 'success');
+        const card = document.querySelector(`[data-post-id="${postId}"]`);
+        if (card) {
+          card.classList.add('card-exit-active');
+          setTimeout(() => card.remove(), 400);
+        }
+      } else { showToast(result?.error || 'Delete failed', 'error'); }
+    } catch(e) { showToast('Error deleting', 'error'); }
+  }
+
+  function reportContent(postId) {
+    document.getElementById('report-modal').setAttribute('data-id', postId);
+    document.getElementById('report-modal').setAttribute('data-type', 'post');
+    openModal('report-modal');
+  }
+
+  async function submitReport() {
+    const modal = document.getElementById('report-modal');
+    const itemId = modal.getAttribute('data-id');
+    const itemType = modal.getAttribute('data-type');
+    const reason = document.getElementById('report-reason').value;
+    const description = document.getElementById('report-description').value.trim();
+    if (!reason) { showToast('Please select a reason'); return; }
+    try {
+      const result = await apiFetch('/api/reports/', {
+        method: 'POST',
+        body: { item_id: itemId, item_type: itemType, reason, description }
+      });
+      if (result && !result.error) {
+        closeModal('report-modal');
+        showToast('🚩 Report submitted');
+      } else { showToast(result?.error || 'Report failed'); }
+    } catch(e) { showToast('Error submitting report'); }
+  }
+
+  // Helpers
+  function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+  function toggleMenu(id) {
+    const menu = document.getElementById(`menu-${id}`);
+    const isOpen = menu.classList.contains('open');
+    document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
+    if (!isOpen) menu.classList.add('open');
+  }
+  function changePage(delta) { currentPage += delta; loadPosts(currentSort); }
+
+  function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.className = `toast-notification toast-${type}`;
+    
+    // Premium Neon Styling
+    const bgColor = type === 'success' ? '#05d9e8' : (type === 'error' ? '#ff2a6d' : '#1e1e2e');
+    const borderColor = type === 'success' ? '#05d9e8' : (type === 'error' ? '#ff2a6d' : '#4ecca3');
+    const textColor = type === 'success' ? '#000' : '#fff';
+    
+    toast.style.cssText = `
+      position: fixed; bottom: 32px; right: 32px; 
+      background: ${bgColor}; color: ${textColor}; 
+      border: 1px solid ${borderColor}; 
+      padding: 14px 28px; border-radius: 12px; 
+      z-index: 99999; font-weight: 800; font-family: 'Rajdhani', sans-serif;
+      text-transform: uppercase; letter-spacing: 1px;
+      box-shadow: 0 0 20px ${borderColor}44, 0 10px 40px rgba(0,0,0,0.4);
+      animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    `;
+    
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(20px)';
+      toast.style.transition = 'all 0.4s ease';
+      setTimeout(() => toast.remove(), 400);
+    }, 4000);
+  }
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.menu-wrapper') && !e.target.closest('.dropdown-menu')) {
+      document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  function togglePollSection(mode = 'create') {
+    const prefix = mode === 'edit' ? 'edit-' : '';
+    const type = document.getElementById(`${prefix}q-type`).value;
+    const pollSection = document.getElementById(`${prefix}poll-section`);
+    if (type === 'Poll') {
+      pollSection.style.display = 'block';
+      document.getElementById(`${prefix}q-content`).placeholder = 'Add context for your poll (optional)...';
+      if (mode === 'create') initPollOptions();
+    } else {
+      pollSection.style.display = 'none';
+      document.getElementById(`${prefix}q-content`).placeholder = 'Describe your question in detail...';
+    }
+  }
+
+  function createPollOptionRow(placeholder, value = '', mode = 'create') {
+    const prefix = mode === 'edit' ? 'edit-' : '';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'poll-opt-row';
+    wrapper.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:8px;';
+    
+    const input = document.createElement('input');
+    input.className = `poll-opt poll-option ${mode === 'edit' ? 'edit-opt' : 'q-opt'} poll-option-input`;
+    input.placeholder = placeholder;
+    input.value = value;
+    input.style.cssText = 'flex:1; background:#0a1628; border:1px solid #05d9e8; border-radius:8px; padding:10px 14px; color:#fff; font-family:"Share Tech Mono",monospace; font-size:14px; outline:none; box-sizing:border-box;';
+    
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '✕';
+    removeBtn.style.cssText = 'background:#1a0a0a; border:1px solid #ff2a6d; color:#ff2a6d; border-radius:6px; width:36px; height:36px; cursor:pointer; font-size:14px; flex-shrink:0; transition:0.2s;';
+    removeBtn.onclick = function() {
+      const list = document.getElementById(`${prefix}poll-options-list`);
+      const rows = list.querySelectorAll('.poll-opt-row');
+      if (rows.length <= 2) { showToast('Minimum 2 poll options required'); return; }
+      wrapper.remove();
+    };
+    
+    wrapper.appendChild(input);
+    wrapper.appendChild(removeBtn);
+    return wrapper;
+  }
+
+  function addPollOption(mode = 'create') {
+    const prefix = mode === 'edit' ? 'edit-' : '';
+    const list = document.getElementById(`${prefix}poll-options-list`);
+    const count = list.querySelectorAll('.poll-opt-row').length;
+    if (count >= 6) { showToast('Maximum 6 poll options allowed'); return; }
+    list.appendChild(createPollOptionRow(`Option ${count + 1}`, '', mode));
+  }
+
+  function initPollOptions() {
+    const list = document.getElementById('poll-options-list');
+    list.innerHTML = '';
+    list.appendChild(createPollOptionRow('Option 1'));
+    list.appendChild(createPollOptionRow('Option 2'));
+  }
+
+  async function submitPost() {
+    const btn = document.querySelector('[onclick*="submitPost"]') || 
+                document.getElementById('post-submit-btn') ||
+                document.querySelector('#ask-question-modal .btn-post');
+    if (btn) { btn.textContent = '🚀 Posting...'; btn.disabled = true; }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      console.error('REQUEST TIMED OUT after 10 seconds');
+    }, 10000);
+
+    try {
+      const type = document.getElementById('q-type')?.value || 'question';
+      const title = document.getElementById('q-title')?.value?.trim();
+      const content = document.getElementById('q-content')?.value || '';
+      const tags = (document.getElementById('q-tags')?.value || '').split(',').map(t=>t.trim()).filter(Boolean);
+
+      console.log('Submitting post type:', type);
+      console.log('Title:', title);
+
+      if (!title) {
+        showToast('❌ Title is required', 'error');
+        if (btn) { btn.textContent = '🚀 Post Anonymously'; btn.disabled = false; }
+        return;
+      }
+
+      let pollData = null;
+      if (type === 'Poll' || type === 'poll') {
+        const pollQ = document.getElementById('poll-question')?.value?.trim();
+        const optionInputs = document.querySelectorAll('.poll-opt');
+        const options = [...optionInputs].map(i => i.value.trim()).filter(Boolean);
+        console.log('Poll question:', pollQ);
+        console.log('Poll options:', options);
+        if (!pollQ) { showToast('Poll question required', 'error'); return; }
+        if (options.length < 2) { showToast('Need at least 2 options', 'error'); return; }
+        pollData = { question: pollQ, options: options };
+      }
+
+      const payload = {
+        title: title,
+        content: content,
+        post_type: type.toLowerCase(),
+        anonymous: true,
+        tags: tags,
+        poll: pollData
+      };
+
+      console.log('Sending payload:', JSON.stringify(payload));
+
+      const res = await fetch('/api/community/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+      console.log('Response status:', res.status);
+
+      const data = await res.json();
+      console.log('Response data:', data);
+
+      if (res.ok) {
+        if (btn) { 
+          btn.textContent = '✅ Posted Successfully!';
+          btn.style.background = '#05d9e8';
+          btn.style.color = '#000';
+        }
+        setTimeout(() => {
+          closeModal('ask-question-modal');
+          const newId = data.id || data._id;
+          window.location.href = `/community?success=1&new_post=${newId}`;
+        }, 600);
+      } else {
+        showToast('❌ Failed: ' + (data.error || data.message || 'Unknown error'), 'error');
+        console.error('Post failed:', data);
+      }
+    } catch(e) {
+      clearTimeout(timeoutId);
+      if (e.name === 'AbortError') {
+        showToast('❌ Timed out — server not responding. Check Flask terminal for errors.', 'error');
+        console.error('ABORTED - server took too long');
+      } else {
+        showToast('❌ Error: ' + e.message, 'error');
+        console.error('Exception:', e);
+      }
+    } finally {
+      if (btn && btn.textContent !== '✅ Posted!') {
+        btn.textContent = '🚀 Post Anonymously';
+        btn.disabled = false;
+      }
+    }
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+  }
+
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return date.toLocaleDateString();
+  }
+</script>
+
+<style>
+  .dropdown-menu {
+    display: none; position: absolute; right: 0; top: 100%; background: #1a1a2e;
+    border: 1px solid #333; border-radius: 8px; z-index: 100; min-width: 180px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 8px 0; list-style:none;
+  }
+  .dropdown-menu.open { display: block; }
+  .dropdown-menu li {
+    padding: 10px 16px; color: #ccc; font-size: 0.85rem; cursor: pointer; transition: 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .dropdown-menu li:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .dropdown-menu li.danger-item { color: #ff4757; }
+  
+  .card-dropdown-trigger {
+    background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+    color: #fff; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+  }
+
+  .social-card {
+    background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .social-card:hover { background: rgba(255, 255, 255, 0.05); }
+  .sc-title { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .sc-content { font-size: 0.95rem; color: #ccc; line-height: 1.5; margin-bottom: 16px; font-family: 'Share Tech Mono'; }
+  .sc-footer { display: flex; align-items: center; gap: 16px; }
+  .reaction-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 4px 12px; border-radius: 16px; cursor: pointer; }
+
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); z-index: 9999;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(8px);
+  }
+  .modal-card {
+    background: #0d1b2a; border: 1px solid #05d9e8;
+    border-radius: 16px; padding: 32px; width: 640px;
+    max-width: 95vw; max-height: 90vh; overflow-y: auto;
+    position: relative; animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn {
+    from { opacity:0; transform: scale(0.95) translateY(-10px); }
+    to   { opacity:1; transform: scale(1) translateY(0); }
+  }
+  .modal-card label {
+    display: block; font-size: 11px; color: #05d9e8;
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px;
+    font-family: 'Rajdhani', sans-serif; font-weight: bold;
+  }
+  .modal-card input, .modal-card textarea, .modal-card select {
+    width: 100%; background: #0a1628; border: 1px solid rgba(5, 217, 232, 0.3);
+    border-radius: 8px; padding: 12px 14px; color: #fff;
+    font-family: 'Share Tech Mono', monospace; font-size: 14px;
+    outline: none; box-sizing: border-box; transition: all 0.3s;
+  }
+  .modal-card input:focus, .modal-card textarea:focus {
+    border-color: #ff2a6d; box-shadow: 0 0 10px rgba(255,42,109,0.3);
+  }
+  .modal-card textarea { min-height: 100px; resize: vertical; }
+
+  .btn-close-modal {
+    position:absolute; top:18px; right:18px; background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:50%;
+    width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition: 0.2s;
+  }
+  .btn-close-modal:hover { background: #ff2a6d; border-color: #ff2a6d; transform: rotate(90deg); }
+  
+  .filter-bar { display: flex; gap: 12px; margin-bottom: 24px; }
+  .filter-chip {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    color: #888; padding: 8px 16px; border-radius: 20px; cursor: pointer;
+    font-family: 'Rajdhani'; font-weight: 600; font-size: 14px; transition: 0.3s;
+  }
+  .filter-chip.active { background: #05d9e8; color: #000; border-color: #05d9e8; box-shadow: 0 0 15px rgba(5,217,232,0.4); }
+  
+  .glow-heading { font-family: 'Rajdhani'; font-weight: 700; font-size: 32px; margin: 0; display: flex; align-items: center; gap: 12px; }
+  .text-gradient-animated {
+    background: linear-gradient(90deg, #fff, #05d9e8, #ff2a6d, #fff);
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientText 5s linear infinite;
+  }
+  @keyframes gradientText { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
+  /* Poll UI Improvements */
+  .poll-ui-container {
+    margin: 16px 0;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(5, 217, 232, 0.1);
+    border-radius: 12px;
+  }
+  .poll-q-text {
+    font-size: 16px;
+    color: #fff;
+    font-weight: 800;
+    margin-bottom: 16px;
+    font-family: 'Rajdhani', sans-serif;
+  }
+  .poll-opts-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .poll-opt-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    overflow: hidden;
+  }
+  .poll-opt-card:hover:not(.voted) {
+    background: rgba(5, 217, 232, 0.05);
+    border-color: #05d9e8;
+    transform: translateX(4px);
+  }
+  .poll-opt-card.voted-this {
+    border-color: #ff2a6d;
+    background: rgba(255, 42, 109, 0.05);
+  }
+  .poll-bar-container {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    background: linear-gradient(90deg, rgba(5, 217, 232, 0.1), rgba(255, 42, 109, 0.1));
+    z-index: 0;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .poll-opt-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .poll-opt-label {
+    font-size: 14px;
+    color: #fff;
+    font-weight: 500;
+  }
+  .poll-opt-stats {
+    font-size: 12px;
+    font-weight: 800;
+    font-family: 'Share Tech Mono', monospace;
+    opacity: 0.9;
+  }
+  .poll-stats-footer {
+    margin-top: 16px;
+    font-size: 11px;
+    color: #888;
+    display: flex;
+    justify-content: space-between;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Rajdhani', sans-serif;
+  }
+  .btn-vote-now {
+    margin-top: 12px;
+    width: 100%;
+    background: linear-gradient(135deg, #05d9e8, #0055ff);
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 1px;
+    transition: 0.3s;
+  }
+  .btn-vote-now:hover {
+    box-shadow: 0 0 15px rgba(5, 217, 232, 0.4);
+    filter: brightness(1.1);
+  }
+
+  /* Smooth Exit Animation for Cards */
+  .card-exit-active {
+    opacity: 0 !important;
+    transform: scale(0.9) translateY(20px) !important;
+    max-height: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border-width: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+</style>
+{% endblock %}

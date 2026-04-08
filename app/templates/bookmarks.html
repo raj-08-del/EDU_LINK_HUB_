@@ -1,0 +1,836 @@
+{% extends 'base.html' %}
+{% block title %}Saved Items — EDU Link Hub{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include 'partials/sidebar.html' %}
+  <div class="main-content">
+    {% include 'partials/navbar.html' %}
+
+    <style>
+      .bookmark-tabs {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+        margin-bottom: 40px;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 6px;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        box-sizing: border-box;
+      }
+      .bookmark-tab {
+        flex: 1;
+        padding: 14px;
+        border-radius: 14px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-secondary);
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+      }
+      .bookmark-tab.active {
+        background: var(--accent) !important;
+        color: #0c0c14 !important;
+        font-weight: 800;
+        box-shadow: 0 8px 24px rgba(5, 217, 232, 0.25);
+      }
+      .bookmark-tab:hover:not(.active) {
+        background: rgba(5, 217, 232, 0.1);
+        color: white;
+        transform: translateY(-1px);
+      }
+
+      .saved-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 32px;
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 80px 24px;
+        background: rgba(255, 255, 255, 0.01);
+        border-radius: 40px;
+        border: 2px dashed rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(5px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .empty-icon {
+        font-size: 80px;
+        margin-bottom: 8px;
+        filter: drop-shadow(0 0 20px rgba(5, 217, 232, 0.3));
+      }
+      .empty-title { color: white; font-size: 24px; font-weight: 800; }
+      .empty-text { color: var(--text-secondary); font-size: 15px; opacity: 0.7; max-width: 350px; }
+
+      /* Opportunity/Job Cards Styling (Locked - preserving existing) */
+      .opp-feed-card { border-left: 4px solid rgba(255,255,255,0.1) !important; transition: all 0.3s ease; }
+      .opp-feed-card.cat-skill-based { border-left-color: #00d4ff !important; }
+      .opp-feed-card.cat-internship { border-left-color: #9b59b6 !important; }
+      .opp-feed-card.cat-job { border-left-color: #2ecc71 !important; }
+      .opp-feed-card.cat-campus-placement { border-left-color: #f39c12 !important; }
+
+      .opp-highlight-chip {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.8);
+        display: inline-flex; align-items: center; gap: 6px;
+      }
+      .deadline-badge { padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
+      .deadline-badge.expired { background: rgba(255, 71, 87, 0.2); color: #ff4757; border: 1px solid rgba(255,71,87,0.3); }
+      .deadline-badge.closing-soon { background: rgba(255, 165, 0, 0.2); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); animation: badgePulse 2s infinite; }
+      .deadline-badge.safe { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+      
+      @keyframes badgePulse { 0% { opacity: 0.8; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.8; transform: scale(1); } }
+      @keyframes btnPulse { 0% { box-shadow: 0 0 0 0 rgba(5, 217, 232, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(5, 217, 232, 0); } 100% { box-shadow: 0 0 0 0 rgba(5, 217, 232, 0); } }
+      .pulse-btn { animation: btnPulse 2s infinite; }
+      
+      /* Card Layout Styling */
+      .glass-card-premium {
+        background: rgba(10, 22, 40, 0.6);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 24px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Unified Action Bar */
+      .card-actions-row {
+        margin-top: auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .btn-remove-bookmark {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid #ff4757;
+        color: #ff4757;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 16px;
+      }
+      .btn-remove-bookmark:hover {
+        background: #ff4757;
+        color: white;
+        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
+      }
+    </style>
+
+    <div class="page-content">
+      <style>
+        .header-title-wrapper { position: relative; display: inline-block; margin-bottom: 8px; }
+        .glow-heading { font-size: 36px !important; font-weight: 800; line-height: 1.2; display: flex; align-items: center; gap: 12px; margin: 0; }
+        .emoji-icon { display: inline-block; animation: floatEmoji 3s ease-in-out infinite; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4)); }
+        @keyframes floatEmoji { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-6px) rotate(5deg); } }
+        .text-gradient-animated {
+          background: linear-gradient(to right, #ffbe0b, #ff006e, var(--primary-light), var(--accent), #ffbe0b);
+          background-size: 300% 100%;
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+          animation: auroraShift 6s linear infinite; text-shadow: 0 0 30px rgba(180, 81, 252, 0.4);
+        }
+        @keyframes auroraShift { 0% { background-position: 0% center; } 100% { background-position: 300% center; } }
+        .glow-line { height: 4px; width: 60%; margin-top: 6px; background: linear-gradient(90deg, var(--accent), var(--primary-light), transparent); border-radius: 4px; box-shadow: 0 0 15px var(--accent), 0 0 30px var(--primary-light); animation: linePulse 2s alternate infinite ease-in-out; }
+        @keyframes linePulse { 0% { width: 40%; opacity: 0.7; } 100% { width: 85%; opacity: 1; } }
+        .header-subtitle { font-size: 15px !important; color: rgba(255, 255, 255, 0.9) !important; margin-top: 12px !important; letter-spacing: 0.3px; font-weight: 400; }
+      </style>
+      <div class="page-header" style="margin-bottom: 48px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 32px;">
+        <div class="header-title-wrapper">
+          <h1 class="glow-heading" style="font-size: 52px !important;">
+            <span class="emoji-icon">🔖</span>
+            <span class="text-gradient-animated" style="letter-spacing: -1.5px;">Saved Items</span>
+          </h1>
+          <div class="glow-line"></div>
+          <p class="header-subtitle" style="opacity:0.8;">Your curated collection of premium bookmarks and archived content</p>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bookmark-tabs">
+        <button class="bookmark-tab active" id="tab-events" onclick="switchTab('events')">
+          📅 Events <span class="tab-count tab-badge-events" id="count-events" style="display:none;">0</span>
+        </button>
+        <button class="bookmark-tab" id="tab-opportunities" onclick="switchTab('opportunities')">
+          💼 Opportunities <span class="tab-count tab-badge-opportunities" id="count-opportunities" style="display:none;">0</span>
+        </button>
+        <button class="bookmark-tab" id="tab-posts" onclick="switchTab('posts')">
+          💬 Posts <span class="tab-count tab-badge-posts" id="count-posts" style="display:none;">0</span>
+        </button>
+        <button class="bookmark-tab" id="tab-archive" onclick="switchTab('archive')">
+          📦 Archive <span class="tab-count tab-badge-archive" id="count-archive">
+            {{ (archive_events|length) + (archive_opportunities|length) + (archive_posts|length) }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Content Grid -->
+      <div id="bookmark-container" class="saved-grid">
+        <div class="spinner" style="grid-column: 1/-1; margin: 40px auto;"></div>
+      </div>
+
+      <!-- Server-side Archive Content (Hidden until needed) -->
+      <div id="archive-content-source" style="display: none;">
+        {% set total_archive = (archive_events|length) + (archive_opportunities|length) + (archive_posts|length) %}
+        {% if total_archive > 0 %}
+          <div class="archive-sections" style="grid-column: 1/-1; width: 100%;">
+            {% if archive_events %}
+              <div class="archive-group" style="margin-bottom: 40px;">
+                <h2 class="section-glow-title" style="font-size: 20px; color: var(--accent); margin-bottom: 20px;">🎪 Hidden Events</h2>
+                <div class="saved-grid">
+                  {% for item in archive_events %}
+                    <div class="saved-card-wrapper" id="archive-event-{{ item._id }}">
+                      <div class="glass-card-premium saved-card-archive" style="border-left: 4px solid var(--accent);">
+                        <div class="rl-meta" style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:11px; opacity:0.6;">
+                          <span class="badge-event">EVENT</span>
+                          <span>Hidden: {{ item.hidden_at.strftime('%b %d, %Y') if item.hidden_at else 'Recently' }}</span>
+                        </div>
+                        <h3 class="card-title-bold" style="font-size:18px; margin-bottom:8px;">{{ item.title }}</h3>
+                        <p style="font-size:13px; color:rgba(255,255,255,0.6); margin-bottom:20px;">{{ item.description|truncate(100) }}</p>
+                        <div class="card-actions-row">
+                          <button class="btn btn-secondary btn-sm" onclick="editArchivedItem('{{ item._id }}', 'event')">✏️ Edit</button>
+                          <button class="btn btn-primary btn-sm" style="flex:1; background:var(--accent); color:#0c0c14;" onclick="unhideItemPersonal('{{ item._id }}', 'event')">👁️ Unhide</button>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            {% if archive_opportunities %}
+              <div class="archive-group" style="margin-bottom: 40px;">
+                <h2 class="section-glow-title" style="font-size: 20px; color: #9b59b6; margin-bottom: 20px;">💼 Hidden Opportunities</h2>
+                <div class="saved-grid">
+                  {% for item in archive_opportunities %}
+                    <div class="saved-card-wrapper" id="archive-opportunity-{{ item._id }}">
+                      <div class="glass-card-premium saved-card-archive" style="border-left: 4px solid #9b59b6;">
+                        <div class="rl-meta" style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:11px; opacity:0.6;">
+                          <span class="badge-opportunity">OPPORTUNITY</span>
+                          <span>Hidden: {{ item.hidden_at.strftime('%b %d, %Y') if item.hidden_at else 'Recently' }}</span>
+                        </div>
+                        <h3 class="card-title-bold" style="font-size:18px; margin-bottom:8px;">{{ item.role }} at {{ item.company }}</h3>
+                        <p style="font-size:13px; color:rgba(255,255,255,0.6); margin-bottom:20px;">{{ item.description|truncate(100) }}</p>
+                        <div class="card-actions-row">
+                          <button class="btn btn-secondary btn-sm" onclick="editArchivedItem('{{ item._id }}', 'opportunity')">✏️ Edit</button>
+                          <button class="btn btn-primary btn-sm" style="flex:1; background:var(--accent); color:#0c0c14;" onclick="unhideItemPersonal('{{ item._id }}', 'opportunity')">👁️ Unhide</button>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            {% if archive_posts %}
+              <div class="archive-group" style="margin-bottom: 40px;">
+                <h2 class="section-glow-title" style="font-size: 20px; color: #4ecca3; margin-bottom: 20px;">💬 Hidden Posts</h2>
+                <div class="saved-grid">
+                  {% for item in archive_posts %}
+                    <div class="saved-card-wrapper" id="archive-post-{{ item._id }}">
+                      <div class="glass-card-premium saved-card-archive" style="border-left: 4px solid #4ecca3;">
+                        <div class="rl-meta" style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:11px; opacity:0.6;">
+                          <span class="badge-post">POST</span>
+                          <span>Hidden: {{ item.hidden_at.strftime('%b %d, %Y') if item.hidden_at else 'Recently' }}</span>
+                        </div>
+                        <h3 class="card-title-bold" style="font-size:18px; margin-bottom:8px;">{{ item.title }}</h3>
+                        <p style="font-size:13px; color:rgba(255,255,255,0.6); margin-bottom:20px;">{{ item.content|truncate(100) }}</p>
+                        <div class="card-actions-row">
+                          <button class="btn btn-secondary btn-sm" onclick="editArchivedItem('{{ item._id }}', 'post')">✏️ Edit</button>
+                          <button class="btn btn-primary btn-sm" style="flex:1; background:var(--accent); color:#0c0c14;" onclick="unhideItemPersonal('{{ item._id }}', 'post')">👁️ Unhide</button>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="empty-state" style="grid-column: 1/-1; width: 100%;">
+            <div class="empty-icon">📦</div>
+            <div class="empty-title">Your Archive is Empty</div>
+            <div class="empty-text">Hidden posts and events will appear here. You can restore them to the public feed anytime.</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-container"></div>
+
+<!-- Edit Event Modal (Fix 5) -->
+<div class="modal-overlay" id="editEventModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Edit Hidden Event</h2>
+      <button class="modal-close" onclick="closeModal('editEventModal')">&times;</button>
+    </div>
+    <form id="editEventForm" onsubmit="submitEditEvent(event)">
+      <input type="hidden" id="eev_id">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="eev_title" required>
+      </div>
+      <div class="form-group">
+        <label>College Name</label>
+        <input type="text" id="eev_college" required>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="eev_category" required>
+          <option value="workshop">Workshop</option>
+          <option value="technical">Technical Event</option>
+          <option value="non-technical">Non-Technical Event</option>
+          <option value="hackathon">Hackathon</option>
+          <option value="festival">College Festival</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date & Time</label>
+        <input type="text" id="eev_date" required>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="eev_description" rows="4" required></textarea>
+      </div>
+      <div class="form-group">
+        <label>Registration Link (optional)</label>
+        <input type="url" id="eev_reglink">
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+let bookmarkData = { events: [], opportunities: [], posts: [], archive: [] };
+let currentTab = 'events';
+
+// ... (existing helper functions) ...
+
+async function editArchivedEvent(id) {
+  try {
+    const e = bookmarkData.archive.find(x => x._id === id);
+    if (!e) return;
+    
+    document.getElementById('eev_id').value = e._id;
+    document.getElementById('eev_title').value = e.title;
+    document.getElementById('eev_college').value = e.college_name || '';
+    document.getElementById('eev_category').value = e.category;
+    document.getElementById('eev_description').value = e.description || '';
+    document.getElementById('eev_reglink').value = e.registration_link || '';
+    
+    const ed = document.getElementById('eev_date');
+    if (ed) {
+      const d = new Date(e.date);
+      ed.value = d.toISOString().slice(0, 16).replace('T', ' ');
+      flatpickr(ed, { enableTime: true, dateFormat: "Y-m-d H:i" });
+    }
+    
+    openModal('editEventModal');
+  } catch (err) { showToast('Failed to load event', 'error'); }
+}
+
+async function submitEditEvent(e) {
+  e.preventDefault();
+  const id = document.getElementById('eev_id').value;
+  try {
+    const updatedData = {
+      title: document.getElementById('eev_title').value,
+      college_name: document.getElementById('eev_college').value,
+      category: document.getElementById('eev_category').value,
+      date: new Date(document.getElementById('eev_date').value).toISOString(),
+      description: document.getElementById('eev_description').value,
+      registration_link: document.getElementById('eev_reglink').value,
+    };
+    await apiFetch(`/api/events/${id}`, { method: 'PUT', body: JSON.stringify(updatedData) });
+    showToast('Changes saved. Event is still hidden.', 'success');
+    closeModal('editEventModal');
+    loadData();
+  } catch (err) { showToast('Failed to save changes', 'error'); }
+}
+
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ... (Rest of existing JS remains below) ...
+
+// Fetch bookmarks and counts
+async function loadData() {
+  try {
+    const [data, counts, hiddenEvents, expiredOpps] = await Promise.all([
+      apiFetch('/api/bookmarks/'),
+      apiFetch('/api/bookmarks/counts'),
+      apiFetch('/api/events/hidden'),
+      apiFetch('/api/opportunities/?include_archived=true')
+    ]);
+    
+    bookmarkData = data;
+    // Inject hidden events and expired opportunities into archive
+    bookmarkData.archive = [
+      ...hiddenEvents.map(e => ({ ...e, archive_source: 'mine', item_type: 'event' })),
+      ...expiredOpps.filter(o => o.status === 'archived').map(o => ({ ...o, archive_source: 'expired', item_type: 'opportunity' }))
+    ];
+    
+    updateCounts(counts);
+    renderTab(currentTab);
+  } catch (e) {
+    showToast('Failed to load saved items', 'error');
+  }
+}
+
+function updateCounts(counts) {
+  Object.keys(counts).forEach(key => {
+    const el = document.getElementById(`count-${key}`);
+    const badge = document.querySelector(`.tab-badge-${key}`);
+    if (el) {
+      const val = parseInt(counts[key]);
+      el.innerText = val;
+      el.style.display = val > 0 ? 'inline-block' : 'none';
+      if (badge) badge.style.display = val > 0 ? 'inline-block' : 'none';
+    }
+  });
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  ['events','opportunities','posts','archive'].forEach(t => {
+    const tabEl = document.getElementById(`tab-${t}`);
+    if (tabEl) tabEl.classList.toggle('active', t === tab);
+  });
+  renderTab(tab);
+}
+
+function renderTab(tab) {
+  const container = document.getElementById('bookmark-container');
+  
+  if (tab === 'archive') {
+    const archiveSource = document.getElementById('archive-content-source');
+    container.style.display = 'block';
+    container.innerHTML = archiveSource.innerHTML;
+    return;
+  }
+
+  const items = bookmarkData[tab] || [];
+  if (!items.length) {
+    renderEmptyState(tab);
+    return;
+  }
+
+  container.style.display = 'grid';
+  container.innerHTML = items.map(item => `
+    <div class="saved-card-wrapper bookmark-card" id="card-${item._id}" data-bookmark-id="${item._id}">
+      ${renderCard(item, tab)}
+    </div>
+  `).join('');
+}
+
+function renderEmptyState(tab) {
+  const container = document.getElementById('bookmark-container');
+  if (tab === 'archive') {
+    container.innerHTML = `
+      <div class="empty-state" style="grid-column: 1/-1;">
+        <div class="empty-icon">📦</div>
+        <div class="empty-title">Your Archive is Empty</div>
+        <div class="empty-text">Hidden posts and events will appear here. You can restore them to the public feed anytime.</div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:16px;">
+          <a href="/explore" class="btn btn-secondary btn-sm">🎪 Explore Events</a>
+          <a href="/opportunities" class="btn btn-secondary btn-sm">💼 Browse Opportunities</a>
+          <a href="/community" class="btn btn-secondary btn-sm">💬 Community Q&A</a>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const config = {
+    events: { icon: '🎪', title: 'No saved events yet', text: 'Browse events and click 🔖 to save them', btn: 'Browse Events', link: '/explore' },
+    opportunities: { icon: '💼', title: 'No saved opportunities', text: 'Keep track of jobs and internships here', btn: 'Find Opportunities', link: '/opportunities' },
+    posts: { icon: '💬', title: 'No saved posts yet', text: 'Save interesting community discussions', btn: 'Browse Community', link: '/community' }
+  };
+  const c = config[tab];
+  container.innerHTML = `
+    <div class="empty-state" style="grid-column: 1/-1;">
+      <div class="empty-icon">${c.icon}</div>
+      <div class="empty-title">${c.title}</div>
+      <div class="empty-text">${c.text}</div>
+      <a href="${c.link}" class="btn btn-primary" style="margin-top:20px; padding: 12px 32px;">${c.btn}</a>
+    </div>
+  `;
+}
+
+function renderCard(i, tab) {
+  const isArchive = tab === 'archive';
+  const itemType = i.item_type || (isArchive ? 'opportunity' : tab.slice(0, -1));
+
+  // Shared Removal Button Component
+  const removeBtn = `
+    <button class="btn-remove-bookmark remove-bookmark-btn" onclick="removeBookmark('${i._id}', '${tab}')" title="Remove from Saved" style="width:40px; height:40px; background:transparent; border:1px solid #ff4757; color:#ff4757; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6"/>
+        <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+      </svg>
+    </button>
+  `;
+
+  if (tab === 'events') {
+    const eventDate = new Date(i.date);
+    const now = new Date();
+    const isPast = eventDate < now;
+    const diff24 = (eventDate - now) / (1000 * 60 * 60);
+    const isSoon = diff24 > 0 && diff24 <= 24;
+
+    let bannerText = `🟢 DATE: ${formatDateTime(i.date)}`;
+    let bannerStyle = "color: #2ecc71;";
+    if (isPast) { bannerText = `🔴 ENDED: ${formatDateTime(i.date)}`; bannerStyle = "color: #ff4757;"; }
+    else if (isSoon) { bannerText = `🟡 SOON: ${formatDateTime(i.date)}`; bannerStyle = "color: #ffa500;"; }
+
+    const tags = i.tags || [];
+
+    return `
+      <div class="glass-card-premium saved-card-event">
+        <div style="font-size:11px; font-weight:800; text-transform:uppercase; margin-bottom:16px; ${bannerStyle}">
+          ${bannerText}
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <span class="card-badge" style="background:rgba(255,255,255,0.05); color:white; border:1px solid rgba(255,255,255,0.1); border-left:3px solid var(--accent);">${i.category.replace("-", " ").toUpperCase()}</span>
+        </div>
+        
+        <h3 class="card-title-bold">${escapeHtml(i.title)}</h3>
+        <p class="card-organizer">${escapeHtml(i.college_name || 'TechFest Hub')}</p>
+        <p style="color:rgba(255,255,255,0.6); font-size:14px; line-height:1.6; margin-bottom:16px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+          ${escapeHtml(i.description)}
+        </p>
+        
+        <div class="pill-group">
+          ${i.location ? `<span class="pill">📍 ${escapeHtml(i.location)}</span>` : ''}
+          ${tags.slice(0,2).map(t => `<span class="bookmark-tag" style="background:rgba(78,204,163,0.1); color:#4ecca3; border:1px solid rgba(78,204,163,0.2); padding:3px 10px; border-radius:20px; font-size:0.8rem; display:inline-block; margin:2px 3px 2px 0;">#${escapeHtml(t)}</span>`).join('')}
+        </div>
+        
+        <div class="card-actions-row" style="display:flex; gap:10px; margin-top:14px; align-items:center;">
+          <a href="/explore" style="flex:1; background:transparent; border:1px solid #4ecca3; color:#4ecca3; padding:10px; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600; text-align:center; text-decoration:none;">VIEW DETAILS</a>
+          ${removeBtn}
+        </div>
+      </div>
+    `;
+  } 
+  
+  if (tab === 'opportunities') {
+    const deadlineStr = i.deadline || "";
+    let deadlineHtml = "";
+    let isClosingSoon = false;
+
+    if (deadlineStr) {
+      const deadlineDate = new Date(deadlineStr);
+      const today = new Date();
+      const diffDays = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
+      const formatted = deadlineDate.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+      if (diffDays < 0) deadlineHtml = `<span class="deadline-badge expired">❌ Expired</span>`;
+      else if (diffDays <= 3) { deadlineHtml = `<span class="deadline-badge closing-soon">🔥 Closes: ${formatted}</span>`; isClosingSoon = true; }
+      else deadlineHtml = `<span class="deadline-badge safe">🟢 Closes: ${formatted}</span>`;
+    }
+
+    const highlights = [];
+    if (i.stipend) highlights.push(`💰 ${i.stipend}`);
+    if (i.location) highlights.push(`📍 ${i.location}`);
+
+    return `
+      <div class="opp-feed-card cat-${i.category}" style="height:100%; display:flex; flex-direction:column; padding:24px; background:rgba(10, 22, 40, 0.6); border:1px solid rgba(255,255,255,0.08); border-radius:24px;">
+        <div style="margin-bottom:16px; display:flex; flex-direction:column; align-items:flex-start; gap:8px;">
+          <span class="card-badge badge-${i.category}">${i.category.replace("-", " ")}</span>
+          ${deadlineHtml}
+        </div>
+        
+        <h3 style="font-size:22px; font-weight:800; color:white; margin-bottom:8px; text-transform:uppercase;">${escapeHtml(i.role)}</h3>
+        <p style="color:var(--accent); font-weight:600; font-size:14px; margin-bottom:16px;">${escapeHtml(i.company)}</p>
+        
+        <p style="color:rgba(255,255,255,0.6); font-size:14px; margin-bottom:16px; line-height:1.6; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+          ${escapeHtml(i.description)}
+        </p>
+        
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px;">
+          ${highlights.map(h => `<span class="opp-highlight-chip">${escapeHtml(h)}</span>`).join('')}
+        </div>
+        
+        <div class="card-actions-row">
+          <div style="display:flex; gap:12px; flex:1;">
+            <a href="/opportunities" class="btn btn-secondary btn-sm" style="flex:1;">Details</a>
+            <a href="${i.apply_link}" target="_blank" class="btn btn-primary btn-sm ${isClosingSoon ? 'pulse-btn' : ''}" style="flex:1; background:var(--accent); color:#0c0c14;">Apply Now</a>
+          </div>
+          ${removeBtn}
+        </div>
+      </div>
+    `;
+  }
+
+  if (tab === 'posts') {
+    const tags = i.tags || [];
+    let pType = 'Post';
+    let pClass = 'pill-grey';
+    if (tags.includes('question')) { pType = 'Question'; pClass = 'pill-blue'; }
+    else if (tags.includes('help')) { pType = 'Help Needed'; pClass = 'pill-orange'; }
+
+    return `
+      <div class="glass-card-premium saved-card-post" style="padding:20px; border-left:4px solid #4ecca3;">
+        <div style="margin-bottom:12px; display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-muted);">
+          <span>💬</span> Community Post  •  ${formatTimeAgo(i.created_at)}
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          <h3 style="font-size:18px; font-weight:800; color:white; margin:0; line-height:1.2;">${escapeHtml(i.title)}</h3>
+          <span class="post-type-badge ${pClass}">${pType}</span>
+        </div>
+
+        <p style="margin-bottom:12px; font-size:13px; color:#888;">👤 Anonymous</p>
+
+        <p style="color:rgba(255,255,255,0.6); font-size:14px; line-height:1.4; margin-bottom:16px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+          ${escapeHtml(i.content)}
+        </p>
+
+        <div class="engagement-row" style="margin-bottom:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); color:var(--text-muted); font-size:12px;">
+          👍 ${i.upvotes_count || 0}  &nbsp;·&nbsp;  💬 ${i.reply_count || 0} replies
+        </div>
+
+        <div class="card-actions-row">
+          <a href="/community/${i._id}" class="btn btn-secondary btn-sm" style="border-radius:24px; padding:8px 20px;">Read Post →</a>
+          ${removeBtn}
+        </div>
+      </div>
+    `;
+  }
+
+  if (tab === 'archive') {
+    const isMine = i.archive_source === 'mine';
+    const isExpired = i.archive_source === 'expired';
+    const isEvent = itemType === 'event';
+    const isOpp = itemType === 'opportunity';
+    const isPost = itemType === 'post';
+
+    let bannerText = isMine ? `🙈 HIDDEN · ${formatDateTime(i.hidden_at || i.created_at)}` : `🔴 CLOSED · ${formatDateTime(i.deadline || i.archived_at)}`;
+    let bannerStyle = isMine ? "color: var(--accent);" : "color: #ff4757;";
+    let title = i.title || i.role || "Untitled";
+    let subTitle = i.company || i.college_name || (isPost ? "Anonymous Post" : "Archive");
+
+    const editBtn = (isMine && isEvent) ? `
+      <button class="btn btn-secondary btn-sm" onclick="editArchivedEvent('${i._id}')" style="font-size:11px;">✏️ Edit</button>
+    ` : '';
+    
+    const unhideBtn = isMine ? `
+      <button class="btn btn-primary btn-sm" onclick="unhideItem('${i._id}', '${itemType}')" style="flex:1; background:var(--accent); color:#0c0c14; font-size:11px;">👁️ Unhide</button>
+    ` : `<a href="/opportunities" class="btn btn-secondary btn-sm" style="flex:1; font-size:11px;">VIEW DETAILS</a>`;
+
+    const finalRemoveBtn = isMine ? `
+      <button class="btn-remove-bookmark remove-bookmark-btn" onclick="deleteArchivedItem('${i._id}', '${itemType}')" title="Delete Permanently" style="width:40px; height:40px; background:transparent; border:1px solid #ff4757; color:#ff4757; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      </button>
+    ` : `
+      <button class="btn-remove-bookmark remove-bookmark-btn" onclick="removeBookmark('${i._id}', 'archive')" title="Remove from Archive" style="width:40px; height:40px; background:transparent; border:1px solid #ff4757; color:#ff4757; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      </button>
+    `;
+
+    return `
+      <div class="glass-card-premium saved-card-archive" style="opacity:0.8; border-left:4px solid ${isMine ? 'var(--accent)' : '#ff4757'};">
+        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; ${bannerStyle}">
+          ${bannerText}
+        </div>
+        
+        <h3 class="card-title-bold" style="font-size: 18px; margin-bottom: 4px;">${escapeHtml(title)}</h3>
+        <p style="color:var(--text-muted); font-weight:600; font-size:13px; margin-bottom: 12px;">${escapeHtml(subTitle)}</p>
+        
+        <p style="color:rgba(255,255,255,0.5); font-size:13px; line-height:1.5; margin-bottom: 16px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+          ${escapeHtml(i.description || i.content || "")}
+        </p>
+        
+        <div class="card-actions-row">
+          ${editBtn}
+          ${unhideBtn}
+          ${finalRemoveBtn}
+        </div>
+      </div>
+    `;
+  }
+
+}
+
+async function unhideItemPersonal(id, type) {
+  try {
+    let endpoint = `/api/${type}s/${id}/hide`;
+    if (type === 'post') endpoint = `/api/community/${id}/hide`;
+    
+    await apiFetch(endpoint, {
+      method: 'PATCH',
+      body: JSON.stringify({ hide: false })
+    });
+    
+    showToast('Content restored to public feed successfully.', 'success');
+    
+    // UI Update: Remove card
+    const card = document.getElementById(`archive-${type}-${id}`);
+    if (card) {
+      card.classList.add('card-fade-out');
+      setTimeout(() => {
+        card.remove();
+        // Update badge count
+        const badge = document.getElementById('count-archive');
+        if (badge) {
+          let count = parseInt(badge.textContent);
+          count = Math.max(0, count - 1);
+          badge.textContent = count;
+          if (count === 0) {
+             // Re-render empty state if we unhid the last item
+             switchTab('archive');
+          }
+        }
+      }, 400);
+    }
+  } catch (e) { 
+    showToast(e.message || 'Restoration failed', 'error'); 
+  }
+}
+
+async function editArchivedItem(id, type) {
+  if (type === 'event') {
+    // We need to fetch the full event data first
+    try {
+      const e = await apiFetch(`/api/events/${id}`);
+      if (!e) return;
+      document.getElementById('eev_id').value = e._id;
+      document.getElementById('eev_title').value = e.title;
+      document.getElementById('eev_college').value = e.college_name || '';
+      document.getElementById('eev_category').value = e.category;
+      document.getElementById('eev_description').value = e.description || '';
+      document.getElementById('eev_reglink').value = e.registration_link || '';
+      const ed = document.getElementById('eev_date');
+      if (ed) {
+        const d = new Date(e.date);
+        ed.value = d.toISOString().slice(0, 16).replace('T', ' ');
+      }
+      openModal('editEventModal');
+    } catch(err) { showToast('Failed to load item data', 'error'); }
+  } else {
+    showToast(`Editing for ${type} coming soon!`, 'info');
+  }
+}
+
+// ── Shared Helper Functions ──
+
+function formatDateTime(iso) {
+  if (!iso) return 'N/A';
+  return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatTimeAgo(iso) {
+  if (!iso) return 'Recently';
+  const date = new Date(iso);
+  const seconds = Math.floor((new Date() - date) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + "h ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + "m ago";
+  return "just now";
+}
+
+async function removeBookmark(id, tab) {
+  try {
+    const result = await apiFetch(`/api/bookmarks/${id}`, { method: 'DELETE' });
+    
+    if (result && !result.error) {
+      const card = document.getElementById(`card-${id}`) || document.querySelector(`[data-bookmark-id="${id}"]`);
+      if (card) {
+        card.style.transition = 'opacity 0.3s, transform 0.3s';
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.9) translateY(20px)';
+        setTimeout(() => {
+          card.remove();
+          updateTabCount(tab);
+        }, 300);
+      }
+      showToast('✅ Removed from saved items', 'success');
+      
+      // Update local storage representation
+      if (bookmarkData && bookmarkData[tab]) {
+        bookmarkData[tab] = bookmarkData[tab].filter(item => item._id !== id);
+      }
+    } else {
+      showToast('❌ ' + (result?.error || 'Remove failed'));
+    }
+  } catch (e) {
+    showToast('❌ Error removing');
+  }
+}
+
+function updateTabCount(tab) {
+  const remaining = document.querySelectorAll('.bookmark-card:not([style*="opacity: 0"])').length;
+  
+  const tabBadge = document.getElementById(`count-${tab}`);
+  if (tabBadge) {
+    const newCount = Math.max(0, remaining);
+    tabBadge.textContent = newCount;
+    if (newCount === 0) {
+      tabBadge.style.display = 'none';
+    } else {
+      tabBadge.style.display = 'inline-block';
+    }
+  }
+  
+  if (remaining === 0) {
+    renderEmptyState(tab);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!requireAuth()) return;
+  loadData();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}Keyword Alerts - EDU Link Hub{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content">
+      <div class="page-header">
+        <div class="header-title-wrapper">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+            <a href="/notifications" class="btn btn-secondary btn-sm" style="padding: 6px 12px; border-radius: 10px;">← Back</a>
+          </div>
+          <h1 class="glow-heading">
+            <span class="emoji-icon">🎯</span>
+            <span class="text-gradient-animated">Keyword Alerts</span>
+          </h1>
+          <div class="glow-line"></div>
+          <p class="header-subtitle">Manage terms you'd like to be notified about</p>
+        </div>
+      </div>
+
+      <div class="glass-card holographic-card" style="margin-bottom: 32px; padding: 32px; border: 1px solid rgba(180, 81, 252, 0.2);">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+          <div>
+            <h3 style="font-size: 20px; font-weight: 700; color: white; margin-bottom: 6px;">Notification Preferences</h3>
+            <p style="font-size:14px; color: var(--text-secondary);">Add keywords like "Internship", "AI", or "Hackathon". We'll notify you whenever they appear in new posts or opportunities.</p>
+          </div>
+          <button class="btn btn-primary" onclick="saveKeywords()" id="saveKeywordsBtn" style="padding: 10px 32px; font-weight: 700; background: var(--primary); box-shadow: 0 0 20px rgba(180, 81, 252, 0.3);">Save Changes</button>
+        </div>
+        
+        <div class="keyword-entry-bar" style="display: flex; gap: 12px; margin-bottom: 24px;">
+          <div class="keyword-input-wrapper" style="position: relative; flex: 1;">
+            <input type="text" id="keywordInput" placeholder="Type an interest and press Enter..." style="width: 100%; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 20px; background: rgba(0,0,0,0.4); color: white; font-size: 15px; transition: all 0.3s; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);">
+          </div>
+        </div>
+
+        <div class="keyword-chips-container" style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
+          <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 16px; font-weight: 800;">My Active Keywords</div>
+          <div id="activeKeywords" style="display: flex; flex-wrap: wrap; gap: 12px; min-height: 40px;">
+            <div class="spinner" style="margin: 0;"></div>
+          </div>
+        </div>
+
+        <div class="keyword-suggestions" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08);">
+          <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 16px; font-weight: 800;">Recommended for you</div>
+          <div id="suggestedKeywords" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .page-content {
+    background: linear-gradient(180deg, rgba(1, 10, 19, 0.8) 0%, rgba(1, 10, 19, 0.9) 100%),
+      url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1920&auto=format') no-repeat center center;
+    background-size: cover;
+    background-attachment: fixed;
+  }
+
+  .keyword-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    background: rgba(180, 81, 252, 0.15);
+    border: 1px solid rgba(180, 81, 252, 0.3);
+    color: var(--primary-light);
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 4px 4px 20px rgba(0,0,0,0.3), 0 0 15px rgba(180, 81, 252, 0.1);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.2s;
+  }
+  .keyword-chip:hover {
+    transform: translateY(-2px);
+    background: rgba(180, 81, 252, 0.25);
+    border-color: rgba(180, 81, 252, 0.5);
+  }
+
+  .keyword-chip span {
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    opacity: 0.6;
+    transition: all 0.2s;
+  }
+  .keyword-chip span:hover {
+    opacity: 1;
+    color: white;
+    transform: scale(1.3);
+  }
+
+  .suggest-chip {
+    display: inline-block;
+    padding: 8px 18px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-secondary);
+    border-radius: 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .suggest-chip:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    transform: scale(1.05) translateY(-2px);
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  if (!requireAuth()) {}
+
+  let activeKeywords = [];
+  const suggestions = ['AI', 'Machine Learning', 'Hackathon', 'Internship', 'Web Development', 'Data Science', 'Python', 'React', 'Placement', 'Scholarship', 'Open Source', 'Competitive Programming', 'UI/UX Design'];
+
+  function renderKeywords() {
+    const activeContainer = document.getElementById('activeKeywords');
+    const suggestContainer = document.getElementById('suggestedKeywords');
+
+    if (activeKeywords.length === 0) {
+      activeContainer.innerHTML = '<div style="color: var(--text-muted); font-style: italic; font-size: 13px;">No active keywords. Add some to get started!</div>';
+    } else {
+      activeContainer.innerHTML = activeKeywords.map(k => `
+        <div class="keyword-chip">
+          ${escapeHtml(k)}
+          <span onclick="removeKeyword('${escapeHtml(k).replace(/'/g, "\\'")}')">&times;</span>
+        </div>
+      `).join('');
+    }
+
+    const availableSuggests = suggestions.filter(s => !activeKeywords.some(ak => ak.toLowerCase() === s.toLowerCase()));
+    suggestContainer.innerHTML = availableSuggests.map(s => `
+      <span class="suggest-chip" onclick="addKeyword('${escapeHtml(s).replace(/'/g, "\\'")}')">${escapeHtml(s)} +</span>
+    `).join('');
+  }
+
+  function addKeyword(k) {
+    const clean = k.trim();
+    if (clean && !activeKeywords.some(ak => ak.toLowerCase() === clean.toLowerCase())) {
+      activeKeywords.push(clean);
+      renderKeywords();
+    }
+    document.getElementById('keywordInput').value = '';
+  }
+
+  function removeKeyword(k) {
+    activeKeywords = activeKeywords.filter(ak => ak.toLowerCase() !== k.toLowerCase());
+    renderKeywords();
+  }
+
+  async function saveKeywords() {
+    const btn = document.getElementById('saveKeywordsBtn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    try {
+      await apiFetch('/api/keywords', {
+        method: 'PUT',
+        body: JSON.stringify({ keywords: activeKeywords })
+      });
+      showToast('Alert preferences updated!', 'success');
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  }
+
+  async function loadKeywords() {
+    try {
+      const kwData = await apiFetch('/api/keywords');
+      if (kwData && kwData.keywords) {
+        activeKeywords = kwData.keywords;
+        renderKeywords();
+      } else {
+        activeKeywords = [];
+        renderKeywords();
+      }
+    } catch(e) { 
+      console.error('Failed to load keywords', e); 
+      document.getElementById('activeKeywords').innerHTML = '<div style="color: var(--primary); font-size: 13px;">Failed to load keywords. Please refresh.</div>';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('keywordInput');
+    if(input) {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addKeyword(e.target.value);
+        }
+      });
+    }
+    loadKeywords();
+  });
+</script>
+{% endblock %}

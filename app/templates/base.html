@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}EDU Link Hub{% endblock %}</title>
+  <meta name="description" content="EDU Link Hub - Student Networking Platform">
+  <!-- F10 PWA -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#6c63ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="EduLink">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <!-- Styles -->
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.css">
+  <link rel="stylesheet" href="/static/css/card_dropdown.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="space-bg" id="spaceBg">
+    <div class="mesh-gradient"></div>
+    <div class="starfield"></div>
+    <div class="glowing-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+  </div>
+  <div class="particles-overlay" id="particlesOverlay"></div>
+  <div class="scanlines"></div>
+
+  <!-- F7: Global Report Modal -->
+  <div id="reportModalOverlay" class="report-modal-overlay" style="display:none" onclick="if(event.target===this)closeReportModal()">
+    <div class="report-modal">
+      <h3>⚠️ Report Content</h3>
+      <p class="report-modal-subtitle">Help us keep EDU Link Hub safe and respectful.</p>
+      <input type="hidden" id="reportItemId">
+      <input type="hidden" id="reportItemType">
+      <input type="hidden" id="reportItemTitle">
+      <div class="form-group">
+        <label>Reason</label>
+        <select id="reportReason">
+          <option value="Spam">Spam</option>
+          <option value="Inappropriate">Inappropriate</option>
+          <option value="Misleading">Misleading</option>
+          <option value="Harassment">Harassment</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Additional details (optional)</label>
+        <textarea id="reportDescription" rows="3" placeholder="Describe the issue..."></textarea>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:flex-end">
+        <button class="btn btn-secondary btn-sm" onclick="closeReportModal()">Cancel</button>
+        <button class="btn btn-danger btn-sm" id="reportSubmitBtn" onclick="submitReport()">Submit Report</button>
+      </div>
+    </div>
+  </div>
+
+  {% block body %}{% endblock %}
+  <script src="/static/js/app.js"></script>
+  <script src="/static/js/card_dropdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.js"></script>
+
+  <!-- F7: Report Modal JS -->
+  <script>
+  window.handleReport = function(itemId, itemType, itemTitle) {
+    if (!requireAuth()) return;
+    openReportModal(itemId, itemType, itemTitle);
+  };
+
+  function openReportModal(itemId, itemType, itemTitle) {
+    document.getElementById('reportItemId').value = itemId;
+    document.getElementById('reportItemType').value = itemType;
+    // Attempt to find title if not provided
+    if (!itemTitle) {
+      if (itemType === 'opportunity') {
+        const card = document.querySelector(`[data-id="${itemId}"]`)?.closest('.opp-card');
+        itemTitle = card?.querySelector('.opp-role')?.textContent || 'Opportunity';
+      } else if (itemType === 'event') {
+        const card = document.querySelector(`[data-id="${itemId}"]`)?.closest('.card');
+        itemTitle = card?.querySelector('.card-title')?.textContent || 'Event';
+      }
+    }
+    document.getElementById('reportItemTitle').value = itemTitle || 'Untitled Content';
+    document.getElementById('reportModalOverlay').style.display = 'flex';
+  }
+
+  function closeReportModal() {
+    document.getElementById('reportModalOverlay').style.display = 'none';
+    document.getElementById('reportDescription').value = '';
+  }
+
+  async function submitReport() {
+    const itemId = document.getElementById('reportItemId').value;
+    const itemType = document.getElementById('reportItemType').value;
+    const itemTitle = document.getElementById('reportItemTitle').value;
+    const reason = document.getElementById('reportReason').value;
+    const description = document.getElementById('reportDescription').value.trim();
+    const btn = document.getElementById('reportSubmitBtn');
+    
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    try {
+      await apiFetch('/api/reports/', {
+        method: 'POST',
+        body: JSON.stringify({ 
+          contentId: itemId, 
+          contentType: itemType, 
+          contentTitle: itemTitle,
+          reason: reason + (description ? ': ' + description : '')
+        })
+      });
+      showToast('🚩 Report submitted. Admin will review.', 'success');
+      closeReportModal();
+    } catch (e) {
+      showToast(e.message || 'Failed to submit report', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit Report';
+    }
+  }
+  </script>
+
+  <!-- F10: Service Worker Registration -->
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .then(reg => console.log('SW registered:', reg.scope))
+        .catch(err => console.log('SW registration failed:', err));
+    });
+  }
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

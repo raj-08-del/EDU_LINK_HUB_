@@ -1,0 +1,124 @@
+/* Standardized Card Action Menus */
+
+.card-dropdown-container {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    z-index: 100 !important;
+}
+
+.card-dropdown-trigger {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-size: 18px !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+}
+
+.card-dropdown-trigger:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.card-dropdown-menu {
+    position: absolute !important;
+    top: 40px !important;
+    right: 0 !important;
+    background: #1a1a2e !important; /* User specified solid #1a1a2e */
+    backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    width: 200px !important;
+    min-width: 180px !important;
+    display: none;
+    flex-direction: column !important;
+    padding: 6px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+    z-index: 1001 !important;
+    gap: 2px !important;
+}
+
+.card-dropdown-menu.show {
+    display: flex !important;
+    animation: menuFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes menuFadeIn {
+    from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.menu-item {
+    padding: 10px 16px !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+}
+
+.menu-item span, .menu-item i {
+    font-size: 16px !important;
+    width: 20px !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: white !important;
+}
+
+.menu-item.danger:hover {
+    background: rgba(255, 71, 87, 0.1) !important;
+    color: #ff4757 !important;
+}
+
+/* Tooltip for Copy Link */
+.copy-tooltip {
+    position: fixed;
+    background: #05d9e8;
+    color: #010a13;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    z-index: 2000;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    box-shadow: 0 4px 15px rgba(5, 217, 232, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Ensure parent cards are relative */
+.timeline-card, .opp-feed-card, .social-card, .saved-card-wrapper, .group-card {
+    position: relative !important;
+    overflow: visible !important; /* Allow menu to overflow card boundaries */
+}
+
+/* Smooth deletion animation */
+.card-fade-out {
+    opacity: 0 !important;
+    transform: scale(0.9) !important;
+    height: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    overflow: hidden !important;
+}

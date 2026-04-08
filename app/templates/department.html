@@ -1,0 +1,559 @@
+{% extends 'base.html' %}
+{% block title %}Department Community - EDU Link Hub{% endblock %}
+
+{% block body %}
+{% include 'partials/navbar.html' %}
+
+<div class="layout slide-up">
+  {% include 'partials/sidebar.html' %}
+  
+  <main class="main-content" style="padding:0">
+    <div id="loader" style="padding: 100px; text-align: center;">
+      <div class="spinner"></div><p style="margin-top:20px; color:var(--accent); font-family:'Rajdhani'; font-weight:bold;">CONNECTING TO DEPARTMENT...</p>
+    </div>
+
+    <div id="deptContent" style="display: none;">
+      <!-- BREADCRUMB -->
+      <div class="breadcrumb" style="padding: 20px 40px; background: rgba(1,10,19,0.5); border-bottom: 1px solid var(--border); font-size: 0.9rem; letter-spacing: 0.5px;">
+        <a href="/colleges" style="color: var(--cyan); text-decoration: none;">Communities</a> &rsaquo; 
+        <a href="/colleges/{{college_id}}" id="bcCollegeText" style="color: var(--cyan); text-decoration: none;">College</a> &rsaquo; 
+        <span id="bcDeptText" style="color: var(--text-muted);">Department</span>
+      </div>
+
+      <!-- HEADER -->
+      <section class="pattern-bg" style="padding: 60px 40px; background: linear-gradient(135deg, rgba(20,20,40,0.95), rgba(10,10,20,0.95)), url('/static/pattern.svg'); border-bottom: 2px solid var(--border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 30px;">
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+               <span class="chip chip-prominent" style="background: var(--accent); color: #000; font-weight: 800;">ACTIVE COMMUNITY</span>
+               <span id="memberCountBadge" class="chip chip-outline" style="border-color: var(--cyan); color: var(--cyan); font-weight: bold;">👥 0 MEMBERS</span>
+            </div>
+            <h1 id="deptName" style="font-size: 3rem; margin-bottom: 5px; color: #fff;">Department Name</h1>
+            <p id="deptSubtitle" style="color: var(--text-secondary); font-size: 1.25rem; font-family: 'Rajdhani';">Branch Short Name</p>
+          </div>
+          <div style="display: flex; gap: 15px; align-items: center;">
+            <button class="btn btn-primary" id="joinBtn" onclick="joinDept()" style="padding: 15px 35px; border-radius: 40px;">JOIN COMMUNITY</button>
+            <button class="btn btn-success" id="createPostBtn" onclick="openCreateModal()" style="display:none; padding: 15px 35px; border-radius: 40px; box-shadow: 0 0 20px var(--accent);">+ CREATE POST</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- POST TYPE FILTERS (SCROLLABLE TABS) -->
+      <section class="filter-bar" style="background: rgba(1,10,19,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: var(--navbar-height); z-index: 100;">
+         <div class="container" style="display: flex; align-items: center; justify-content: space-between; padding: 0 40px;">
+            <div class="filter-tabs" id="postFilters" style="display: flex; gap: 10px; overflow-x: auto; padding: 20px 0; -ms-overflow-style: none; scrollbar-width: none;">
+               <button class="btn btn-sm btn-primary" data-type="all">ALL ACTIVITY</button>
+               <button class="btn btn-sm btn-secondary" data-type="announcement">📢 ANNOUNCE</button>
+               <button class="btn btn-sm btn-secondary" data-type="discussion">💬 DISCUSS</button>
+               <button class="btn btn-sm btn-secondary" data-type="resource">📚 RESOURCES</button>
+               <button class="btn btn-sm btn-secondary" data-type="placement_info">💼 PLACEMENTS</button>
+               <button class="btn btn-sm btn-secondary" data-type="fresher_tip">💡 FRESHER TIPS</button>
+               <button class="btn btn-sm btn-secondary" data-type="event">📅 EVENTS</button>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+               <div class="search-compact glass" style="display: flex; padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.02);">
+                  <span style="font-size: 1rem; margin-right: 10px;">🔍</span>
+                  <input type="text" id="postSearchInput" placeholder="Filter posts..." style="background:transparent; border:none; outline:none; color:#fff; width: 150px; font-size: 0.9rem;" oninput="filterPosts()">
+               </div>
+               <select id="postSort" class="input input-sm glass" style="border-radius: 20px; min-width: 130px;" onchange="loadPosts()">
+                  <option value="newest">Newest</option>
+                  <option value="popular">Popular</option>
+                  <option value="pinned">Pinned</option>
+               </select>
+            </div>
+         </div>
+      </section>
+
+      <!-- FEED CONTENT -->
+      <section style="padding: 40px; background: rgba(0,0,0,0.2);">
+         <div class="container animate-in">
+            <div id="postsFeed" style="display: grid; grid-template-columns: 1fr; gap: 25px; max-width: 900px; margin: 0 auto;">
+               <!-- Posts loaded here -->
+            </div>
+            
+            <div id="emptyFeed" style="display: none; text-align: center; padding: 100px 20px;">
+               <div style="font-size: 5rem; margin-bottom: 20px;">📭</div>
+               <h2 style="color: var(--text-muted);">No posts found in this category.</h2>
+               <p style="color: var(--text-muted);">Be the first to share something with your department!</p>
+               <button class="btn btn-primary" onclick="openCreateModal()" style="margin-top: 20px;">+ START A CONVERSATION</button>
+            </div>
+         </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- Create Post Modal -->
+<div class="modal-overlay" id="createPostModal" style="display:none;" onclick="if(event.target===this) closeModal('createPostModal')">
+  <div class="modal glass-card" style="max-width: 800px; width: 95%; border: 1px solid var(--accent); padding: 0; overflow: hidden; animation: zoomIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);">
+    <div style="padding: 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(5,217,232,0.1);">
+       <h2 style="margin:0; color: var(--accent); letter-spacing: 2px;">NEW DEPARTMENT POST</h2>
+       <button class="btn btn-xs btn-secondary" onclick="closeModal('createPostModal')">✕</button>
+    </div>
+    <div style="max-height: 85vh; overflow-y: auto; padding: 35px;">
+       
+       <div class="grid grid-2" style="gap: 30px; margin-bottom: 25px;">
+          <div class="form-group">
+             <label>Select Post Type</label>
+             <select id="cpType" class="input glass" onchange="updateCpForm()">
+                <option value="discussion">💬 General Discussion</option>
+                <option value="announcement">📢 Announcement</option>
+                <option value="resource">📚 Study Resource / Notes</option>
+                <option value="placement_info">💼 Placement / Career Update</option>
+                <option value="fresher_tip">💡 Tip for Freshers</option>
+                <option value="event">📅 Campus Event</option>
+                <option value="review">⭐ Course Review</option>
+             </select>
+          </div>
+          <div class="form-group">
+             <label>Post Title</label>
+             <input type="text" id="cpTitle" class="input glass" placeholder="Enter a descriptive title...">
+          </div>
+       </div>
+
+       <!-- DYNAMIC FIELDS -->
+       <div id="cpDynamicSec" style="display: none; padding: 25px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 25px;"></div>
+
+       <div class="form-group">
+          <label>Post Content</label>
+          <textarea id="cpContent" class="input glass" rows="6" placeholder="Write your thoughts, share details, or provide descriptions..."></textarea>
+       </div>
+
+       <!-- MEDIA UPLOAD DROP ZONE -->
+       <div class="form-group" style="margin-top: 30px;">
+          <label>Media & Attachments</label>
+          <div id="dropZone" class="media-dropzone" onclick="document.getElementById('fileInput').click()">
+             <div class="drop-icon">📤</div>
+             <p class="drop-text">CLICK OR DRAG MEDIA FILES TO UPLOAD</p>
+             <p class="drop-hint">Images · Videos · PDFs · Maximum 20MB</p>
+             <input type="file" id="fileInput" multiple style="display:none;" onchange="handleFiles(this.files)">
+          </div>
+
+          <div id="uploadProgressContainer" style="display: none; margin-top: 20px;">
+             <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;">
+                <span id="uploadStatusText" style="color: var(--accent);">Uploading media...</span>
+                <span id="uploadPercent">0%</span>
+             </div>
+             <div class="progress-bar-bg" style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 30px;">
+                <div id="uploadBar" class="progress-fill" style="width: 0%; height: 100%; border-radius: 30px; background: var(--accent); box-shadow: 0 0 10px var(--accent); transition: width 0.3s;"></div>
+             </div>
+          </div>
+
+          <div id="filePreviewGrid" class="media-preview-grid">
+             <!-- Uploaded file chips -->
+          </div>
+       </div>
+
+       <div class="form-group" style="margin-top: 30px;">
+          <label>Tags (Comma separated)</label>
+          <input type="text" id="cpTags" class="input glass" placeholder="e.g. exams, python, intern, urgent">
+       </div>
+
+       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 25px; border-top: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 15px;">
+             <label class="switch-ui">
+                <input type="checkbox" id="cpAnon">
+                <span class="slider"></span>
+             </label>
+             <span style="font-size: 0.9rem; color: var(--text-muted);">Post Anonymously</span>
+          </div>
+          <button class="btn btn-primary" id="submitPostBtn" onclick="submitPost()" style="padding: 15px 50px; border-radius: 40px; font-size: 1rem;">PUBLISH POST</button>
+       </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CID = "{{ college_id }}";
+const DID = "{{ dept_id }}";
+let DEPT = null;
+let ALL_POSTS = [];
+let UPLOADED_MEDIA = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const cRes = await apiFetch(`/api/colleges/${CID}`);
+        document.getElementById('bcCollegeText').textContent = cRes.name;
+        
+        if (DID === 'all') {
+             DEPT = {
+                 _id: null,
+                 name: "General Campus Discussions",
+                 short_name: "GENERAL",
+                 stats: { total_members: cRes.stats.total_students, total_posts: cRes.stats.total_posts },
+                 is_member: cRes.is_member
+             };
+        } else {
+             DEPT = await apiFetch(`/api/colleges/${CID}/dept/${DID}`);
+        }
+        
+        renderHeader(DEPT);
+        loadPosts();
+        setupFilters();
+        setupDragDrop();
+        
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('action') === 'create') openCreateModal();
+
+    } catch(e) {
+        document.getElementById('loader').innerHTML = '<div style="color:var(--danger)">ERROR ACCESSING DEPARTMENT HUB</div>';
+    }
+});
+
+function renderHeader(d) {
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('deptContent').style.display = 'block';
+    
+    document.getElementById('bcDeptText').textContent = d.name;
+    document.getElementById('deptName').textContent = d.name;
+    document.getElementById('deptSubtitle').textContent = d.short_name || 'CAMPUS HUB';
+    document.getElementById('memberCountBadge').textContent = `👥 ${d.stats?.total_members || 0} MEMBERS`;
+    
+    if (d.is_member) {
+        const jbtn = document.getElementById('joinBtn');
+        jbtn.className = 'btn btn-outline';
+        jbtn.textContent = '✅ JOINED';
+        jbtn.onclick = null;
+        document.getElementById('createPostBtn').style.display = 'inline-block';
+    }
+}
+
+async function loadPosts() {
+    const list = document.getElementById('postsFeed');
+    const empty = document.getElementById('emptyFeed');
+    list.innerHTML = '<div class="spinner-container"><div class="spinner"></div></div>';
+    empty.style.display = 'none';
+
+    try {
+        const sort = document.getElementById('postSort').value;
+        let url = `/api/colleges/${CID}/posts/?sort=${sort}`;
+        if (DEPT._id) url += `&dept_id=${DEPT._id}`;
+        
+        ALL_POSTS = await apiFetch(url);
+        renderPosts(ALL_POSTS);
+    } catch(e) {
+        list.innerHTML = 'Error loading feed.';
+    }
+}
+
+function renderPosts(posts) {
+    const list = document.getElementById('postsFeed');
+    const empty = document.getElementById('emptyFeed');
+    const filterType = document.querySelector('#postFilters .btn-primary').dataset.type;
+    const searchVal = document.getElementById('postSearchInput').value.toLowerCase();
+
+    const filtered = posts.filter(p => {
+        const typeMatch = filterType === 'all' || p.post_type === filterType;
+        const searchMatch = p.title.toLowerCase().includes(searchVal) || p.content.toLowerCase().includes(searchVal);
+        return typeMatch && searchMatch;
+    });
+
+    if (filtered.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
+
+    list.innerHTML = filtered.map(p => `
+    <div class="card feed-post glass animate-in">
+        <div class="post-header">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="post-type-label type-${p.post_type}">${p.post_type.toUpperCase()}</span>
+                ${p.is_pinned ? '<span class="pinned-badge">📌 PINNED</span>' : ''}
+            </div>
+            <div class="post-date">${timeAgo(p.created_at)}</div>
+        </div>
+        
+        <h3 class="post-title">${p.title}</h3>
+        <p class="post-excerpt">${p.content}</p>
+        
+        ${renderPostMediaGrid(p.media)}
+        
+        <div class="post-tags">
+            ${(p.tags||[]).map(t => `<span class="tag">#${t}</span>`).join('')}
+        </div>
+        
+        <div class="post-footer">
+            <div class="author">
+                <div class="avatar">${p.is_anonymous ? '👤' : (p.author_info?.name ? p.author_info.name[0] : '?')}</div>
+                <span>${p.is_anonymous ? 'Anonymous Student' : (p.author_info?.name || 'Unknown')}</span>
+            </div>
+            <div class="actions">
+                <button class="btn-action" onclick="toggleUpvote('${p._id}', this)">👍 <span class="count">${p.upvotes?.length||0}</span></button>
+                <button class="btn-action" onclick="viewPost('${p._id}')">💬 ${p.replies?.length||0} REPLIES</button>
+            </div>
+        </div>
+    </div>`).join('');
+}
+
+function renderPostMediaGrid(media) {
+    if (!media || media.length === 0) return '';
+    const m = media[0];
+    let icon = '📎';
+    if(m.type === 'image') icon = '🖼️';
+    else if(m.type === 'video') icon = '🎬';
+    else if(m.type === 'document') icon = '📄';
+    
+    return `
+    <div class="post-media-box glass" onclick="event.stopPropagation(); window.open('${m.url}')">
+        <div class="icon">${icon}</div>
+        <div class="info">
+            <div class="fname">${m.filename}</div>
+            <div class="fmeta">${m.type.toUpperCase()} • ${(m.size_bytes/1024/1024).toFixed(1)} MB</div>
+        </div>
+        <div class="download-icon">⬇️</div>
+    </div>`;
+}
+
+function setupFilters() {
+    document.querySelectorAll('#postFilters button').forEach(btn => {
+        btn.onclick = (e) => {
+            document.querySelectorAll('#postFilters button').forEach(b => b.className = 'btn btn-sm btn-secondary');
+            btn.className = 'btn btn-sm btn-primary';
+            renderPosts(ALL_POSTS);
+        };
+    });
+}
+
+function filterPosts() {
+    renderPosts(ALL_POSTS);
+}
+
+function openCreateModal() {
+    if(!requireAuth()) return;
+    openModal('createPostModal');
+    updateCpForm();
+}
+
+function updateCpForm() {
+    const type = document.getElementById('cpType').value;
+    const sec = document.getElementById('cpDynamicSec');
+    let html = '';
+    
+    if (type === 'event') {
+        html = `
+            <div class="grid grid-2" style="gap:20px;">
+                <div class="form-group"><label>Event Date</label><input type="date" id="cpEvDate" class="input glass"></div>
+                <div class="form-group"><label>Venue</label><input type="text" id="cpEvVenue" class="input glass" placeholder="Campus place..."></div>
+            </div>
+            <div class="form-group" style="margin-top:15px;"><label>Registration Link (Optional)</label><input type="url" id="cpEvLink" class="input glass" placeholder="https://..."></div>
+        `;
+    } else if (type === 'placement_info') {
+        html = `
+            <div class="grid grid-3" style="gap:20px;">
+                <div class="form-group"><label>Company</label><input type="text" id="cpPlComp" class="input glass" placeholder="Amazon, etc."></div>
+                <div class="form-group"><label>Package</label><input type="text" id="cpPlPack" class="input glass" placeholder="8.5 LPA"></div>
+                <div class="form-group"><label>Date</label><input type="date" id="cpPlDate" class="input glass"></div>
+            </div>
+        `;
+    } else if (type === 'review') {
+        html = `
+            <div class="grid grid-2" style="gap:20px;">
+                <div class="form-group"><label>Course Difficulty</label><select id="cpRevDiff" class="input glass"><option>Easy</option><option>Medium</option><option>Hard</option></select></div>
+                <div class="form-group"><label>Professor Sentiment</label><select id="cpRevProf" class="input glass"><option>Positive</option><option>Neutral</option><option>Negative</option></select></div>
+            </div>
+        `;
+    }
+    
+    if (html) { sec.innerHTML = html; sec.style.display = 'block'; } else { sec.style.display = 'none'; sec.innerHTML = ''; }
+}
+
+function setupDragDrop() {
+    const zone = document.getElementById('dropZone');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+        zone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
+    });
+    zone.addEventListener('dragover', () => zone.classList.add('dragging'));
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragging'));
+    zone.addEventListener('drop', (e) => {
+        zone.classList.remove('dragging');
+        if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+    });
+}
+
+async function handleFiles(files) {
+    if (!files.length) return;
+    const file = files[0];
+    
+    if (file.size > 20 * 1024 * 1024) return showToast('File too large (>20MB)', 'warning');
+
+    const progressSec = document.getElementById('uploadProgressContainer');
+    const bar = document.getElementById('uploadBar');
+    const pct = document.getElementById('uploadPercent');
+    const status = document.getElementById('uploadStatusText');
+
+    progressSec.style.display = 'block';
+    bar.style.width = '0%';
+    pct.textContent = '0%';
+    status.textContent = `Uploading ${file.name}...`;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/colleges/upload/', true);
+        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+        xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+                const per = Math.round((e.loaded / e.total) * 100);
+                bar.style.width = per + '%';
+                pct.textContent = per + '%';
+            }
+        };
+
+        xhr.onload = () => {
+             if (xhr.status === 200) {
+                 const data = JSON.parse(xhr.responseText);
+                 UPLOADED_MEDIA.push(data);
+                 renderFilePreviews();
+                 status.textContent = 'Upload Complete!';
+                 setTimeout(() => { progressSec.style.display='none'; }, 1500);
+             } else {
+                 status.textContent = 'Upload Failed!';
+                 bar.style.backgroundColor = 'var(--danger)';
+             }
+        };
+
+        xhr.send(formData);
+    } catch(e) {
+        status.textContent = 'Upload Error.';
+    }
+}
+
+function renderFilePreviews() {
+    const grid = document.getElementById('filePreviewGrid');
+    grid.innerHTML = UPLOADED_MEDIA.map((m, i) => `
+    <div class="file-chip glass">
+       <span>📄 ${m.filename}</span>
+       <button class="rm-btn" onclick="UPLOADED_MEDIA.splice(${i},1); renderFilePreviews()">✕</button>
+    </div>`).join('');
+}
+
+async function submitPost() {
+    const title = document.getElementById('cpTitle').value.trim();
+    const content = document.getElementById('cpContent').value.trim();
+    if (!title || !content) return showToast('Title and content required', 'warning');
+
+    const type = document.getElementById('cpType').value;
+    const btn = document.getElementById('submitPostBtn');
+    
+    btn.disabled = true;
+    btn.textContent = 'PUBLISHING...';
+
+    const payload = {
+        department_id: DEPT._id,
+        post_type: type,
+        title: title,
+        content: content,
+        is_anonymous: document.getElementById('cpAnon').checked,
+        tags: document.getElementById('cpTags').value.split(',').map(t => t.trim()).filter(t => t),
+        media: UPLOADED_MEDIA
+    };
+
+    if (type === 'event') {
+        payload.event_data = {
+            event_date: document.getElementById('cpEvDate')?.value,
+            venue: document.getElementById('cpEvVenue')?.value,
+            registration_link: document.getElementById('cpEvLink')?.value
+        };
+    } else if (type === 'placement_info') {
+        payload.placement_data = {
+            company: document.getElementById('cpPlComp')?.value,
+            package: document.getElementById('cpPlPack')?.value,
+            visit_date: document.getElementById('cpPlDate')?.value
+        };
+    }
+
+    try {
+        await apiFetch(`/api/colleges/${CID}/posts/`, { method: 'POST', body: payload });
+        showToast('Community post published!', 'success');
+        closeModal('createPostModal');
+        UPLOADED_MEDIA = [];
+        renderFilePreviews();
+        loadPosts();
+    } catch(e) {
+        showToast('Publish failed. Try again.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'PUBLISH POST';
+    }
+}
+
+async function toggleUpvote(id, btn) {
+    if(!requireAuth()) return;
+    try {
+        const res = await apiFetch(`/api/colleges/posts/${id}/upvote`, { method: 'PATCH' });
+        const countSpan = btn.querySelector('.count');
+        let current = parseInt(countSpan.textContent);
+        countSpan.textContent = res.status === 'added' ? current + 1 : current - 1;
+        btn.classList.toggle('active', res.status === 'added');
+    } catch(e) {}
+}
+
+async function joinDept() {
+    if(!requireAuth()) return;
+    try {
+        await apiFetch(`/api/colleges/${CID}/join`, { method: 'POST', body: { department_id: DEPT._id } });
+        showToast('Successfully joined the department!', 'success');
+        location.reload();
+    } catch(e) { showToast('Join failed.', 'error'); }
+}
+</script>
+
+<style>
+/* Exclusive Styles for Department Feed */
+.media-dropzone { border: 2px dashed var(--border); padding: 40px; border-radius: 20px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(0,0,0,0.2); }
+.media-dropzone:hover, .media-dropzone.dragging { border-color: var(--accent); background: rgba(5,217,232,0.05); }
+.media-dropzone .drop-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.media-dropzone .drop-text { font-weight: bold; color: var(--accent); font-family: 'Rajdhani'; }
+.media-dropzone .drop-hint { font-size: 0.8rem; color: var(--text-muted); }
+
+.media-preview-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+.file-chip { padding: 8px 15px; border-radius: 40px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
+.file-chip .rm-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold; }
+
+.post-type-label { font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 4px; }
+.type-discussion { background: rgba(149,40,215,0.1); color: #9528d7; border: 1px solid rgba(149,40,215,0.3); }
+.type-announcement { background: rgba(255,42,109,0.1); color: #ff2a6d; border: 1px solid rgba(255,42,109,0.3); }
+.type-resource { background: rgba(5,217,232,0.1); color: #05d9e8; border: 1px solid rgba(5,217,232,0.3); }
+.type-placement_info { background: #0c1a2e; color: #fff; border: 1px solid var(--border); }
+.type-event { background: rgba(255,165,0,0.1); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); }
+
+.feed-post { padding: 30px; border: 1px solid var(--border); transition: transform 0.2s; cursor: pointer; }
+.feed-post:hover { transform: scale(1.01); border-color: var(--cyan); }
+.post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.post-date { font-size: 0.85rem; color: var(--text-muted); }
+.post-title { font-size: 1.5rem; color: #fff; margin-bottom: 10px; }
+.post-excerpt { color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; line-clamp: 3; }
+
+.post-media-box { display: flex; align-items: center; padding: 15px; border-radius: 12px; border: 1px solid var(--border); gap: 15px; margin-bottom: 20px; }
+.post-media-box .icon { font-size: 2rem; }
+.post-media-box .fname { font-weight: bold; font-family: 'Rajdhani'; color: var(--cyan); }
+.post-media-box .fmeta { font-size: 0.75rem; color: var(--text-muted); }
+
+.post-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.post-tags .tag { font-size: 0.8rem; color: var(--accent); opacity: 0.8; }
+
+.post-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-light); }
+.post-footer .author { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--text-secondary); }
+.post-footer .avatar { width: 30px; height: 30px; background: var(--bg-card); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+.post-footer .btn-action { background: none; border: 1px solid var(--border); color: var(--text-muted); border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: all 0.2s; }
+.post-footer .btn-action:hover { border-color: var(--accent); color: var(--accent); }
+.post-footer .btn-action.active { background: rgba(5,217,232,0.1); border-color: var(--accent); color: var(--accent); }
+
+.switch-ui { position: relative; display: inline-block; width: 40px; height: 20px; }
+.switch-ui input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--accent); }
+input:focus + .slider { box-shadow: 0 0 1px var(--accent); }
+input:checked + .slider:before { transform: translateX(20px); }
+</style>
+{% endblock %}

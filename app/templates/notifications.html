@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% block title %}Notifications - EDU Link Hub{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content">
+      <div class="page-header">
+        <div class="header-title-wrapper">
+          <h1 class="glow-heading">
+            <span class="emoji-icon">🔔</span>
+            <span class="text-gradient-animated">Notifications</span>
+          </h1>
+          <div class="glow-line"></div>
+          <p class="header-subtitle">Stay updated with activity on your posts and interests</p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <a href="/notifications/keywords" class="btn btn-primary btn-sm" style="background: rgba(180, 81, 252, 0.15); border: 1px solid rgba(180, 81, 252, 0.3); color: var(--primary-light); font-weight: 700; display: flex; align-items: center; gap: 8px; text-decoration: none;">
+            <span style="font-size: 16px;">🎯</span> Keyword Alerts
+          </a>
+          <button class="btn btn-secondary btn-sm" onclick="markAllAsRead()">Mark all as read</button>
+        </div>
+      </div>
+
+      <!-- Notifications List -->
+
+      <div class="notifications-container" id="notifList">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .page-content {
+    background: linear-gradient(180deg, rgba(1, 10, 19, 0.75) 0%, rgba(1, 10, 19, 0.85) 100%),
+      url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1920&auto=format') no-repeat center center;
+    background-size: cover;
+    background-attachment: fixed;
+  }
+
+  .notifications-container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 60px;
+  }
+
+  .notif-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .notif-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 4px; height: 100%;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .notif-card.unread {
+    background: rgba(180, 81, 252, 0.06);
+    border-color: rgba(180, 81, 252, 0.2);
+  }
+
+  .notif-card.unread::before {
+    opacity: 1;
+  }
+
+  .notif-card:hover {
+    transform: translateX(8px);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .notif-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .notif-content {
+    flex: 1;
+  }
+
+  .notif-message {
+    font-size: 15px;
+    color: white;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .notif-time {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .notif-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    margin-left: auto;
+  }
+
+  .notif-card.unread .notif-badge {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 0 10px rgba(180, 81, 252, 0.4);
+  }
+  .keyword-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(180, 81, 252, 0.15);
+    border: 1px solid rgba(180, 81, 252, 0.3);
+    color: var(--primary-light);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(180, 81, 252, 0.1);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .keyword-chip span {
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0.6;
+    transition: all 0.2s;
+  }
+
+  .keyword-chip span:hover {
+    opacity: 1;
+    color: white;
+    transform: scale(1.2);
+  }
+
+  .suggest-chip {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-secondary);
+    border-radius: 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .suggest-chip:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes slideDown {
+    0% { transform: translateY(-20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes heroBgZoom {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.08); }
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  if (!requireAuth()) {}
+
+  async function loadPageNotifications() {
+    const list = document.getElementById('notifList');
+    try {
+      const notifications = await apiFetch('/api/notifications');
+      if (!notifications || notifications.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🔔</div>
+            <h3>No notifications yet</h3>
+            <p>We'll alert you when there's activity on your account</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = notifications.map(n => {
+        const isRead = n.read === true || n.is_read === true;
+        return `
+          <div class="notif-card ${isRead ? '' : 'unread'}" 
+               onclick='handleNotifClick("${n._id}", "${n.post_ref || ""}", "${n.post_model || ""}", "${n.type}", "${n.link || ""}")'>
+            <div class="notif-icon">
+              ${getIcon(n.type)}
+            </div>
+            <div class="notif-content">
+              <div class="notif-message">${escapeHtml(n.message)}</div>
+              <div class="notif-time">${timeAgo(n.created_at)}</div>
+            </div>
+            ${isRead ? '' : '<div class="notif-badge">New</div>'}
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      list.innerHTML = '<div class="empty-state"><p>Error loading notifications</p></div>';
+    }
+  }
+
+  function getIcon(type) {
+    switch (type) {
+      case 'reply': return '💬';
+      case 'keyword': return '🎯';
+      case 'community': return '🧠';
+      case 'opportunity': return '💼';
+      case 'event': return '🎪';
+      default: return '🔔';
+    }
+  }
+
+  async function handleNotifClick(notifId, postRef, postModel, type, link) {
+    // 1. Mark as read
+    try {
+      await apiFetch(`/api/notifications/${notifId}/read`, { method: 'PATCH' });
+    } catch (e) {
+      console.error('Failed to mark as read', e);
+    }
+
+    // 2. Redirect prioritized by direct link
+    if (link && link !== "null" && link !== "undefined") {
+      window.location.href = link;
+      return;
+    }
+
+    // 3. Fallback to model-based redirection
+    if (postRef && postModel) {
+      if (postModel === 'community_posts' || postModel === 'post') {
+        window.location.href = `/community/${postRef}`;
+      } else if (postModel === 'opportunities' || postModel === 'opportunity') {
+        window.location.href = `/community/channel/career-internships?highlight=${postRef}`;
+      } else if (postModel === 'events' || postModel === 'event') {
+        window.location.href = '/explore';
+      } else {
+        console.warn('Unknown post model:', postModel);
+        loadPageNotifications();
+      }
+    } else {
+      // If no link or ref, just refresh current list to show "read" status
+      loadPageNotifications();
+    }
+  }
+
+  loadPageNotifications();
+</script>
+{% endblock %}

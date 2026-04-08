@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+{% block title %}Post Detail - EDU Link Hub{% endblock %}
+{% block page_title %}💬 Post Detail{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content">
+      <a href="/community" class="back-link">← Back to Community</a>
+
+      <div id="postDetail">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Edit Post Modal -->
+      <div class="modal-overlay" id="editPostModal">
+        <div class="modal">
+          <div class="modal-header">
+            <h2>Edit Question</h2>
+            <button class="modal-close" onclick="closeModal('editPostModal')">&times;</button>
+          </div>
+          <form id="editPostForm" onsubmit="submitEditPost(event)">
+            <div class="form-group">
+              <label>Title</label>
+              <input type="text" id="epost_title" required>
+            </div>
+            <div class="form-group">
+              <label>Details</label>
+              <textarea id="epost_content" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+              <label>Tags (comma-separated)</label>
+              <input type="text" id="epost_tags">
+            </div>
+            <div class="form-group">
+              <label>Media Link <span style="color:var(--text-secondary);font-size:12px;">(optional)</span></label>
+              <input type="url" id="epost_image" placeholder="https://unsplash.com/.../image.jpg">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Reply Form -->
+      <div id="replySection" class="glass-card reply-section" hidden>
+        <div class="reply-section-inner">
+          <h3 class="reply-heading">💬 Add a Reply</h3>
+          <form onsubmit="submitReply(event)">
+            <div class="form-group">
+              <textarea id="reply_content" rows="3" placeholder="Share your thoughts anonymously..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Reply Anonymously</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Replies -->
+      <div id="repliesContainer" class="replies-container"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .sc-image {
+    width: auto !important;
+    max-width: 100% !important;
+    max-height: 450px !important;
+    object-fit: contain !important;
+    border-radius: 16px;
+    display: block;
+    margin: 0 auto;
+    background: rgba(0,0,0,0.2);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  }
+  .post-card {
+    background: linear-gradient(135deg, rgba(30,30,50,0.6) 0%, rgba(20,20,40,0.8) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+  }
+  .post-card::before {
+    content: ''; position: absolute; top:0; left:0; width:4px; height:100%;
+    background: var(--primary);
+  }
+
+  .report-btn-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .report-btn-icon:hover {
+    background: rgba(255, 71, 87, 0.1);
+    color: #ff4757;
+    transform: scale(1.1);
+  }
+  .reply {
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid var(--primary);
+    border-radius: 4px 12px 12px 4px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    transition: all 0.2s;
+  }
+  .reply:hover {
+    background: rgba(255,255,255,0.05);
+    transform: translateX(4px);
+  }
+  .reply-content {
+    font-size: 14px;
+    color: white;
+    line-height: 1.6;
+    margin-bottom: 8px;
+    white-space: pre-wrap;
+  }
+  .reply-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .accepted-reply {
+    border: 1px solid #10b981 !important;
+    background: rgba(16, 185, 129, 0.05) !important;
+    position: relative;
+    padding-top: 32px !important;
+  }
+  .solution-badge {
+    position: absolute;
+    top: 8px;
+    left: 20px;
+    background: #10b981;
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .accept-solution-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #888;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+  }
+  .accept-solution-btn:hover {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-color: #10b981;
+  }
+  .accept-solution-btn.active {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+  }
+
+  /* Kebab Menu Styles */
+  .reply-actions-kebab {
+    position: relative;
+    display: inline-block;
+  }
+  .kebab-trigger {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .kebab-trigger:hover {
+    background: rgba(255,255,255,0.08);
+    color: white;
+  }
+  .kebab-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 140px;
+    background: rgba(15, 15, 25, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: none;
+    padding: 6px;
+    margin-top: 4px;
+    animation: fadeInScale 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .reply-actions-kebab:focus-within .kebab-dropdown,
+  .reply-actions-kebab:hover .kebab-dropdown {
+    display: block;
+  }
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95) translateY(-5px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .dropdown-btn {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Rajdhani', sans-serif;
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+  }
+  .dropdown-btn:hover {
+    background: rgba(255,255,255,0.05);
+    color: white;
+  }
+  .btn-delete:hover {
+    background: rgba(255, 71, 87, 0.1) !important;
+    color: #ff4757 !important;
+  }
+  .btn-report:hover {
+    background: rgba(255, 165, 2, 0.1) !important;
+    color: #ffa502 !important;
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  if (!requireAuth()) {}
+
+  const POST_ID = '{{ post_id }}';
+  let currentPost = null;
+  const currentUser = getUser();
+
+  async function loadPost() {
+    try {
+      const post = await apiFetch(`/api/community/${POST_ID}`);
+      // Reactions row
+      const reactionsHtml = ['\ud83d\udc4d','\ud83d\udca1','\u2764\ufe0f','\ud83d\udd25'].map(emoji => {
+        const count = (post.reactions && post.reactions[emoji]) || 0;
+        const isActive = post.user_reaction === emoji;
+        return `<button class="reaction-btn ${isActive ? 'active' : ''}" id="rbtn_${post._id}_${encodeURIComponent(emoji)}" onclick="reactPost('${post._id}','${emoji}',this)">${emoji} <span class="react-count">${count}</span></button>`;
+      }).join('');
+
+      document.getElementById('postDetail').innerHTML = `
+        ... (long string) ...
+      `;
+      currentPost = post;
+
+      document.getElementById('replySection').hidden = false;
+
+      // Render replies
+      const repliesContainer = document.getElementById('repliesContainer');
+      const isAuthor = currentPost && currentUser && String(currentPost.author) === String(currentUser._id);
+      
+      if (post.replies && post.replies.length > 0) {
+        repliesContainer.innerHTML = `<h3 style="margin-bottom:16px;font-size:16px">Replies (${post.replies.length})</h3>` +
+          post.replies.map(r => {
+            const isAccepted = post.accepted_reply_id === r.id;
+            return `
+              <div class="reply ${isAccepted ? 'accepted-reply' : ''}">
+                ${isAccepted ? '<div class="solution-badge">✅ Verified Solution</div>' : ''}
+                <div class="reply-content">${escapeHtml(r.content)}</div>
+                <div class="reply-meta">
+                  <span>
+                    ${currentUser && currentUser.role === 'admin'
+                      ? `<span style="color:#05d9e8; font-weight:600;">👤 ${escapeHtml(r.author_name || 'Anonymous')}</span> <span style="font-size:10px; background:rgba(255,71,87,0.15); color:#ff4757; border:1px solid rgba(255,71,87,0.3); border-radius:4px; padding:1px 5px;">ADMIN VIEW</span> • ${timeAgo(r.created_at)}`
+                      : `👤 Anonymous • ${timeAgo(r.created_at)}`
+                    }
+                  </span>
+                  <div style="display:flex; gap:12px; align-items:center;">
+                    ${isAuthor ? `
+                      <button class="accept-solution-btn ${isAccepted ? 'active' : ''}" 
+                              onclick="toggleAcceptReply('${r.id}')" 
+                              title="${isAccepted ? 'Unmark as Solution' : 'Mark as Solution'}">
+                        ${isAccepted ? '🔄 Change' : '✅ Mark as Solution'}
+                      </button>
+                    ` : ''}
+
+                    <div class="reply-actions-kebab">
+                      <button class="kebab-trigger">⋮</button>
+                      <div class="kebab-dropdown">
+                        ${r.is_owner ? `
+                          <button class="dropdown-btn btn-delete" onclick="deleteReply('${r.id}')">
+                            <span>🗑️</span> Delete
+                          </button>
+                        ` : ''}
+                        <button class="dropdown-btn btn-report" onclick="openReportModal('${r.id}','community_reply')">
+                          <span>🚩</span> Report
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+      } else {
+        repliesContainer.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:30px">No replies yet. Be the first!</p>';
+      }
+
+    } catch (err) {
+      document.getElementById('postDetail').innerHTML = '<div class="empty-state"><p>Post not found</p></div>';
+    }
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('show'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+  function openEditModal() {
+    if (!currentPost) return;
+    document.getElementById('epost_title').value = currentPost.title;
+    document.getElementById('epost_content').value = currentPost.content;
+    document.getElementById('epost_tags').value = currentPost.tags ? currentPost.tags.join(', ') : '';
+    document.getElementById('epost_image').value = currentPost.image || '';
+    openModal('editPostModal');
+  }
+
+  async function submitEditPost(e) {
+    e.preventDefault();
+    const btn = e.submitter || e.target.querySelector('[type=submit]');
+    const originalText = btn.textContent;
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    try {
+      const tagsStr = document.getElementById('epost_tags').value;
+      const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+      await apiFetch(`/api/community/${POST_ID}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: document.getElementById('epost_title').value,
+          content: document.getElementById('epost_content').value,
+          tags,
+          image: document.getElementById('epost_image').value.trim(),
+        }),
+      });
+      showToast('Post updated successfully!', 'success');
+      closeModal('editPostModal');
+      loadPost();
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  }
+
+  async function deletePost() {
+    if (!confirm('Are you sure you want to delete this post?')) return;
+    try {
+      await apiFetch(`/api/community/${POST_ID}`, { method: 'DELETE' });
+      showToast('Post deleted', 'success');
+      window.location.href = '/community';
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function deleteReply(replyId) {
+    if (!confirm('Are you sure you want to delete this reply?')) return;
+    try {
+      await apiFetch(`/api/community/${POST_ID}/reply/${replyId}`, { method: 'DELETE' });
+      showToast('Reply deleted', 'success');
+      loadPost();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function upvotePost(id, btn) {
+    try {
+      const data = await apiFetch(`/api/community/${id}/upvote`, { method: 'PATCH' });
+      if (data) {
+        btn.querySelector('span').textContent = data.upvote_count;
+        btn.classList.toggle('upvoted', data.upvoted);
+      }
+    } catch (err) { showToast(err.message, 'error'); }
+  }
+
+  async function submitReply(e) {
+    e.preventDefault();
+    try {
+      await apiFetch(`/api/community/${POST_ID}/reply`, {
+        method: 'POST',
+        body: JSON.stringify({ content: document.getElementById('reply_content').value }),
+      });
+      showToast('Reply added!', 'success');
+      document.getElementById('reply_content').value = '';
+      loadPost();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function toggleAcceptReply(replyId) {
+    try {
+      const data = await apiFetch(`/api/community/${POST_ID}/accept-reply/${replyId}`, {
+        method: 'PATCH'
+      });
+      if (data.success) {
+        showToast(data.message, 'success');
+        loadPost();
+      }
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  // F5: Reactions
+  async function reactPost(postId, emoji, btn) {
+    try {
+      btn.classList.add('just-reacted');
+      const data = await apiFetch(`/api/community/${postId}/react`, { method: 'PATCH', body: JSON.stringify({ emoji }) });
+      // Update all reaction buttons for this post
+      ['\ud83d\udc4d','\ud83d\udca1','\u2764\ufe0f','\ud83d\udd25'].forEach(e => {
+        const b = document.getElementById(`rbtn_${postId}_${encodeURIComponent(e)}`);
+        if (b) {
+          b.classList.toggle('active', data.user_reaction === e);
+          const cnt = b.querySelector('.react-count');
+          if (cnt) cnt.textContent = (data.reactions && data.reactions[e]) || 0;
+        }
+      });
+    } catch (err) { showToast(err.message, 'error'); }
+  }
+
+  loadPost();
+</script>
+{% endblock %}
+

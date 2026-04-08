@@ -1,0 +1,733 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - EDU Link Hub{% endblock %}
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content">
+      <!-- Dynamic Welcome Hero -->
+      <div class="welcome-hero" id="welcomeHero">
+        <div class="welcome-hero-bg" id="welcomeHeroBg"></div>
+        <div class="welcome-hero-overlay"></div>
+        <div class="welcome-hero-particles"></div>
+        <div class="welcome-hero-content">
+          <h1 class="welcome-hero-title" id="welcomeTitle">Welcome!</h1>
+          <p class="welcome-hero-quote" id="welcomeQuote"><span id="typingText"></span><span class="typing-cursor">|</span></p>
+          <div class="welcome-hero-date-wrapper">
+             <div class="welcome-hero-date" id="welcomeDate"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Matrix (Full Width) -->
+      <div class="stats-grid holographic-stats" id="statsGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; width: 100%;">
+        <div class="stat-card" onclick="window.location.href='/explore'">
+          <div class="stat-icon glow-icon">🎪</div>
+          <div class="stat-value" id="stat-events">{{ campus_events_count | default(0, true) }}</div>
+          <div class="stat-label">Campus Events</div>
+        </div>
+        <div class="stat-card" onclick="window.location.href='/opportunities'">
+          <div class="stat-icon glow-icon">💼</div>
+          <div class="stat-value" id="stat-opportunities">{{ opportunities_count | default(0, true) }}</div>
+          <div class="stat-label">Opportunities</div>
+        </div>
+        <div class="stat-card" onclick="window.location.href='/community'">
+          <div class="stat-icon glow-icon">💬</div>
+          <div class="stat-value" id="stat-posts">{{ community_posts_count | default(0, true) }}</div>
+          <div class="stat-label">Community Posts</div>
+        </div>
+        <div class="stat-card" onclick="window.location.href='/notifications'">
+          <div class="stat-icon glow-icon">🔔</div>
+          <div class="stat-value" id="stat-notifications">{{ notifications_count | default(0, true) }}</div>
+          <div class="stat-label">Notifications</div>
+        </div>
+        <div class="stat-card" onclick="window.location.href='/study-groups'">
+          <div class="stat-icon glow-icon">👥</div>
+          <div class="stat-value" id="stat-groups">{{ study_groups_count | default(0, true) }}</div>
+          <div class="stat-label">Study Groups</div>
+        </div>
+        <div class="stat-card" onclick="window.location.href='/bookmarks'">
+          <div class="stat-icon glow-icon">🔖</div>
+          <div class="stat-value" id="stat-saved">{{ saved_items_count | default(0, true) }}</div>
+          <div class="stat-label">Saved Items</div>
+        </div>
+        <div class="stat-card" onclick="window.location.href='/colleges'">
+          <div class="stat-icon glow-icon">🏛️</div>
+          <div class="stat-value" id="stat-communities">{{ communities_count | default(0, true) }}</div>
+          <div class="stat-label">Communities</div>
+        </div>
+        <div class="stat-card" onclick="window.location.href='/leaderboard'">
+          <div class="stat-icon glow-icon">🏆</div>
+          <div class="stat-value" id="stat-rank">{{ leaderboard_rank | default('Unranked', true) }}</div>
+          <div class="stat-label">Leaderboard</div>
+        </div>
+      </div>
+
+      <!-- REDESIGNED REPORT LOGS SECTION (GROUPED BY ITEM) -->
+      {% if current_user and current_user.role|lower == 'admin' %}
+      <div id="report-logs-section" style="margin-bottom: 40px; font-family: 'Inter', sans-serif;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <div style="display: flex; align-items: center; gap: 10px; font-family: 'Rajdhani', sans-serif; font-size: 1.5rem; font-weight: 700; color: #fff;">
+            <span>🚩</span> <span>REPORT LOGS</span>
+          </div>
+          <div id="report-header-badge" class="badge-hidden" style="padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; background: rgba(255, 71, 87, 0.15); border: 1px solid #ff4757; color: #ff4757;">
+            0 Pending Items
+          </div>
+        </div>
+        <div style="height: 1px; background: #1e2a3a; margin-bottom: 24px;"></div>
+
+        <!-- Filter Tabs -->
+        <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+          <button onclick="filterGroupedReports('pending', this)" id="tab-pending"
+            style="background: rgba(255,71,87,0.15); border: 1px solid #ff4757; color: #ff4757; padding: 6px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; cursor: pointer;">
+            Pending 0
+          </button>
+          <button onclick="filterGroupedReports('all', this)" id="tab-all"
+            style="background: transparent; border: 1px solid #333; color: #888; padding: 6px 16px; border-radius: 20px; font-size: 0.82rem; cursor: pointer;">
+            All 0
+          </button>
+          <button onclick="filterGroupedReports('resolved', this)" id="tab-resolved"
+            style="background: transparent; border: 1px solid #333; color: #888; padding: 6px 16px; border-radius: 20px; font-size: 0.82rem; cursor: pointer;">
+            Resolved 0
+          </button>
+        </div>
+
+        <!-- Cards Container -->
+        <div id="report-cards-container" style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="text-align: center; padding: 40px 20px;">
+             <div class="spinner" style="margin: 0 auto; margin-bottom: 15px;"></div>
+             <p style="color:#888;">Loading Real-time Reports...</p>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Bottom Section: Events & Opportunities -->
+      <div class="dashboard-bottom-section">
+        <div class="events-col">
+          <div class="section-glow-title" style="margin-bottom: 8px;">
+            <span class="emoji-icon">📅</span> <span>Upcoming Events</span>
+          </div>
+          <div class="glow-line" style="width: 60px; margin-bottom: 24px;"></div>
+          <div class="cards-grid holographic-events-grid" id="recentEvents" style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="spinner"></div>
+          </div>
+        </div>
+        <div class="opps-col">
+          <div class="section-glow-title" style="margin-bottom: 8px;">
+            <span class="emoji-icon">🚀</span> <span>Latest Opportunities</span>
+          </div>
+          <div class="glow-line" style="width: 60px; margin-bottom: 24px;"></div>
+          <div class="side-cards-list" id="recentOpps" style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Base Dashboard Styles */
+  .page-content {
+    background: linear-gradient(135deg, rgba(1, 10, 19, 0.75) 0%, rgba(1, 10, 19, 0.9) 100%),
+      url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1920&auto=format') no-repeat center center;
+    background-size: cover;
+    background-attachment: fixed;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .welcome-hero {
+    position: relative;
+    width: 100%;
+    min-height: 200px;
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 32px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.6), 0 0 30px rgba(5, 217, 232, 0.1);
+    border: 1px solid rgba(5, 217, 232, 0.15);
+  }
+  .welcome-hero-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    transition: opacity 1.5s ease-in-out;
+    animation: heroBgZoom 20s ease-in-out infinite alternate;
+  }
+  @keyframes heroBgZoom {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.08); }
+  }
+  .welcome-hero-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(1, 10, 19, 0.85) 0%, rgba(10, 5, 30, 0.7) 50%, rgba(1, 10, 19, 0.9) 100%);
+    z-index: 1;
+  }
+  .welcome-hero-particles {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: radial-gradient(circle, rgba(5, 217, 232, 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: particleDrift 30s linear infinite;
+    z-index: 2;
+    opacity: 0.4;
+  }
+  @keyframes particleDrift {
+    0% { background-position: 0 0; }
+    100% { background-position: 800px 400px; }
+  }
+  .welcome-hero-content {
+    position: relative;
+    z-index: 3;
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column !important;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+    gap: 24px;
+  }
+  .welcome-hero-title {
+    font-size: 42px !important;
+    letter-spacing: -1px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0 0 12px 0;
+    color: #ffffff;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  }
+  .role-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: -3px;
+    margin-left: 10px;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+  }
+  .role-icon:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.2);
+  }
+  .role-admin { color: #ffca28 !important; }
+  .role-moderator { color: #00e5ff !important; }
+  .role-student { color: #ccacff !important; }
+  .welcome-hero-quote {
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.8);
+    margin: 0 0 16px 0;
+    min-height: 24px;
+    font-style: italic;
+  }
+  .typing-cursor {
+    animation: blink 0.8s step-end infinite;
+    color: var(--accent);
+    font-weight: 100;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .welcome-hero-date-wrapper {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 4;
+  }
+  .welcome-hero-date {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  
+  .dashboard-bottom-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  @media (max-width: 768px) {
+    .dashboard-bottom-section { grid-template-columns: 1fr; }
+  }
+
+  .events-col, .opps-col {
+    min-height: 380px;
+    height: auto;
+    background: rgba(10,18,35,0.92);
+    border: 1px solid rgba(0,255,255,0.2);
+    border-radius: 24px;
+    box-shadow: 0 0 25px rgba(0,255,255,0.08);
+    padding: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stat-card {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(180, 81, 252, 0.2);
+    border-color: rgba(180, 81, 252, 0.4);
+    background: rgba(180, 81, 252, 0.05);
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Report card status variants */
+  .badge-hidden { display: none !important; }
+
+  .report-card--pending  { border-left: 3px solid #ff4757; }
+  .report-card--resolved { border-left: 3px solid #2ed573; display: none; }
+
+  /* Status badge colour variants */
+  .status-badge--pending  { background: rgba(255,71,87,0.12); color: #ff4757; border: 1px solid rgba(255,71,87,0.3); }
+  .status-badge--resolved { background: rgba(46,213,115,0.12); color: #2ed573; border: 1px solid rgba(46,213,115,0.3); }
+
+  /* Content-type badge colour variants */
+  .content-type-badge { display: inline-block; }
+  .content-type-opportunity { background: rgba(108,99,255,0.12); border: 1px solid rgba(108,99,255,0.3); color: #6c63ff; }
+  .content-type-event       { background: rgba(78,204,163,0.12); border: 1px solid rgba(78,204,163,0.3); color: #4ecca3; }
+  .content-type-post        { background: rgba(255,107,157,0.12); border: 1px solid rgba(255,107,157,0.3); color: #ff6b9d; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  if (!requireAuth()) { /* redirected */ }
+
+  const heroBackgrounds = [
+    'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1920&auto=format',
+    'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1920&auto=format',
+    'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=80&w=1920&auto=format',
+    'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=1920&auto=format',
+    'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?q=80&w=1920&auto=format',
+  ];
+
+  const motivationalQuotes = [
+    '"The future belongs to those who believe in the beauty of their dreams."',
+    '"Education is the passport to the future."',
+    '"Success is not the key to happiness."',
+    '"The only way to do great work is to love what you do."',
+    '"Code your future, one line at a time."',
+  ];
+
+  function getTimeGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 12) return { emoji: '🌅', text: 'Good Morning' };
+    if (hour < 17) return { emoji: '☀️', text: 'Good Afternoon' };
+    if (hour < 21) return { emoji: '🌇', text: 'Good Evening' };
+    return { emoji: '🌙', text: 'Good Night' };
+  }
+
+  function typeText(element, text, speed = 40) {
+    if(!element) return;
+    let i = 0;
+    element.textContent = '';
+    function type() {
+      if (i < text.length) {
+        element.textContent += text.charAt(i);
+        i++;
+        setTimeout(type, speed);
+      }
+    }
+    type();
+  }
+
+  const userData = getUser();
+  if (userData) {
+    const firstName = (userData.name || 'Student').split(' ')[0];
+    const titleEl = document.getElementById('welcomeTitle');
+    const greeting = getTimeGreeting();
+    const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+    const randomBg = heroBackgrounds[Math.floor(Math.random() * heroBackgrounds.length)];
+
+    if(document.getElementById('welcomeHeroBg')) {
+      document.getElementById('welcomeHeroBg').style.backgroundImage = `url('${randomBg}')`;
+    }
+    if(document.getElementById('welcomeDate')) {
+      document.getElementById('welcomeDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    const roleIcons = {
+      admin: `<span class="role-icon role-admin" title="Administrator"><span class="glow-icon">👑</span></span>`,
+      moderator: `<span class="role-icon role-moderator" title="Moderator"><span class="glow-icon">🛡️</span></span>`,
+      student: `<span class="role-icon role-student" title="Verified Student"><span class="glow-icon">🎓</span></span>`
+    };
+
+    if(titleEl) {
+      titleEl.innerHTML = `${greeting.text}, ${escapeHtml(firstName)}! ${roleIcons[userData.role] || roleIcons.student}`;
+    }
+
+    setTimeout(() => {
+      const typingEl = document.getElementById('typingText');
+      if(typingEl) typeText(typingEl, randomQuote, 35);
+    }, 500);
+  }
+
+  // --- Real-time Stats Refresher ---
+  async function updateGlobalStats() {
+    try {
+      const stats = await apiFetch('/api/stats/summary');
+      if (stats) {
+        document.getElementById('stat-events').textContent = stats.campus_events_count;
+        document.getElementById('stat-opportunities').textContent = stats.opportunities_count;
+        document.getElementById('stat-posts').textContent = stats.community_posts_count;
+        document.getElementById('stat-notifications').textContent = stats.notifications_count;
+        document.getElementById('stat-groups').textContent = stats.study_groups_count;
+        document.getElementById('stat-saved').textContent = stats.saved_items_count;
+        document.getElementById('stat-communities').textContent = stats.communities_count;
+        document.getElementById('stat-rank').textContent = stats.leaderboard_rank;
+      }
+    } catch (err) { console.error('Stats Update Failed:', err); }
+  }
+
+  // --- Dashboard Data Loading ---
+  async function loadFeeds() {
+    try {
+      const [events, opps] = await Promise.all([
+        apiFetch('/api/events?sort=newest'),
+        apiFetch('/api/opportunities?sort=newest')
+      ]);
+
+      const evContainer = document.getElementById('recentEvents');
+      if (evContainer) {
+        evContainer.innerHTML = (events && events.length) 
+          ? events.slice(0, 3).map(e => `
+            <div class="card" onclick="window.location.href='/explore'">
+              <div class="card-header">
+                <div class="card-title">${escapeHtml(e.title)}</div>
+                <span class="card-badge badge-${e.category}">${e.category}</span>
+              </div>
+              <div class="card-meta">
+                <span>📍 ${escapeHtml(e.college_name || 'Campus')}</span>
+                <span>📅 ${formatDate(e.date)}</span>
+              </div>
+              ${userData && userData.role === 'admin' && e.creator_name ? `
+                <div style="font-size:10px; color:#05d9e8; margin: 4px 0 10px; font-weight:600; line-height: 1.4;">
+                  👤 Posted by: ${escapeHtml(e.creator_name)}
+                  <span style="background:rgba(255,71,87,0.15);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:3px;padding:1px 4px;font-size:8px;margin-left:4px;">ADMIN VIEW</span>
+                </div>
+              ` : ''}
+              <div class="card-description">${escapeHtml(e.description)}</div>
+            </div>
+          `).join('')
+          : '<div class="empty-state">No events found</div>';
+      }
+
+      const oppContainer = document.getElementById('recentOpps');
+      if (oppContainer) {
+        oppContainer.innerHTML = (opps && opps.length)
+          ? opps.slice(0, 4).map(o => `
+            <div class="holographic-side-card" onclick="window.location.href='/opportunities'">
+              <div class="hsc-header"><div class="hsc-title">${escapeHtml(o.company)} — ${escapeHtml(o.role)}</div></div>
+              <div class="hsc-meta">
+                <span class="card-badge badge-${o.category}">${o.category}</span>
+                <span>📍 ${escapeHtml(o.location)}</span>
+              </div>
+              ${userData && userData.role === 'admin' && o.creator_name ? `
+                <div style="font-size:10px; color:#05d9e8; margin: 4px 12px 10px; font-weight:600; line-height: 1.4;">
+                  👤 Submitted by: ${escapeHtml(o.creator_name)}
+                  <span style="background:rgba(255,71,87,0.15);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:3px;padding:1px 4px;font-size:8px;margin-left:4px;">ADMIN VIEW</span>
+                </div>
+              ` : ''}
+            </div>
+          `).join('')
+          : '<div class="empty-state">No opportunities found</div>';
+      }
+    } catch(err) { console.error(err); }
+  }
+
+  // --- GROUPED REPORT LOGS LOGIC ---
+  
+  let currentReportFilter = 'pending';
+  let reportsData = [];
+  let fetchedReportIds = new Set();
+  let firstReportsLoad = true;
+
+  async function loadReports() {
+    if (!document.getElementById('report-logs-section')) return;
+    
+    try {
+      const res = await apiFetch('/api/reports/?status=all');
+      if (res && res.reports) {
+        reportsData = res.reports;
+        renderReportGroups();
+        updateReportStats(res);
+      }
+    } catch(e) {
+      console.error('Failed to load real-time reports', e);
+    }
+  }
+
+  function renderReportGroups() {
+    const container = document.getElementById('report-cards-container');
+    if (!container) return;
+
+    const filtered = reportsData.filter(g => currentReportFilter === 'all' || g.status === currentReportFilter);
+    
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: #555;">
+          <div style="font-size:2.5rem; margin-bottom:12px;">✅</div>
+          <p style="color:#4ecca3; font-weight:600; margin:0 0 6px 0;">No Reports Found</p>
+        </div>`;
+      return;
+    }
+
+    // Keep existing expanded states
+    const expandedIds = new Set();
+    document.querySelectorAll('[id^="reports-"]').forEach(el => {
+      if (el.style.display === 'block') expandedIds.add(el.id.replace('reports-', '').replace(/_/g, '.'));
+    });
+
+    container.innerHTML = filtered.map(group => {
+      const gId = group.item_id;
+      const safeId = gId.replace(/\./g, '_');
+      const isExpanded = expandedIds.has(gId);
+      
+      let badgeStyle = '';
+      if (group.item_type === 'opportunity') badgeStyle = 'background: rgba(108,99,255,0.12); border: 1px solid rgba(108,99,255,0.3); color: #6c63ff;';
+      else if (group.item_type === 'event') badgeStyle = 'background: rgba(78,204,163,0.12); border: 1px solid rgba(78,204,163,0.3); color: #4ecca3;';
+      else badgeStyle = 'background: rgba(255,107,157,0.12); border: 1px solid rgba(255,107,157,0.3); color: #ff6b9d;';
+
+      const sBadgeStyle = group.status === 'pending' 
+        ? 'background: rgba(255,71,87,0.12); color: #ff4757; border: 1px solid rgba(255,71,87,0.3);'
+        : 'background: rgba(46,213,115,0.12); color: #2ed573; border: 1px solid rgba(46,213,115,0.3);';
+
+      const statusClBorder = group.status === 'pending' ? 'border-left: 3px solid #ff4757;' : 'border-left: 3px solid #2ed573;';
+
+      const first3 = group.report_details.slice(0, 3).map(r => `
+        <span style="background:#0a1020; border:1px solid #1a2030; border-radius:6px; padding:4px 10px; font-size:12px; color:#888; font-family:'Inter',sans-serif;">
+          👤 ${escapeHtml(r.reporter_name || 'Anonymous')} · ${escapeHtml(r.reason || '?').charAt(0).toUpperCase() + escapeHtml(r.reason || '?').slice(1)}
+        </span>
+      `).join('');
+
+      const detailsHtml = group.report_details.map(r => `
+        <div style="background:#0a1020; border:1px solid #1a2030; border-radius:8px; padding:12px 16px; margin-bottom:8px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div>
+              <p style="margin:0 0 2px; font-size:10px; color:#445; text-transform:uppercase; letter-spacing:0.06em; font-weight:600;">Reporter</p>
+              <p style="margin:0; font-size:13px; color:#ccc; font-weight:600;">👤 ${escapeHtml(r.reporter_name || 'Anonymous')}</p>
+            </div>
+            <div>
+              <p style="margin:0 0 2px; font-size:10px; color:#445; text-transform:uppercase; letter-spacing:0.06em; font-weight:600;">Date</p>
+              <p style="margin:0; font-size:13px; color:#ccc;">${escapeHtml(r.created_at || '—')}</p>
+            </div>
+            <div style="grid-column: span 2;">
+              <p style="margin:0 0 2px; font-size:10px; color:#445; text-transform:uppercase; letter-spacing:0.06em; font-weight:600;">Reason</p>
+              <span style="display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.3); color:#ff4757;">
+                ${escapeHtml(r.reason || 'Unknown').toUpperCase()}
+              </span>
+            </div>
+            <div style="grid-column: span 2;">
+              <p style="margin:0 0 2px; font-size:10px; color:#445; text-transform:uppercase; letter-spacing:0.06em; font-weight:600;">Comment</p>
+              <p style="margin:0; font-size:13px; color:#667; font-style:italic;">
+                ${escapeHtml(r.description || r.comment || 'No comment provided')}
+              </p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      return `
+        <div class="report-card" data-status="${group.status}" data-id="${gId}"
+          style="background:#0f1729; border:1px solid #1e2a3a; ${statusClBorder} border-radius:12px; padding:20px 24px; margin-bottom:14px; transition:all 0.25s ease; animation:fadeInUp 0.3s ease; font-family:'Inter',sans-serif;">
+
+          <!-- Top Row -->
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+            <div style="display:flex; flex-direction:column; gap:6px; flex:1;">
+              <!-- Badges -->
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; ${badgeStyle}">
+                  ${escapeHtml(group.item_type || 'unknown').toUpperCase()}
+                </span>
+                <span style="background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.3); color:#ff4757; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;">
+                  🚩 ${group.report_count} ${group.report_count === 1 ? 'Report' : 'Reports'}
+                </span>
+              </div>
+              <!-- Title -->
+              <h3 style="margin:0; font-size:16px; font-weight:700; color:#f0f0f0; line-height:1.3;">
+                ${escapeHtml(group.item_title)}
+              </h3>
+              <span style="font-size:11px; color:#556;">Latest: ${escapeHtml(group.latest_at)}</span>
+            </div>
+            <span style="padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; margin-left:12px; white-space:nowrap; ${sBadgeStyle}">
+              ${escapeHtml(group.status).toUpperCase()}
+            </span>
+          </div>
+
+          <!-- Divider -->
+          <div style="border-top:1px solid #1e2a3a; margin:12px 0;"></div>
+
+          <!-- Summary -->
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+            ${first3}
+            ${group.report_count > 3 ? `<span style="font-size:12px; color:#556;">+${group.report_count - 3} more</span>` : ''}
+          </div>
+
+          <!-- Toggle Button -->
+          <button onclick="toggleReports('${escapeHtmlJS(gId)}')"
+            style="display:inline-flex; align-items:center; gap:6px; padding:7px 16px; background:rgba(5,217,232,0.08); border:1px solid rgba(5,217,232,0.3); border-radius:8px; color:#05d9e8; font-size:13px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s; margin-bottom:14px;"
+            onmouseover="this.style.background='rgba(5,217,232,0.18)'" onmouseout="this.style.background='rgba(5,217,232,0.08)'"
+            id="toggle-btn-${safeId}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/>${isExpanded ? '<line x1="8" y1="12" x2="16" y2="12"/>' : '<line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>'}</svg>
+            ${isExpanded ? 'Hide reports' : `View all ${group.report_count} ${group.report_count === 1 ? 'Report' : 'Reports'}`}
+          </button>
+
+          <!-- Details -->
+          <div id="reports-${safeId}" style="display:${isExpanded ? 'block' : 'none'}; margin-bottom:14px;">
+            ${detailsHtml}
+          </div>
+
+          <!-- Actions -->
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <a href="${escapeHtml(group.item_url || '#')}" target="_blank"
+              style="display:inline-flex; align-items:center; gap:5px; color:#4ecca3; font-size:13px; font-weight:500; text-decoration:none; font-family:'Inter',sans-serif; transition:all 0.2s;"
+              onmouseover="this.style.textDecoration='underline'; this.style.color='#7fffdf'" onmouseout="this.style.textDecoration='none'; this.style.color='#4ecca3'">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              View Content
+            </a>
+            <div style="flex:1;"></div>
+            ${group.status !== 'resolved' ? `
+            <button onclick="resolveGroupReport('${escapeHtmlJS(gId)}', '${escapeHtmlJS(group.item_type)}')"
+              style="display:inline-flex; align-items:center; gap:6px; padding:8px 18px; background:rgba(46,213,115,0.08); border:1px solid #2ed573; border-radius:8px; color:#2ed573; font-size:13px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s;"
+              onmouseover="this.style.background='#2ed573'; this.style.color='#0d0d0d'" onmouseout="this.style.background='rgba(46,213,115,0.08)'; this.style.color='#2ed573'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Resolve All
+            </button>
+            ` : ''}
+            <button onclick="deleteGroupReport('${escapeHtmlJS(gId)}', '${escapeHtmlJS(group.item_type)}')"
+              style="display:inline-flex; align-items:center; gap:6px; padding:8px 14px; background:rgba(255,71,87,0.08); border:1px solid #ff4757; border-radius:8px; color:#ff4757; font-size:13px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s;"
+              onmouseover="this.style.background='#ff4757'; this.style.color='#fff'" onmouseout="this.style.background='rgba(255,71,87,0.08)'; this.style.color='#ff4757'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+              Delete All
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function updateReportStats(data) {
+    const pendingCount = data.reports.filter(r => r.status === 'pending').length;
+    const resolvedCount = data.reports.filter(r => r.status === 'resolved').length;
+    const totalCount = data.reports.length;
+
+    const badge = document.getElementById('report-header-badge');
+    if (badge) {
+      if (pendingCount > 0) {
+        badge.textContent = `${pendingCount} Pending ${pendingCount === 1 ? 'Item' : 'Items'}`;
+        badge.classList.remove('badge-hidden');
+      } else {
+        badge.classList.add('badge-hidden');
+      }
+    }
+
+    const tabPending = document.getElementById('tab-pending');
+    const tabAll = document.getElementById('tab-all');
+    const tabResolved = document.getElementById('tab-resolved');
+
+    if (tabPending) tabPending.textContent = `Pending ${pendingCount}`;
+    if (tabAll) tabAll.textContent = `All ${totalCount}`;
+    if (tabResolved) tabResolved.textContent = `Resolved ${resolvedCount}`;
+  }
+
+  function filterGroupedReports(tab, btn) {
+    currentReportFilter = tab;
+    renderReportGroups();
+
+    document.querySelectorAll('[id^="tab-"]').forEach(t => {
+      if(t) {
+        t.style.background = 'transparent'; t.style.borderColor = '#333'; t.style.color = '#888';
+      }
+    });
+
+    if (!btn) btn = document.getElementById('tab-' + tab);
+    if (btn) {
+      const activeColor = tab === 'pending' ? '#ff4757' : tab === 'resolved' ? '#2ed573' : '#6c63ff';
+      btn.style.background = activeColor + '22'; btn.style.borderColor = activeColor; btn.style.color = activeColor;
+    }
+  }
+
+  function toggleReports(contentId) {
+    const safeId = contentId.replace(/\./g,'_');
+    const panel = document.getElementById('reports-' + safeId);
+    const btn = document.getElementById('toggle-btn-' + safeId);
+    if (!panel) return;
+    const isOpen = panel.style.display === 'block';
+    panel.style.display = isOpen ? 'none' : 'block';
+    if (btn) {
+      btn.innerHTML = isOpen
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> View all reports'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Hide reports';
+    }
+  }
+
+  async function resolveGroupReport(contentId, itemType) {
+    if (!confirm('Resolve all reports for this content?')) return;
+    try {
+      await apiFetch('/api/reports/resolve', {
+        method: 'POST',
+        body: JSON.stringify({ item_id: contentId, item_type: itemType })
+      });
+      showToast('✅ All reports resolved!', 'success');
+      loadReports(); // Refresh UI dynamically
+    } catch(e) {
+      showToast('Failed to resolve', 'error'); 
+    }
+  }
+
+  async function deleteGroupReport(contentId, itemType) {
+    // Note: If you want to use the legacy /api/reports/delete endpoint, 
+    // it requires report_ids, but since we are fetching ids in loadReports, 
+    // we can pass them or fallback to fetch all ids for the item.
+    // Assuming backend takes item_id and item_type for resolve, let's fetch report IDs from local state:
+    const group = reportsData.find(g => g.item_id === contentId);
+    if (!group) return;
+    
+    if (!confirm('Delete all reports for this content permanently?')) return;
+    try {
+      await apiFetch('/api/reports/delete', {
+        method: 'POST',
+        body: JSON.stringify({ report_ids: group.report_ids })
+      });
+      showToast('🗑️ All reports deleted!', 'success');
+      loadReports(); // Refresh UI dynamically
+    } catch(e) { 
+      showToast('Failed to delete', 'error'); 
+    }
+  }
+
+  function escapeHtmlJS(unsafe) {
+    if (!unsafe) return '';
+    return unsafe.toString().replace(/'/g, "\\'").replace(/"/g, '\\"');
+  }
+
+  if (document.getElementById('report-logs-section')) {
+    loadReports();
+    setInterval(loadReports, 10000); // Pulse reports every 10 secs
+  }
+
+
+  loadFeeds(); updateGlobalStats();
+  setInterval(updateGlobalStats, 30000);
+</script>
+{% endblock %}
