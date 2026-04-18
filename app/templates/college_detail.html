@@ -5,201 +5,424 @@
 {% include 'partials/navbar.html' %}
 
 <div class="layout slide-up">
-  {% include 'partials/sidebar.html' %}
-  
-  <main class="main-content" style="padding:0">
-    <!-- HERO SECTION -->
-    <section id="collegeHero" class="pattern-bg" style="padding: 60px 40px; background: linear-gradient(135deg, rgba(20,20,40,0.96), rgba(10,10,20,0.96)), url('/static/pattern.svg'); border-bottom: 2px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
-      <div id="loader" style="text-align: center; padding: 40px;">
-        <div class="spinner"></div><p style="margin-top:20px; color:var(--cyan); font-family:'Rajdhani'; font-weight:bold;">ACCESSING COLLEGE DATA...</p>
-      </div>
+   {% include 'partials/sidebar.html' %}
 
-      <div id="heroContent" style="display: none; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 30px;">
-        <div style="flex: 1;">
-          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-            <span id="collegeTypeBadge" class="chip chip-prominent" style="background: var(--cyan); color: #000; font-weight: 800;">GOVERNMENT</span>
-            <span id="verifiedLabel" style="color: var(--accent); font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
-               <span class="verified-icon">check_circle</span> VERIFIED CAMPUS
-            </span>
-          </div>
-          <h1 id="collegeName" style="font-size: 3.5rem; margin-bottom: 15px; line-height: 1; letter-spacing: -1px; color: #fff;">College Name</h1>
-          <div id="collegeMeta" style="color: var(--text-secondary); font-size: 1.2rem; display: flex; align-items: center; gap: 15px;">
-             <span>📍 Chennai, Tamil Nadu</span>
-             <span style="opacity: 0.3;">|</span>
-             <span>🗓️ Est. 1978</span>
-          </div>
-        </div>
-        <div style="display: flex; gap: 15px; padding-bottom: 5px;">
-           <button class="btn btn-primary" id="joinBtn" onclick="openJoinModal()" style="padding: 15px 35px; border-radius: 40px;">JOIN COMMUNITY</button>
-           <button class="btn btn-outline" onclick="openReviewModal()" style="padding: 15px 35px; border-radius: 40px;">WRITE REVIEW</button>
-        </div>
-      </div>
-    </section>
+   <main class="main-content" style="padding:0">
+      <!-- HERO SECTION -->
+      <section id="collegeHero" class="pattern-bg"
+         style="padding: 60px 40px; background: linear-gradient(135deg, rgba(20,20,40,0.96), rgba(10,10,20,0.96)), url('/static/pattern.svg'); border-bottom: 2px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
+         <div id="loader" style="text-align: center; padding: 40px;">
+            <div class="spinner"></div>
+            <p style="margin-top:20px; color:var(--cyan); font-family:'Rajdhani'; font-weight:bold;">ACCESSING COLLEGE
+               DATA...</p>
+         </div>
 
-    <!-- QUICK STATS & RATING SUMMARY -->
-    <section id="statsStrip" style="display: none; padding: 30px 40px; background: rgba(5,15,30,0.8); border-bottom: 1px solid var(--border); display: flex; gap: 40px; align-items: center; flex-wrap: wrap;">
+         <div id="heroContent"
+            style="display: none; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 30px;">
+            <div style="flex: 1;">
+               <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                  <span id="collegeTypeBadge" class="chip chip-prominent"
+                     style="background: var(--cyan); color: #000; font-weight: 800;">GOVERNMENT</span>
+                  <span id="verifiedLabel"
+                     style="color: var(--accent); font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
+                     <span class="verified-icon">check_circle</span> VERIFIED CAMPUS
+                  </span>
+               </div>
+               <h1 id="collegeName"
+                  style="font-size: 3.5rem; margin-bottom: 15px; line-height: 1; letter-spacing: -1px; color: #fff;">
+                  College Name</h1>
+               <div id="collegeMeta"
+                  style="color: var(--text-secondary); font-size: 1.2rem; display: flex; align-items: center; gap: 15px;">
+                  <span>📍 <span id="collegeCityState">Location</span></span>
+                  <span style="opacity: 0.3;">|</span>
+                  <span>🗓️ <span id="collegeEst">Est. 1978</span></span>
+               </div>
+            </div>
+            <div style="display: flex; gap: 15px; padding-bottom: 5px;">
+               <button class="btn btn-primary" id="joinBtn" onclick="openJoinModal()"
+                  style="padding: 15px 35px; border-radius: 40px;">JOIN COMMUNITY</button>
+               <button class="btn btn-outline" onclick="openReviewModal()"
+                  style="padding: 15px 35px; border-radius: 40px; border: 1px solid var(--cyan); color: var(--cyan);">WRITE
+                  REVIEW</button>
+            </div>
+         </div>
+      </section>
 
+      <!-- CONTENT TABS -->
+      <section class="filter-bar"
+         style="background: rgba(1,10,19,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: var(--navbar-height); z-index: 100;">
+         <div class="container"
+            style="display: flex; align-items: center; justify-content: flex-start; padding: 0 40px;">
+            <div class="filter-tabs" id="mainTabs"
+               style="display: flex; gap: 10px; overflow-x: auto; padding: 20px 0; -ms-overflow-style: none; scrollbar-width: none;">
+               <button class="tab-btn active" data-target="overview">🏠 OVERVIEW</button>
+               <button class="tab-btn" data-target="reviews">⭐ REVIEWS</button>
+               <button class="tab-btn" data-target="departments">🏢 DEPARTMENTS</button>
+               <button class="tab-btn" data-target="placements">💼 PLACEMENTS</button>
+               <button class="tab-btn" data-target="ask">❓ ASK A SENIOR</button>
+               <button class="tab-btn" data-target="achievements">🏆 ACHIEVEMENTS</button>
+            </div>
+         </div>
+      </section>
 
+      <section id="contentPanes" style="padding: 40px; max-width: 1200px; margin: 0 auto;">
+         <!-- OVERVIEW (TWO COLUMNS) -->
+         <div id="pane-overview" class="tab-pane active"
+            style="display: grid; grid-template-columns: 65% 35%; gap: 40px;">
+            <!-- LEFT COLUMN -->
+            <div>
+               <section class="overview-section glass-card" style="padding:25px; margin-bottom: 30px;">
+                  <h3
+                     style="color:var(--accent); margin-bottom:15px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">
+                     About College</h3>
+                  <p id="collegeDescription" style="color:var(--text-secondary); line-height: 1.8;">Loading
+                     description...</p>
 
-    </section>
+                  <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:15px; margin-top:20px;">
+                     <div class="fact-chip glass">🏛️ <span id="factType">Private</span></div>
+                     <div class="fact-chip glass">📅 <span id="factEst">Est. 1978</span></div>
+                     <div class="fact-chip glass">📍 <span id="factLoc">Location</span></div>
+                     <div class="fact-chip glass">🎓 <span id="factNaac">A++ NAAC</span></div>
+                  </div>
+               </section>
 
-    <!-- CONTENT SECTION (CLEAN PROFILE) -->
-    <section id="contentPanes" style="padding: 60px 40px; max-width: 1000px; margin: 0 auto;">
-          <!-- OVERVIEW (CATEGORY GRID) -->
-          <div id="pane-overview" class="tab-pane active">
-             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 600px; margin: 0 auto 40px;">
-                <!-- SQUARE COVER 1: OVERVIEW -->
-                <div class="card glass-card link-card" style="aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid var(--border); border-top: 4px solid var(--cyan); background: linear-gradient(135deg, rgba(5,217,232,0.05), transparent);">
-                   <div style="font-size: 3.5rem; margin-bottom: 10px;">🏠</div>
-                   <div style="font-size: 1.4rem; font-weight: bold; color: #fff; font-family: 'Rajdhani'; letter-spacing: 1px;">OVERVIEW</div>
-                </div>
-                <!-- SQUARE COVER 2: REVIEWS -->
-                <div class="card glass-card link-card" style="aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid var(--border); border-top: 4px solid #ffd700; background: linear-gradient(135deg, rgba(255,215,0,0.05), transparent);">
-                   <div style="font-size: 3.5rem; margin-bottom: 10px;">⭐</div>
-                   <div id="statTotalReviews" style="font-size: 2.2rem; font-weight: bold; color: #ffd700; font-family: 'Rajdhani';">0</div>
-                   <div style="color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; font-weight: 800;">REVIEWS</div>
-                </div>
-                <!-- SQUARE COVER 3: DEPARTMENTS -->
-                <div class="card glass-card link-card" style="aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid var(--border); border-top: 4px solid var(--accent); background: linear-gradient(135deg, rgba(108,99,255,0.05), transparent);">
-                   <div style="font-size: 3.5rem; margin-bottom: 10px;">🏢</div>
-                   <div id="statTotalDepts" style="font-size: 2.2rem; font-weight: bold; color: var(--accent); font-family: 'Rajdhani';">0</div>
-                   <div style="color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; font-weight: 800;">DEPARTMENTS</div>
-                </div>
-                <!-- SQUARE COVER 4: PLACEMENTS -->
-                <div class="card glass-card link-card" style="aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid var(--border); border-top: 4px solid #ff2a6d; background: linear-gradient(135deg, rgba(255,42,109,0.05), transparent);">
-                   <div style="font-size: 3.5rem; margin-bottom: 10px;">💼</div>
-                   <div id="statAvgPackage" style="font-size: 2.2rem; font-weight: bold; color: #ff2a6d; font-family: 'Rajdhani';">-</div>
-                   <div style="color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; font-weight: 800;">PLACEMENTS</div>
-                </div>
-             </div>
-          </div>
-          <div id="pane-events" class="tab-pane" style="display: none;">
-             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h2>UPCOMING CAMPUS EVENTS</h2>
-                <button class="btn btn-sm btn-outline">+ PROPOSE EVENT</button>
-             </div>
-             <div id="eventsGrid" class="grid grid-2" style="gap: 25px;">
-                <!-- Event cards -->
-             </div>
-          </div>
+               <section class="overview-section" style="margin-bottom: 30px;">
+                  <h3 style="color:var(--accent); margin-bottom:15px;">Rankings & Recognition</h3>
+                  <div style="display:flex; gap:15px; overflow-x:auto; padding-bottom:10px;" id="overviewRankings">
+                     <!-- Populated via JS -->
+                  </div>
+               </section>
 
-          <!-- DISCUSSIONS PANE -->
-          <div id="pane-discussions" class="tab-pane" style="display: none;">
-             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h2>CAMPUS DISCUSSIONS</h2>
-                <button class="btn btn-sm btn-primary" onclick="goToCreateDiscussion()">+ NEW DISCUSSION</button>
-             </div>
-             <div id="discussionsList" style="display: flex; flex-direction: column; gap: 20px;">
-                <!-- Discussion posts -->
-             </div>
-          </div>
+               <section class="overview-section glass-card" style="padding:25px; margin-bottom: 30px;">
+                  <h3
+                     style="color:var(--accent); margin-bottom:15px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">
+                     Campus Facilities</h3>
+                  <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                     <span class="chip-facility active">🏠 Boys Hostel</span>
+                     <span class="chip-facility active">🏠 Girls Hostel</span>
+                     <span class="chip-facility active">📶 WiFi Campus</span>
+                     <span class="chip-facility active">🏃 Sports Ground</span>
+                     <span class="chip-facility active">🍽️ Canteen</span>
+                     <span class="chip-facility active">📚 Central Library</span>
+                     <span class="chip-facility inactive">🔬 Research Labs</span>
+                     <span class="chip-facility inactive">🏋️ Gym</span>
+                  </div>
+               </section>
 
-       </div>
-    </section>
-  </main>
+               <section class="overview-section">
+                  <h3 style="color:var(--accent); margin-bottom:15px;">Upcoming Events</h3>
+                  <div id="overviewEventsGrid" style="display:flex; flex-direction:column; gap:15px;"></div>
+               </section>
+            </div>
+
+            <!-- RIGHT COLUMN (STICKY) -->
+            <div
+               style="position: sticky; top: 120px; align-self: start; display: flex; flex-direction: column; gap: 20px;">
+               <div class="glass-card" style="padding:25px;">
+                  <div style="text-align:center; margin-bottom: 20px;">
+                     <div id="ratingBigNumber"
+                        style="font-size: 3.5rem; font-weight:800; color: #ffd700; line-height:1; font-family:'Rajdhani';">
+                        4.2</div>
+                     <div class="stars" id="ratingBigStars"
+                        style="font-size:1.5rem; color:#ffd700; margin-bottom: 5px;">★★★★☆</div>
+                     <div style="color:var(--text-muted); font-size:0.85rem;" id="ratingBasedOn">Based on 0 reviews
+                     </div>
+                  </div>
+
+                  <div id="categoryRatings" style="display:flex; flex-direction:column; gap:10px;"></div>
+
+                  <div
+                     style="margin-top:20px; padding-top:15px; border-top:1px solid var(--border-light); text-align:center;">
+                     <span id="ratingWouldRecommend"
+                        style="color:var(--cyan); font-weight:800; font-family:'Rajdhani'; font-size:1.1rem;">89% ✅
+                        Would Recommend</span>
+                     <button class="btn btn-outline btn-full" onclick="openReviewModal()"
+                        style="margin-top:15px; border-radius:30px;">WRITE A REVIEW</button>
+                  </div>
+               </div>
+
+               <div class="glass-card" style="padding:25px;">
+                  <h3
+                     style="color:var(--accent); margin-bottom:15px; font-size:1rem; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">
+                     Quick Links</h3>
+                  <div style="display:flex; flex-direction:column; gap:10px;">
+                     <a href="#" class="quick-link">🌐 Official Website</a>
+                     <a href="#" class="quick-link">📝 Admission Portal</a>
+                     <a href="#" class="quick-link">🏠 Hostel Portal</a>
+                     <a href="#" class="quick-link">📊 COE Portal</a>
+                  </div>
+               </div>
+
+               <div class="glass-card" style="padding:25px; text-align:center;">
+                  <h3 style="color:var(--accent); margin-bottom:15px; font-size:1rem;">Share this college</h3>
+                  <div style="display:flex; gap:10px; justify-content:center;">
+                     <button class="btn btn-sm btn-secondary" onclick="copyUrl()">📋 COPY LINK</button>
+                     <button class="btn btn-sm btn-secondary" onclick="showQr()">📱 QR CODE</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <!-- REVIEWS PANE -->
+         <div id="pane-reviews" class="tab-pane" style="display: none;">
+            <div class="glass-card animate-in"
+               style="padding:30px; margin-bottom:30px; display:flex; align-items:center; gap:40px;">
+               <div style="text-align:center;">
+                  <div id="reviewsTabOverall"
+                     style="font-size:4rem; font-family:'Rajdhani'; color:#ffd700; font-weight:800; line-height:1;">4.2
+                  </div>
+                  <div class="stars" id="reviewsTabStars" style="font-size:1.5rem; color:#ffd700;">★★★★☆</div>
+                  <div style="color:var(--text-muted); font-size:0.9rem;" id="reviewsTabCount">124 Total</div>
+               </div>
+               <div id="reviewsTabCategories" style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+               </div>
+               <div style="text-align:center;">
+                  <div class="progress-arc-container">
+                     <svg class="progress-arc" viewBox="0 0 36 36">
+                        <path class="circle-bg"
+                           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path class="circle" stroke-dasharray="0, 100"
+                           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                           id="arcRecommend" />
+                     </svg>
+                     <div class="arc-text" id="arcRecommendText">89%<br><span>Recommend</span></div>
+                  </div>
+               </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+               <div style="display:flex; gap:10px;">
+                  <button class="btn btn-xs btn-primary">ALL</button>
+                  <button class="btn btn-xs btn-secondary">POSITIVE</button>
+                  <button class="btn btn-xs btn-secondary">CRITICAL</button>
+               </div>
+               <select class="input input-sm glass" style="width:150px; border-radius:20px;">
+                  <option>Newest First</option>
+                  <option>Most Helpful</option>
+               </select>
+            </div>
+
+            <div id="reviewsList" style="display:grid; gap:20px;"></div>
+         </div>
+
+         <!-- DEPARTMENTS PANE -->
+         <div id="pane-departments" class="tab-pane" style="display: none;">
+            <div id="departmentsGrid" class="grid grid-3" style="gap:25px;"></div>
+         </div>
+
+         <!-- PLACEMENTS PANE -->
+         <div id="pane-placements" class="tab-pane" style="display: none;">
+            <!-- TOP STATS -->
+            <div class="grid grid-4" style="gap:20px; margin-bottom:30px;">
+               <div class="card glass-card stat-card">
+                  <div class="val" id="statPlCompanies">0</div>
+                  <div class="lbl">Companies Visited</div>
+               </div>
+               <div class="card glass-card stat-card">
+                  <div class="val" id="statPlStudents">0</div>
+                  <div class="lbl">Students Placed</div>
+               </div>
+               <div class="card glass-card stat-card">
+                  <div class="val" id="statPlAvg">0</div>
+                  <div class="lbl">Average Package</div>
+               </div>
+               <div class="card glass-card stat-card">
+                  <div class="val" id="statPlMax">0</div>
+                  <div class="lbl">Highest Package</div>
+               </div>
+            </div>
+
+            <!-- FILTERS & ADD BUTTON -->
+            <div
+               style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(255,255,255,0.05); border-radius:12px; margin-bottom:20px;">
+               <div style="display:flex; gap:15px;">
+                  <select id="plFiltYear" class="input input-sm glass" onchange="loadPlacements()">
+                     <option value="all">All Batches</option>
+                     <option value="2026">2026</option>
+                     <option value="2025">2025</option>
+                     <option value="2024">2024</option>
+                  </select>
+                  <select id="plFiltDept" class="input input-sm glass" onchange="loadPlacements()">
+                     <option value="all">All Departments</option>
+                  </select>
+                  <select id="plFiltPkg" class="input input-sm glass" onchange="loadPlacements()">
+                     <option value="all">All Packages</option>
+                     <option value="6">6+ LPA</option>
+                     <option value="10">10+ LPA</option>
+                  </select>
+               </div>
+               <button class="btn btn-primary btn-sm" onclick="openPlacementModal()">+ ADD PLACEMENT</button>
+            </div>
+
+            <div id="placementsGrid" class="grid grid-3" style="gap:25px;"></div>
+         </div>
+
+         <!-- ASK A SENIOR PANE -->
+         <div id="pane-ask" class="tab-pane" style="display: none;">
+            <div class="glass-card"
+               style="padding:30px; margin-bottom:30px; text-align:center; background: linear-gradient(135deg, rgba(149,40,215,0.1), transparent);">
+               <h2 style="color:var(--accent); font-family:'Rajdhani';">HAVE A QUESTION? ASK A SENIOR!</h2>
+               <p style="color:var(--text-muted); margin-bottom:20px;">Anonymous Q&A for prospective and current
+                  students.</p>
+               <div style="display:flex; max-width:600px; margin:0 auto; gap:10px;">
+                  <input type="text" id="askInputTitle" class="input glass" placeholder="Enter your question here..."
+                     style="flex:1;">
+                  <button class="btn btn-primary" onclick="submitQuestion()">ASK ANONYMOUSLY</button>
+               </div>
+            </div>
+            <div id="askList" style="display:flex; flex-direction:column; gap:20px;"></div>
+         </div>
+
+         <!-- ACHIEVEMENTS PANE -->
+         <div id="pane-achievements" class="tab-pane" style="display: none;">
+            <div class="grid grid-2" style="gap:30px;">
+               <div>
+                  <h3
+                     style="color:var(--accent); margin-bottom:20px; font-family:'Rajdhani'; border-bottom:1px solid var(--border); padding-bottom:10px;">
+                     🏆 RANKINGS</h3>
+                  <div id="achievementsRankings" style="display:flex; flex-direction:column; gap:15px;"></div>
+
+                  <h3
+                     style="color:var(--accent); margin-top:30px; margin-bottom:20px; font-family:'Rajdhani'; border-bottom:1px solid var(--border); padding-bottom:10px;">
+                     🥇 AWARDS</h3>
+                  <div id="achievementsAwards" style="display:flex; flex-direction:column; gap:15px;"></div>
+               </div>
+               <div>
+                  <h3
+                     style="color:var(--accent); margin-bottom:20px; font-family:'Rajdhani'; border-bottom:1px solid var(--border); padding-bottom:10px;">
+                     🌟 NOTABLE ALUMNI</h3>
+                  <div id="achievementsAlumni" style="display:grid; grid-template-columns:1fr; gap:15px;"></div>
+               </div>
+            </div>
+         </div>
+
+</div>
+</section>
+</main>
 </div>
 
 <!-- Review Modal -->
-<div class="modal-overlay" id="reviewModal" style="display:none;" onclick="if(event.target===this) closeModal('reviewModal')">
-  <div class="modal glass-card" style="max-width: 700px; width: 95%; border: 1px solid var(--cyan); overflow: hidden;">
-    <div style="padding: 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(5,217,232,0.1);">
-       <h2 style="margin:0; color: var(--cyan);">SHARE YOUR EXPERIENCE</h2>
-       <button class="btn btn-xs btn-secondary" onclick="closeModal('reviewModal')">✕</button>
-    </div>
-    <div style="max-height: 80vh; overflow-y: auto; padding: 30px;">
-       
-       <div style="text-align: center; margin-bottom: 30px;">
-          <label style="display: block; margin-bottom: 10px; font-weight: bold; color: var(--text-secondary);">Overall satisfaction</label>
-          <div class="star-input-group" data-category="overall">
-             <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
-          </div>
-          <div id="overallStarLabel" style="margin-top: 10px; color: var(--accent); font-weight: bold;">Select your rating</div>
-       </div>
+<div class="modal-overlay" id="reviewModal" style="display:none;"
+   onclick="if(event.target===this) closeModal('reviewModal')">
+   <div class="modal glass-card animate-in-modal"
+      style="max-width: 600px; width: 95%; border: 1px solid var(--cyan); padding:0; overflow:hidden;">
+      <div
+         style="padding: 25px; border-bottom: 1px solid var(--border); background: rgba(5,217,232,0.1); display:flex; justify-content:space-between;">
+         <h2 style="margin:0; color: var(--cyan); letter-spacing:1px;">WRITE A REVIEW</h2>
+         <button class="btn btn-xs btn-secondary" onclick="closeModal('reviewModal')">✕</button>
+      </div>
+      <div style="max-height: 80vh; overflow-y: auto; padding: 30px;">
 
-       <div class="grid grid-2" style="gap: 25px;">
-          <div class="form-group review-cat-input">
-             <label>Academic Quality</label>
-             <div class="star-input-small" data-category="academics">
-                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
-             </div>
-          </div>
-          <div class="form-group review-cat-input">
-             <label>Placement Support</label>
-             <div class="star-input-small" data-category="placements">
-                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
-             </div>
-          </div>
-          <div class="form-group review-cat-input">
-             <label>Infrastructure & Labs</label>
-             <div class="star-input-small" data-category="infrastructure">
-                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
-             </div>
-          </div>
-          <div class="form-group review-cat-input">
-             <label>Faculty & Mentorship</label>
-             <div class="star-input-small" data-category="faculty">
-                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
-             </div>
-          </div>
-          <div class="form-group review-cat-input">
-             <label>Campus & Social Life</label>
-             <div class="star-input-small" data-category="campus_life">
-                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
-             </div>
-          </div>
-          <div class="form-group review-cat-input">
-             <label>Recommend to others?</label>
-             <select id="revRecommend" class="input glass">
-                <option value="true">Yes, Definitely</option>
-                <option value="false">No, Wouldn't recommend</option>
-             </select>
-          </div>
-       </div>
+         <div id="revStep1" class="rev-step active">
+            <h4 style="margin-bottom:20px; text-align:center; color:var(--text-secondary);">Step 1: Rate Categories</h4>
+            <div class="grid grid-2" style="gap:25px;">
+               <!-- Dynamic categories will be injected via JS -->
+               <div id="revCatsContainer"
+                  style="grid-column: span 2; display:grid; grid-template-columns:1fr 1fr; gap:20px;"></div>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="nextRevStep(2)" style="margin-top:30px;">NEXT STEP
+               ➔</button>
+         </div>
 
-       <div class="form-group" style="margin-top: 30px;">
-          <label>Public Review (Explain your ratings)</label>
-          <textarea id="revContent" class="input glass" rows="5" placeholder="What are the pros and cons? How is the campus culture?"></textarea>
-       </div>
+         <div id="revStep2" class="rev-step" style="display:none;">
+            <h4 style="margin-bottom:20px; text-align:center; color:var(--text-secondary);">Step 2: Share Experience
+            </h4>
+            <div class="form-group"><label>Review Title</label><input type="text" id="revTitle" class="input glass"
+                  placeholder="Summarize your experience"></div>
+            <div class="form-group"><label>Pros [+]</label><textarea id="revPros" class="input glass" rows="2"
+                  placeholder="What did you like?"></textarea></div>
+            <div class="form-group"><label>Cons [-]</label><textarea id="revCons" class="input glass" rows="2"
+                  placeholder="What could be better?"></textarea></div>
+            <div class="form-group"><label>Would you recommend this college?</label><select id="revRecommend"
+                  class="input glass">
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+               </select></div>
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
+               <button class="btn btn-outline" onclick="nextRevStep(1)">⬅ BACK</button>
+               <button class="btn btn-primary" onclick="nextRevStep(3)">NEXT ➔</button>
+            </div>
+         </div>
 
-       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
-          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-             <input type="checkbox" id="revAnon" style="width:18px; height:18px;"> Post Anonymously
-          </label>
-          <button class="btn btn-primary" onclick="submitReview()" style="padding: 12px 40px;">SUBMIT REVIEW</button>
-       </div>
-    </div>
-  </div>
+         <div id="revStep3" class="rev-step" style="display:none;">
+            <h4 style="margin-bottom:20px; text-align:center; color:var(--text-secondary);">Step 3: Submit</h4>
+            <label
+               style="display:flex; align-items:center; gap:10px; cursor:pointer; background:rgba(0,0,0,0.3); padding:15px; border-radius:8px; border:1px solid var(--border);">
+               <input type="checkbox" id="revAnon" checked><span style="flex:1;">Post Anonymously</span>
+               <small style="color:var(--text-muted);">Hide my identity from public view</small>
+            </label>
+            <div style="display:flex; justify-content:space-between; margin-top:30px;">
+               <button class="btn btn-outline" onclick="nextRevStep(2)">⬅ BACK</button>
+               <button class="btn btn-success" onclick="submitReview()">SUBMIT REVIEW</button>
+            </div>
+         </div>
+
+      </div>
+   </div>
+</div>
+
+<!-- Placement Modal -->
+<div class="modal-overlay" id="placementModal" style="display:none;"
+   onclick="if(event.target===this) closeModal('placementModal')">
+   <div class="modal glass-card animate-in-modal"
+      style="max-width: 500px; width: 95%; border: 1px solid var(--accent); padding:0; overflow:hidden;">
+      <div
+         style="padding: 20px; border-bottom: 1px solid var(--border); background: rgba(5,217,232,0.1); display:flex; justify-content:space-between;">
+         <h3 style="margin:0; color: var(--accent);">ADD PLACEMENT</h3>
+         <button class="btn btn-xs btn-secondary" onclick="closeModal('placementModal')">✕</button>
+      </div>
+      <div style="padding: 25px;">
+         <div class="form-group"><label>Company</label><input type="text" id="plmComp" class="input glass"></div>
+         <div class="grid grid-2" style="gap:15px;">
+            <div class="form-group"><label>Role</label><input type="text" id="plmRole" class="input glass"></div>
+            <div class="form-group"><label>Package (LPA)</label><input type="number" id="plmPkg" class="input glass"
+                  step="0.1"></div>
+         </div>
+         <div class="grid grid-2" style="gap:15px;">
+            <div class="form-group"><label>Batch Year</label><input type="number" id="plmYear" class="input glass"
+                  value="2024"></div>
+            <div class="form-group"><label>Location</label><input type="text" id="plmLoc" class="input glass"></div>
+         </div>
+         <div class="form-group">
+            <label>Department</label>
+            <select id="plmDept" class="input glass"></select>
+         </div>
+         <div class="form-group"><label>Short Quote</label><input type="text" id="plmQuote" class="input glass"
+               placeholder="'Dream placement!'"></div>
+         <label style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="plmAnon"> Post
+            Anonymously</label>
+         <button class="btn btn-primary btn-full" onclick="submitPlacement()" style="margin-top:20px;">SUBMIT
+            PLACEMENT</button>
+      </div>
+   </div>
 </div>
 
 <!-- Join Modal -->
-<div class="modal-overlay" id="joinModal" style="display:none;" onclick="if(event.target===this) closeModal('joinModal')">
-   <div class="modal glass-card" style="max-width: 450px; width: 95%; border: 1px solid var(--cyan);">
+<div class="modal-overlay" id="joinModal" style="display:none;"
+   onclick="if(event.target===this) closeModal('joinModal')">
+   <div class="modal glass-card animate-in-modal" style="max-width: 450px; width: 95%; border: 1px solid var(--cyan);">
       <div style="padding: 25px; border-bottom: 1px solid var(--border); background: rgba(5,217,232,0.1);">
          <h3 style="margin:0; color: var(--cyan);">JOIN CAMPUS COMMUNITY</h3>
       </div>
       <div style="padding: 30px;">
-         <p style="color: var(--text-muted); margin-bottom: 25px;">Select your academic details to connect with peers and access department-specific resources.</p>
-         
          <div class="form-group">
             <label>Select Department</label>
             <select id="joinDeptSelect" class="input glass">
                <option value="">-- Choose Department --</option>
             </select>
          </div>
-
          <div class="form-group">
             <label>Year of Study</label>
             <select id="joinYearSelect" class="input glass">
-               <option value="1">1st Year (Freshman)</option>
-               <option value="2">2nd Year (Sophomore)</option>
-               <option value="3">3rd Year (Junior)</option>
-               <option value="4">4th Year (Senior)</option>
-               <option value="5">5th Year+</option>
+               <option value="1">1st Year</option>
+               <option value="2">2nd Year</option>
+               <option value="3">3rd Year</option>
+               <option value="4">4th Year</option>
                <option value="0">Alumni</option>
             </select>
          </div>
-
-         <button class="btn btn-primary btn-full" onclick="submitJoinRequest()" style="margin-top: 20px;">CONNECT TO COMMUNITY</button>
+         <button class="btn btn-primary btn-full" onclick="submitJoinRequest()" style="margin-top: 20px;">CONNECT TO
+            COMMUNITY</button>
       </div>
    </div>
 </div>
@@ -208,266 +431,454 @@
 
 {% block scripts %}
 <script>
-const CID = "{{ college_id }}";
-let COLLEGE = null;
-let RATING_DATA = { overall: 0, academics: 0, placements: 0, infrastructure: 0, faculty: 0, campus_life: 0 };
+   const CID = "{{ college_id }}";
+   let COLLEGE = null;
+   let RATING_DATA = { academics: 0, placements: 0, infrastructure: 0, faculty: 0, campus_life: 0 };
 
-document.addEventListener('DOMContentLoaded', async () => {
-   try {
-      COLLEGE = await apiFetch(`/api/colleges/${CID}`);
-      renderHero(COLLEGE);
-      renderStats(COLLEGE);
-      setupTabs();
-      setupStarRatingInputs();
-      
-      // Auto-switch to hash tab
-      if (window.location.hash) {
-         const target = window.location.hash.substring(1);
-         if(document.querySelector(`[data-target="${target}"]`)) switchTab(target);
-      } else {
-         switchTab('overview');
+   document.addEventListener('DOMContentLoaded', async () => {
+      try {
+         COLLEGE = await apiFetch(`/api/colleges/${CID}`);
+         renderHero(COLLEGE);
+         renderOverviewTab(COLLEGE);
+         populateDropdowns();
+         setupTabs();
+         setupReviewStars();
+
+         // Auto-switch
+         if (window.location.hash) {
+            const target = window.location.hash.substring(1);
+            if (document.querySelector(`[data-target="${target}"]`)) switchTab(target);
+         } else {
+            switchTab('overview');
+         }
+
+      } catch (e) {
+         document.getElementById('loader').innerHTML = '<div style="color:var(--danger)">FAILED TO LOAD COLLEGE DATA</div>';
       }
+   });
 
-   } catch(e) {
-      document.getElementById('loader').innerHTML = '<div style="color:var(--danger)">FAILED TO LOAD COLLEGE DATA</div>';
+   function renderHero(c) {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('heroContent').style.display = 'flex';
+
+      document.getElementById('collegeName').textContent = c.name;
+      document.getElementById('collegeTypeBadge').textContent = c.type.toUpperCase();
+      document.getElementById('collegeCityState').textContent = `${c.city}, ${c.state || ''}`;
+      document.getElementById('collegeEst').textContent = `Est. ${c.established || ''}`;
+
+      if (!c.is_verified) document.getElementById('verifiedLabel').style.display = 'none';
+      if (c.is_member) {
+         const btn = document.getElementById('joinBtn');
+         btn.className = 'btn btn-outline';
+         btn.innerHTML = '✅ JOINED';
+         btn.onclick = null;
+      }
    }
-});
 
-function renderHero(c) {
-   document.getElementById('loader').style.display = 'none';
-   document.getElementById('heroContent').style.display = 'flex';
-   document.getElementById('statsStrip').style.display = 'flex';
-   
-   document.getElementById('collegeName').textContent = c.name;
-   document.getElementById('collegeTypeBadge').textContent = c.type.toUpperCase();
-   document.getElementById('collegeMeta').innerHTML = `📍 ${c.city}, ${c.state || ''} <span style="opacity:0.3">|</span> 🗓️ Est. ${c.established || ''}`;
-   
-   if (!c.is_verified) document.getElementById('verifiedLabel').style.display = 'none';
-   
-   if (c.is_member) {
-      const btn = document.getElementById('joinBtn');
-      btn.className = 'btn btn-outline';
-      btn.innerHTML = '✅ JOINED';
-      btn.onclick = null;
-   }
-}
+   function renderOverviewTab(c) {
+      document.getElementById('collegeDescription').textContent = c.description || "A premier institute providing excellent education and campus life.";
+      document.getElementById('factType').textContent = (c.type || 'Private').toUpperCase();
+      document.getElementById('factEst').textContent = `Est. ${c.established || ''}`;
+      document.getElementById('factLoc').textContent = c.city;
+      document.getElementById('factNaac').textContent = c.accreditation || 'NAAC A++';
 
-function renderStats(c) {
+      // Right side ratings
+      const r = c.ratings || {};
+      document.getElementById('ratingBigNumber').textContent = (r.overall || 0).toFixed(1);
+      document.getElementById('ratingBigStars').innerHTML = getStarsHtml(r.overall);
+      document.getElementById('ratingBasedOn').textContent = `Based on ${r.total_reviews || 0} reviews`;
 
-   // Restoration of Stat Population
-   document.getElementById('statTotalReviews').textContent = c.ratings.total_reviews || 0;
-   document.getElementById('statTotalDepts').textContent = c.stats.total_departments || 0;
-   document.getElementById('statAvgPackage').textContent = c.stats.avg_package || 'N/A';
+      const cats = [
+         { l: 'Academics', k: 'academics', e: '📚' },
+         { l: 'Placements', k: 'placements', e: '💼' },
+         { l: 'Infrastructure', k: 'infrastructure', e: '🏗️' },
+         { l: 'Faculty', k: 'faculty', e: '👨‍🏫' },
+         { l: 'Campus Life', k: 'campus_life', e: '🎭' }
+      ];
 
-   // Category bars
-   const cats = [
-      { l: 'Academics', k: 'academics', c: 'var(--cyan)' },
-      { l: 'Placements', k: 'placements', c: 'var(--primary)' },
-      { l: 'Faculty', k: 'faculty', c: 'var(--accent)' },
-      { l: 'Infrastructure', k: 'infrastructure', c: 'var(--warning)' },
-      { l: 'Social Life', k: 'campus_life', c: '#a8d8ea' }
-   ];
-   
-   document.getElementById('categoryRatings').innerHTML = cats.map(cat => {
-      const val = c.ratings[cat.k] || 0;
-      return `
-      <div style="min-width: 140px;">
-         <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:5px;">
-            <span style="color:var(--text-muted); text-transform:uppercase;">${cat.l}</span>
-            <span style="font-weight:bold;">${val.toFixed(1)}</span>
-         </div>
-         <div class="rating-bar-bg"><div class="fill" style="width:${(val/5)*100}%; background:${cat.c}"></div></div>
+      document.getElementById('categoryRatings').innerHTML = cats.map(cat => {
+         const val = typeof r[cat.k] === 'number' ? r[cat.k] : 0;
+         return `
+      <div style="font-size:0.85rem; display:flex; justify-content:space-between; margin-bottom:2px;">
+         <span>${cat.e} ${cat.l}</span><span>${val.toFixed(1)}</span>
       </div>
+      <div class="rating-bar-bg"><div class="fill" style="width:${(val / 5) * 100}%; background:var(--cyan)"></div></div>
       `;
-   }).join('');
+      }).join('');
 
-   // Populate Join Dept Select
-   const joinSelect = document.getElementById('joinDeptSelect');
-   (c.departments || []).forEach(d => {
-      const opt = document.createElement('option');
-      opt.value = d._id; opt.textContent = d.name;
-      joinSelect.appendChild(opt);
-   });
-}
+      // Quick Mock layout for rankings
+      document.getElementById('overviewRankings').innerHTML = `
+      <div class="ranking-card"><div class="val">#12</div><div class="lbl">NIRF 2024</div></div>
+      <div class="ranking-card"><div class="val">A++</div><div class="lbl">NAAC Grade</div></div>
+      <div class="ranking-card"><div class="val">Accredited</div><div class="lbl">NBA</div></div>
+   `;
+   }
 
-function setupTabs() {
-   document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.onclick = () => switchTab(btn.dataset.target);
-   });
-}
+   function populateDropdowns() {
+      const depts = COLLEGE.departments || [];
+      const df = document.createDocumentFragment();
+      depts.forEach(d => {
+         const opt = document.createElement('option');
+         opt.value = d._id; opt.textContent = d.name;
+         df.appendChild(opt.cloneNode(true));
+      });
 
-function switchTab(target) {
-   document.querySelectorAll('.tab-btn').forEach(b => {
-      b.classList.remove('active');
-      b.style.borderBottomColor = 'transparent';
-      if(b.dataset.target === target) {
-         b.classList.add('active');
-         b.style.borderBottomColor = 'var(--cyan)';
-      }
-   });
-   
-   document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
-   const pane = document.getElementById(`pane-${target}`);
-   if(pane) {
-      pane.style.display = target === 'overview' ? 'grid' : 'block';
-      window.location.hash = target;
-      
-      // Lazy load tab data
-      if (pane.dataset.loaded !== 'true') {
-         if (target === 'reviews') fetchTabPosts('review', 'reviewsList', renderReviewCard);
-         if (target === 'departments') renderDepartmentsTab();
-         if (target === 'placements') fetchTabPosts('placement_info', 'placementsList', renderHorizontalPostCard);
-         if (target === 'events') fetchTabPosts('event', 'eventsGrid', renderEventCard);
-         if (target === 'discussions') fetchTabPosts('discussion', 'discussionsList', renderHorizontalPostCard);
-         pane.dataset.loaded = 'true';
+      document.getElementById('joinDeptSelect').appendChild(df.cloneNode(true));
+      document.getElementById('plFiltDept').appendChild(df.cloneNode(true));
+      document.getElementById('plmDept').appendChild(df.cloneNode(true));
+   }
+
+   function setupTabs() {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+         btn.onclick = () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            switchTab(btn.dataset.target);
+         };
+      });
+   }
+
+   function switchTab(target) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+      const pane = document.getElementById(`pane-${target}`);
+      if (pane) {
+         pane.style.display = target === 'overview' ? 'grid' : 'block';
+         window.location.hash = target;
+
+         if (pane.dataset.loaded !== 'true') {
+            if (target === 'reviews') loadReviews();
+            if (target === 'departments') renderDepartments();
+            if (target === 'placements') loadPlacements();
+            if (target === 'ask') fetchTabPosts('qna', 'askList', renderQnACard);
+            if (target === 'achievements') loadAchievements();
+            pane.dataset.loaded = 'true';
+         }
       }
    }
+
+   // ------ REVIEWS TAB ------
+   async function loadReviews() {
+      const r = COLLEGE.ratings || {};
+      document.getElementById('reviewsTabOverall').textContent = (r.overall || 0).toFixed(1);
+      document.getElementById('reviewsTabStars').innerHTML = getStarsHtml(r.overall);
+      document.getElementById('reviewsTabCount').textContent = `${r.total_reviews || 0} Total Reviews`;
+
+      // Arc animation
+      const arc = document.getElementById('arcRecommend');
+      const dash = 89;
+      setTimeout(() => { arc.style.strokeDasharray = `${dash}, 100`; }, 500);
+
+      const cats = [
+         { l: 'Academics', k: 'academics' }, { l: 'Placements', k: 'placements' },
+         { l: 'Infrastructure', k: 'infrastructure' }, { l: 'Faculty', k: 'faculty' },
+         { l: 'Campus Life', k: 'campus_life' }, { l: 'Overall', k: 'overall' }
+      ];
+
+      document.getElementById('reviewsTabCategories').innerHTML = cats.map(cat => {
+         const val = typeof r[cat.k] === 'number' ? r[cat.k] : 0;
+         return `
+      <div>
+         <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
+            <span>${cat.l}</span><span>${val.toFixed(1)}</span>
+         </div>
+         <div class="rating-bar-bg"><div class="fill" style="width:${(val / 5) * 100}%; background:var(--accent); transition: width 1s;"></div></div>
+      </div>`;
+      }).join('');
+
+      fetchTabPosts('review', 'reviewsList', renderReviewCardObj);
+   }
+
+   function renderReviewCardObj(p) {
+      const pros = extractPros(p.content);
+      const cons = extractCons(p.content);
+      return `
+   <div class="card glass review-card animate-in-modal">
+      <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border-light); padding-bottom:15px; margin-bottom:15px;">
+         <div style="display:flex; gap:15px; align-items:center;">
+            <div class="avatar-circle">${p.is_anonymous ? '👤' : (p.author_info?.name[0] || '?')}</div>
+            <div>
+               <div style="font-weight:bold;">${p.is_anonymous ? 'Anonymous Student' : p.author_info?.name}</div>
+               <div style="font-size:0.75rem; color:var(--text-muted);">${new Date(p.created_at).toLocaleDateString()} • Verified</div>
+            </div>
+         </div>
+         <div style="text-align:right;">
+            <div class="stars">${getStarsHtml(p.rating?.overall)} ${p.rating?.overall?.toFixed(1) || ''}</div>
+            <div style="font-size:0.8rem; color:${p.rating?.would_recommend ? 'var(--cyan)' : 'var(--danger)'}">${p.rating?.would_recommend ? '✅ Recommends' : '❌ Do not recommend'}</div>
+         </div>
+      </div>
+      <h4 style="margin-bottom:10px;">${p.title || 'Review'}</h4>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+         <div style="background:rgba(5,217,232,0.05); padding:10px; border-left:3px solid var(--cyan); border-radius:4px;">
+            <strong>✅ Pros:</strong><br><span style="font-size:0.9rem;">${pros}</span>
+         </div>
+         <div style="background:rgba(255,42,109,0.05); padding:10px; border-left:3px solid var(--primary); border-radius:4px;">
+            <strong>❌ Cons:</strong><br><span style="font-size:0.9rem;">${cons}</span>
+         </div>
+      </div>
+   </div>`;
+   }
+
+   function extractPros(text) {
+      let p = text.split('CONS:')[0].replace('PROS:', '').trim();
+      return p || 'Great overall experience.';
+   }
+   function extractCons(text) {
+      let parts = text.split('CONS:');
+      return parts.length > 1 ? parts[1].trim() : 'Nothing specifically bad mentioned.';
+   }
+
+   // ------ MODAL LOGIC ------
+   function setupReviewStars() {
+      const cats = [
+         { l: 'Academics', k: 'academics' }, { l: 'Placements', k: 'placements' },
+         { l: 'Infrastructure', k: 'infrastructure' }, { l: 'Faculty', k: 'faculty' },
+         { l: 'Campus Life', k: 'campus_life' }
+      ];
+      document.getElementById('revCatsContainer').innerHTML = cats.map(c => `
+      <div class="form-group review-cat-input">
+         <label>${c.l}</label>
+         <div class="star-input-small" data-category="${c.k}">
+            <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+         </div>
+      </div>
+   `).join('');
+
+      document.querySelectorAll('.star-input-small').forEach(group => {
+         const cat = group.dataset.category;
+         group.querySelectorAll('span').forEach(star => {
+            star.onclick = () => {
+               const val = parseInt(star.dataset.v);
+               RATING_DATA[cat] = val;
+               updateStarDisplay(group, val);
+            };
+            star.onmouseover = () => updateStarDisplay(group, parseInt(star.dataset.v));
+            star.onmouseout = () => updateStarDisplay(group, RATING_DATA[cat]);
+         });
+      });
+   }
+
+   function updateStarDisplay(group, val) {
+      group.querySelectorAll('span').forEach(s => {
+         s.style.color = parseInt(s.dataset.v) <= val ? '#ffd700' : 'rgba(255,255,255,0.1)';
+      });
+   }
+
+   function nextRevStep(step) {
+      document.querySelectorAll('.rev-step').forEach(s => s.style.display = 'none');
+      document.getElementById(`revStep${step}`).style.display = 'block';
+   }
+
+   async function submitReview() {
+      const pros = document.getElementById('revPros').value;
+      const cons = document.getElementById('revCons').value;
+      const title = document.getElementById('revTitle').value || 'Review';
+
+      let avg = 0; let totalCats = 0;
+      for (let k in RATING_DATA) { if (RATING_DATA[k] > 0) { avg += RATING_DATA[k]; totalCats++; } }
+      RATING_DATA.overall = totalCats > 0 ? avg / totalCats : 0;
+      RATING_DATA.would_recommend = document.getElementById('revRecommend').value === 'true';
+
+      try {
+         await apiFetch(`/api/colleges/${CID}/review`, {
+            method: 'POST',
+            body: {
+               title: title,
+               content: \`PROS: $\{pros}\\n\\nCONS: $\{cons}\`,
+            is_anonymous: document.getElementById('revAnon').checked,
+            rating: RATING_DATA
+         }
+      });
+      showToast('Review submitted!', 'success');
+      location.reload();
+   } catch(e) { showToast('Submission failed', 'error'); }
 }
+
+// ------ DEPARTMENTS TAB ------
+function renderDepartments() {
+   const grid = document.getElementById('departmentsGrid');
+   const colors = ['purple-blue', 'orange-red', 'green-teal', 'brown-yellow', 'pink-purple'];
+   
+   grid.innerHTML = (COLLEGE.departments || []).map((d, i) => {
+      const cls = colors[i % colors.length];
+      return `
+               < div class= "card glass dept-grad-card ${cls} animate-in-modal" onclick="window.location.href='/colleges/${CID}/dept/${d._id}'" >
+         <div class="dept-cover"></div>
+         <div class="dept-content">
+            <h3>💻 ${d.name}</h3>
+            <div style="font-weight:bold; letter-spacing:2px; margin-bottom:15px;">${d.short_name || 'DEPT'}</div>
+            <div style="display:flex; gap:10px; font-size:0.85rem; color:rgba(255,255,255,0.8); margin-bottom:20px;">
+               <span>👥 ${d.stats?.total_members||0}</span>
+               <span>👨‍🏫 45</span>
+               <span>💬 ${d.stats?.total_posts||0}</span>
+            </div>
+            <button class="btn btn-sm btn-outline btn-full" style="border-color:#fff; color:#fff;">ENTER DEPARTMENT</button>
+         </div>
+      </div> `;
+   }).join('');
+}
+
+// ------ PLACEMENTS TAB ------
+async function loadPlacements() {
+   const y = document.getElementById('plFiltYear').value;
+   const d = document.getElementById('plFiltDept').value;
+   const p = document.getElementById('plFiltPkg').value;
+   
+   document.getElementById('placementsGrid').innerHTML = '<div class="spinner"></div>';
+   try {
+      const res = await apiFetch(`/ api / colleges / ${ CID } / placements ? year = ${ y } & dept=${ d } & min_package=${ p }`);
+      
+      // Update counters with animation
+      animateValue('statPlCompanies', res.stats.companies_visited);
+      animateValue('statPlStudents', res.stats.total_placed);
+      document.getElementById('statPlAvg').textContent = res.stats.avg_package + ' LPA';
+      document.getElementById('statPlMax').textContent = res.stats.highest_package + ' LPA';
+      
+      document.getElementById('placementsGrid').innerHTML = res.placements.map(pl => `
+         < div class= "card glass placement-card animate-in-modal" >
+         <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px; border-bottom:1px solid var(--border-light); padding-bottom:15px;">
+             <div class="avatar-circle" style="width:50px; height:50px; font-size:1.5rem;">${pl.placement_data?.photo_url ? `<img src="${pl.placement_data.photo_url}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` : (pl.is_anonymous ? '👤' : (pl.author_info?.name[0] || '?'))}</div>
+             <div>
+                <div style="font-weight:bold; font-size:1.1rem;">${pl.is_anonymous ? 'Anonymous' : pl.author_info?.name}</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">${pl.placement_data?.batch_year || '2024'} Batch</div>
+             </div>
+         </div>
+         <div style="margin-bottom:10px;">💼 ${pl.placement_data?.role || 'Software Engineer'}</div>
+         <div style="margin-bottom:10px; font-weight:bold; color:var(--accent);">🏢 ${pl.placement_data?.company || 'Company'}</div>
+         <div style="display:flex; justify-content:space-between; margin-top:20px; padding-top:10px; border-top:1px dashed var(--border-light);">
+            <span style="color:#ff2a6d; font-family:'Rajdhani'; font-weight:800;">💰 ${pl.placement_data?.package || '-'} LPA</span>
+            <span style="font-size:0.85rem; color:var(--text-muted);">📍 ${pl.placement_data?.location || '-'}</span>
+         </div>
+      </div > `).join('');
+      
+   } catch(e) { document.getElementById('placementsGrid').innerHTML = 'Error loading placements.'; }
+}
+
+async function submitPlacement() {
+   try {
+      await apiFetch(`/ api / colleges / ${ CID } / placements`, {
+         method: 'POST',
+         body: {
+            department_id: document.getElementById('plmDept').value || null,
+            is_anonymous: document.getElementById('plmAnon').checked,
+            content: document.getElementById('plmQuote').value || 'Got placed!',
+            placement_data: {
+               company: document.getElementById('plmComp').value,
+               role: document.getElementById('plmRole').value,
+               package: parseFloat(document.getElementById('plmPkg').value),
+               batch_year: parseInt(document.getElementById('plmYear').value),
+               location: document.getElementById('plmLoc').value
+            }
+         }
+      });
+      showToast('Placement Added!', 'success');
+      closeModal('placementModal');
+      loadPlacements();
+   } catch(e) { showToast('Error adding placement', 'error'); }
+}
+
+// ------ ASK A SENIOR ------
+function renderQnACard(p) {
+   return `
+         < div class= "card glass animate-in-modal" style = "padding:20px; border-left:4px solid var(--accent);" >
+      <h4 style="margin-bottom:10px; font-size:1.2rem;">Q: ${p.title}</h4>
+      <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">Asked by Anonymous Student • ${new Date(p.created_at).toLocaleDateString()}</div>
+      
+      <div style="margin-left:20px; padding-left:15px; border-left:2px solid var(--border-light);">
+         ${p.replies && p.replies.length > 0 ? p.replies.map(r => `
+            <div style="margin-bottom:15px;">
+               <div style="font-weight:bold; font-size:0.9rem; margin-bottom:5px;">A: ${r.author_name} <span class="chip-sm">${r.author_role}</span></div>
+               <p style="font-size:0.95rem; color:var(--text-secondary);">${r.content}</p>
+            </div>
+         `).join('') : '<div style="color:var(--warning); font-size:0.9rem; font-style:italic;">No answers yet. Be the first to answer!</div>'}
+         
+         <div style="display:flex; gap:10px; margin-top:15px;">
+            <input type="text" id="ansInp_${p._id}" class="input input-sm glass" placeholder="Write an answer..." style="flex:1;">
+            <button class="btn btn-sm btn-outline" onclick="submitAnswer('${p._id}')">POST</button>
+         </div>
+      </div>
+   </div > `;
+}
+
+async function submitQuestion() {
+   const t = document.getElementById('askInputTitle').value.trim();
+   if(!t) return showToast('Please enter a question', 'warning');
+   try {
+      await apiFetch(`/ api / colleges / ${ CID } / ask`, { method: 'POST', body: { title: t, is_anonymous: true } });
+      document.getElementById('askInputTitle').value = '';
+      showToast('Question posted!', 'success');
+      switchTab('ask');
+   } catch(e) { showToast('Error', 'error'); }
+}
+
+async function submitAnswer(pid) {
+   const txt = document.getElementById(`ansInp_${ pid }`).value.trim();
+   if(!txt) return;
+   try {
+      await apiFetch(`/ api / colleges / posts / ${ pid } / answer`, { method: 'POST', body: { content: txt, is_anonymous: false } });
+      showToast('Answer posted!', 'success');
+      switchTab('ask');
+   } catch(e) { showToast('Error', 'error'); }
+}
+
+// ------ ACHIEVEMENTS ------
+async function loadAchievements() {
+   document.getElementById('achievementsRankings').innerHTML = '<div class="spinner"></div>';
+   try {
+      const ach = await apiFetch(`/ api / colleges / ${ CID } / achievements`);
+      document.getElementById('achievementsRankings').innerHTML = ach.rankings.map(r => `
+         < div class= "card glass" style = "display:flex; justify-content:space-between; padding:20px; align-items:center; border-left:4px solid #ffd700;" >
+            <span style="font-size:1.2rem; font-weight:bold;">${r.name}</span>
+            <span style="font-size:1.5rem; color:#ffd700; font-family:'Rajdhani'; font-weight:800;">${r.rank}</span>
+         </div >
+            `).join('');
+      
+      document.getElementById('achievementsAwards').innerHTML = ach.awards.map(a => `
+            < div class= "card glass" style = "padding:15px 20px; border-left:4px solid var(--accent);" >✔️ ${ a.title }</div >
+            `).join('');
+      
+      document.getElementById('achievementsAlumni').innerHTML = ach.alumni.map(a => `
+         < div class= "card glass" style = "display:flex; gap:15px; align-items:center; padding:20px;" >
+            <div class="avatar-circle" style="width:60px; height:60px; font-size:1.5rem;">${a.photo ? '-' : a.name[0]}</div>
+            <div>
+               <div style="font-weight:bold; font-size:1.1rem; color:var(--cyan);">${a.name}</div>
+               <div>${a.achievement}</div>
+               <div style="font-size:0.8rem; color:var(--text-muted);">Class of ${a.year}</div>
+            </div>
+            <button class="btn btn-sm btn-outline" style="margin-left:auto;">Connect</button>
+         </div >
+            `).join('');
+   } catch(e) { document.getElementById('achievementsRankings').innerHTML = 'Error loading achievements'; }
+}
+
+// UTILS
+function animateValue(id, endVal) {
+   const obj = document.getElementById(id);
+   if(!obj) return;
+   let start = 0; const duration = 1500; const range = endVal - start;
+   let current = start; const increment = endVal > start ? 1 : -1;
+   const stepTime = Math.abs(Math.floor(duration / Math.max(range, 1)));
+   const timer = setInterval(() => {
+      current += increment; obj.textContent = current;
+      if (current == endVal) clearInterval(timer);
+   }, stepTime);
+}
+
+function openReviewModal() { openModal('reviewModal'); }
+function openJoinModal() { openModal('joinModal'); }
+function openPlacementModal() { openModal('placementModal'); }
+function copyUrl() { 
+   navigator.clipboard.writeText(window.location.href); 
+   showToast('Link copied to clipboard!', 'success'); 
+}
+function showQr() { showToast('QR Code Generation Modal would open here', 'success'); }
 
 async function fetchTabPosts(type, containerId, renderer) {
    const container = document.getElementById(containerId);
    container.innerHTML = '<div class="spinner"></div>';
    try {
-      const posts = await apiFetch(`/api/colleges/${CID}/posts/?type=${type}`);
-      container.innerHTML = posts.length ? posts.map(renderer).join('') : '<div style="padding:40px; text-align:center; color:var(--text-muted)">No activity yet in this category.</div>';
+      const posts = await apiFetch(`/ api / colleges / ${ CID } / posts /? type = ${ type }`);
+      container.innerHTML = posts.length ? posts.map(renderer).join('') : '<div style="padding:40px; text-align:center; color:var(--text-muted)">No items found.</div>';
    } catch(e) { container.innerHTML = 'Error loading posts.'; }
-}
-
-function renderReviewCard(p) {
-   return `
-   <div class="card glass review-card animate-in">
-      <div class="review-header">
-         <div class="stars">${getStarsHtml(p.rating?.overall)}</div>
-         <div class="meta">${p.rating?.would_recommend ? '✅ Recommends' : '❌ No'} • ${new Date(p.created_at).toLocaleDateString()}</div>
-      </div>
-      <p class="review-content">${p.content}</p>
-      <div class="review-footer">
-         <div class="author-info">By ${p.is_anonymous ? 'Anonymous Student' : (p.author_info?.name || 'User')}</div>
-         <div class="actions">
-            <button class="btn btn-xs btn-outline" onclick="toggleUpvote('${p._id}')">👍 ${p.upvotes?.length||0}</button>
-            <button class="btn btn-xs btn-outline" onclick="viewPost('${p._id}')">💬 ${p.replies?.length||0} REPLIES</button>
-         </div>
-      </div>
-   </div>`;
-}
-
-function renderHorizontalPostCard(p) {
-   return `
-   <div class="card glass horizontal-post animate-in" onclick="viewPost('${p._id}')">
-      <div class="post-badges">
-         <span class="chip chip-outline">${p.post_type}</span>
-         ${p.is_pinned ? '📌' : ''}
-      </div>
-      <h3>${p.title}</h3>
-      <p>${p.content.substring(0, 150)}...</p>
-      <div class="post-footer">
-         <span>👤 ${p.is_anonymous ? 'Anonymous' : (p.author_info?.name || 'User')}</span>
-         <span>👍 ${p.upvotes?.length||0}</span>
-         <span>💬 ${p.replies?.length||0}</span>
-         <span>📅 ${new Date(p.created_at).toLocaleDateString()}</span>
-      </div>
-   </div>`;
-}
-
-function renderEventCard(p) {
-   return `
-   <div class="card glass event-card animate-in">
-      <div class="event-banner">${p.event_data?.event_date || 'TBD'}</div>
-      <div class="event-body">
-         <h3>${p.title}</h3>
-         <p>📍 ${p.event_data?.venue || 'Campus'}</p>
-         <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:var(--text-muted); font-size:0.8rem;">${p.event_data?.rsvp_users?.length||0} Going</span>
-            <button class="btn btn-sm btn-primary" onclick="toggleRSVP('${p._id}')">RSVP</button>
-         </div>
-      </div>
-   </div>`;
-}
-
-function renderDepartmentsTab() {
-   const grid = document.getElementById('departmentsGrid');
-   grid.innerHTML = (COLLEGE.departments || []).map(d => `
-   <div class="card glass dept-card animate-in">
-      <h3>${d.name}</h3>
-      <div class="meta">${d.short_name} • 👥 ${d.stats?.total_members||0} Members</div>
-      <a href="/colleges/${CID}/dept/${d._id}" class="btn btn-sm btn-outline btn-full" style="margin-top:15px;">ENTER COMMUNITY</a>
-   </div>`).join('');
-}
-
-function setupStarRatingInputs() {
-   const starGroups = document.querySelectorAll('.star-input-group, .star-input-small');
-   starGroups.forEach(group => {
-      const cat = group.dataset.category;
-      const stars = group.querySelectorAll('span');
-      
-      stars.forEach(star => {
-         star.onclick = () => {
-            const val = parseInt(star.dataset.v);
-            RATING_DATA[cat] = val;
-            updateStarDisplay(group, val);
-            if(cat === 'overall') updateOverallLabel(val);
-         };
-         star.onmouseover = () => updateStarDisplay(group, parseInt(star.dataset.v));
-         star.onmouseout = () => updateStarDisplay(group, RATING_DATA[cat]);
-      });
-   });
-}
-
-function updateStarDisplay(group, val) {
-   group.querySelectorAll('span').forEach(s => {
-      s.style.color = parseInt(s.dataset.v) <= val ? '#ffd700' : 'rgba(255,255,255,0.1)';
-      if(parseInt(s.dataset.v) <= val) s.classList.add('active'); else s.classList.remove('active');
-   });
-}
-
-function updateOverallLabel(val) {
-   const labels = ['', 'Terrible 😞', 'Poor 🙁', 'Average 😐', 'Good! 🙂', 'Exemplary! 🤩'];
-   document.getElementById('overallStarLabel').textContent = labels[val] || 'Select your rating';
-}
-
-async function submitReview() {
-   if(!RATING_DATA.overall) return showToast('Please select an overall rating', 'warning');
-   const content = document.getElementById('revContent').value.trim();
-   if (!content) return showToast('Please write a detailed review', 'warning');
-
-   try {
-      await apiFetch(`/api/colleges/${CID}/posts/`, {
-         method: 'POST',
-         body: {
-            post_type: 'review',
-            title: 'College Review',
-            content: content,
-            is_anonymous: document.getElementById('revAnon').checked,
-            rating: { ...RATING_DATA, would_recommend: document.getElementById('revRecommend').value === 'true' }
-         }
-      });
-      showToast('Review shared successfully!', 'success');
-      closeModal('reviewModal');
-      location.reload();
-   } catch(e) { showToast('Submission failed', 'error'); }
-}
-
-function openJoinModal() {
-   if(!requireAuth()) return;
-   openModal('joinModal');
-}
-
-async function submitJoinRequest() {
-   const deptId = document.getElementById('joinDeptSelect').value;
-   const year = document.getElementById('joinYearSelect').value;
-   
-   try {
-      await apiFetch(`/api/colleges/${CID}/join`, {
-         method: 'POST',
-         body: { department_id: deptId || null, year: parseInt(year) }
-      });
-      showToast('Welcome to the community!', 'success');
-      location.reload();
-   } catch(e) { showToast('Join failed', 'error'); }
-}
-
-function goToCreateDiscussion() {
-   window.location.href = `/colleges/${CID}/dept/all?action=create`;
 }
 
 function getStarsHtml(r) {
@@ -478,38 +889,291 @@ function getStarsHtml(r) {
 </script>
 
 <style>
-/* Exclusive Styles for College Detail */
-.rating-bar-bg { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
-.rating-bar-bg .fill { height: 100%; border-radius: 3px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+   /* Exclusive Styles for College Detail V2 */
+   .overview-section h3 {
+      letter-spacing: 1.5px;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+   }
 
-.activity-item { padding: 12px; border-radius: 12px; border: 1px solid var(--border); transition: all 0.2s; cursor: pointer; }
-.activity-item:hover { border-color: var(--cyan); background: rgba(5,217,232,0.05); transform: translateX(5px); }
-.activity-item .type-tag { font-size: 0.65rem; color: var(--cyan); text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
-.activity-item .title { font-weight: bold; font-family: 'Rajdhani'; line-height: 1.2; font-size: 0.95rem; }
-.activity-item .meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; }
+   .fact-chip {
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-light);
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+   }
 
-.review-card { padding: 30px; border: 1px solid var(--border); border-radius: 20px; }
-.review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.review-header .stars { font-size: 1.5rem; color: #ffd700; height: 1.5rem; line-height: 1; }
-.review-header .meta { font-size: 0.85rem; color: var(--text-muted); }
-.review-content { font-size: 1.05rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 25px; }
-.review-footer { border-top: 1px solid var(--border-light); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; }
-.review-footer .author-info { font-style: italic; font-size: 0.9rem; color: var(--text-muted); }
+   .chip-facility {
+      padding: 8px 15px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+   }
 
-.horizontal-post { padding: 25px; border: 1px solid var(--border); transition: all 0.2s; cursor: pointer; }
-.horizontal-post:hover { border-color: var(--cyan); box-shadow: 0 0 20px rgba(5,217,232,0.1); }
-.horizontal-post h3 { margin: 10px 0; color: #fff; }
-.post-footer { display: flex; gap: 20px; font-size: 0.85rem; color: var(--text-muted); }
+   .chip-facility.active {
+      background: rgba(5, 217, 232, 0.1);
+      color: var(--cyan);
+   }
 
-.dept-card { padding: 25px; border-radius: 20px; transition: all 0.3s; }
-.dept-card:hover { transform: translateY(-5px); border-color: var(--cyan); box-shadow: var(--cyber-glow); }
+   .chip-facility.inactive {
+      opacity: 0.5;
+      border-color: transparent;
+      background: rgba(255, 255, 255, 0.05);
+      text-decoration: line-through;
+   }
 
-.event-card { overflow: hidden; border-radius: 20px; border: 1px solid var(--border); }
-.event-banner { height: 120px; background: linear-gradient(45deg, var(--bg-card), var(--cyan)); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: #000; font-family: 'Rajdhani'; }
-.event-body { padding: 20px; }
+   .quick-link {
+      display: block;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-light);
+      color: var(--text-primary);
+      transition: all 0.2s;
+   }
 
-.star-input-group span { font-size: 3rem; cursor: pointer; transition: transform 0.2s; -webkit-user-select: none; user-select: none; }
-.star-input-group span:hover, .star-input-group span.active { transform: scale(1.2); }
-.star-input-small span { font-size: 1.5rem; cursor: pointer; }
+   .quick-link:hover {
+      background: rgba(5, 217, 232, 0.1);
+      border-color: var(--cyan);
+      padding-left: 20px;
+   }
+
+   .ranking-card {
+      min-width: 120px;
+      background: rgba(255, 215, 0, 0.05);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+   }
+
+   .ranking-card .val {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ffd700;
+      font-family: 'Rajdhani';
+   }
+
+   .ranking-card .lbl {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 5px;
+   }
+
+   /* Progress Arc */
+   .progress-arc-container {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto;
+   }
+
+   .progress-arc {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+   }
+
+   .progress-arc .circle-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.05);
+      stroke-width: 3.8;
+   }
+
+   .progress-arc .circle {
+      fill: none;
+      stroke: var(--cyan);
+      stroke-width: 2.8;
+      stroke-linecap: round;
+      transition: stroke-dasharray 1.5s ease-out;
+   }
+
+   .arc-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--cyan);
+      font-family: 'Rajdhani';
+   }
+
+   .arc-text span {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      display: block;
+      line-height: 1;
+   }
+
+   /* Departments Tab */
+   .dept-grad-card {
+      position: relative;
+      overflow: hidden;
+      padding: 0;
+      min-height: 250px;
+      cursor: pointer;
+      border: none;
+   }
+
+   .dept-grad-card .dept-cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0.8;
+      transition: all 0.4s;
+      z-index: 0;
+   }
+
+   .dept-grad-card:hover .dept-cover {
+      transform: scale(1.1);
+      opacity: 1;
+   }
+
+   .dept-grad-card .dept-content {
+      position: relative;
+      z-index: 1;
+      padding: 25px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 20%, transparent);
+   }
+
+   .purple-blue .dept-cover {
+      background: linear-gradient(135deg, #6c63ff, #05d9e8);
+   }
+
+   .orange-red .dept-cover {
+      background: linear-gradient(135deg, #ff2a6d, #ff7e5f);
+   }
+
+   .green-teal .dept-cover {
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+   }
+
+   .brown-yellow .dept-cover {
+      background: linear-gradient(135deg, #f6d365, #fda085);
+   }
+
+   .pink-purple .dept-cover {
+      background: linear-gradient(135deg, #ff0844, #ffb199);
+   }
+
+   /* Placements Tab */
+   .stat-card {
+      padding: 25px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+   }
+
+   .stat-card .val {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #fff;
+      font-family: 'Rajdhani';
+      margin-bottom: 5px;
+   }
+
+   .stat-card .lbl {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+   }
+
+   /* Review modal specific */
+   .rev-step {
+      animation: fade 0.3s;
+   }
+
+   @keyframes fade {
+      from {
+         opacity: 0;
+         transform: translateX(10px);
+      }
+
+      to {
+         opacity: 1;
+         transform: translateX(0);
+      }
+   }
+
+   .avatar-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+   }
+
+   .rating-bar-bg {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+      overflow: hidden;
+   }
+
+   .rating-bar-bg .fill {
+      height: 100%;
+      border-radius: 3px;
+   }
+
+   .star-input-small span {
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.1);
+      transition: transform 0.2s;
+      user-select: none;
+   }
+
+   .star-input-small span:hover,
+   .star-input-small span.active {
+      color: #ffd700;
+      transform: scale(1.2);
+   }
+
+   .chip-sm {
+      padding: 2px 6px;
+      background: rgba(5, 217, 232, 0.1);
+      border: 1px solid var(--border-light);
+      font-size: 0.65rem;
+      border-radius: 4px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-left: 5px;
+   }
+
+   .animate-in-modal {
+      animation: slideUpModal 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+   }
+
+   @keyframes slideUpModal {
+      from {
+         opacity: 0;
+         transform: translateY(20px) scale(0.95);
+      }
+
+      to {
+         opacity: 1;
+         transform: translateY(0) scale(1);
+      }
+   }
 </style>
 {% endblock %}

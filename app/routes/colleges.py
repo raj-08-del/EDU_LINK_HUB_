@@ -580,3 +580,226 @@ def upload_media():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# ── New Redesign Routes ──
+
+@colleges_bp.route('/<college_id>/review', methods=['POST'])
+@jwt_required()
+def submit_review_specific(college_id):
+    try:
+        data = request.get_json(silent=True) or {}
+        user_id = get_jwt_identity()
+
+        member = mongo.db.college_members.find_one({'user_id': ObjectId(user_id), 'college_id': ObjectId(college_id)})
+        if not member:
+            return jsonify({'error': 'Must join college first'}), 403
+
+        review = {
+            'college_id': ObjectId(college_id),
+            'post_type': 'review',
+            'title': data.get('title', 'College Review'),
+            'content': data.get('content', ''),
+            'author': ObjectId(user_id),
+            'is_anonymous': bool(data.get('is_anonymous', False)),
+            'upvotes': [],
+            'replies': [],
+            'views': 0,
+            'is_hidden': False,
+            'is_pinned': False,
+            'created_at': datetime.utcnow(),
+            'rating': data.get('rating', {
+                'overall': 0, 'academics': 0, 'placements': 0, 
+                'infrastructure': 0, 'faculty': 0, 'campus_life': 0, 
+                'would_recommend': True
+            })
+        }
+
+        res = mongo.db.college_posts.insert_one(review)
+        review['_id'] = res.inserted_id
+
+        mongo.db.colleges.update_one({'_id': ObjectId(college_id)}, {'$inc': {'stats.total_posts': 1}})
+        recalculate_college_ratings(college_id)
+        
+        try:
+            from app.routes.leaderboard import award_points
+            award_points(str(user_id), 'college_review')
+        except: pass
+
+        return jsonify(serialize_doc(review)), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@colleges_bp.route('/<college_id>/placements', methods=['GET'])
+def get_placements(college_id):
+    try:
+        year = request.args.get('year')
+        dept_id = request.args.get('dept')
+        min_pkg = request.args.get('min_package')
+        
+        query = {'college_id': ObjectId(college_id), 'post_type': 'placement_info', 'is_hidden': {'$ne': True}}
+        if dept_id and dept_id != 'all':
+            query['department_id'] = ObjectId(dept_id)
+        
+        posts = list(mongo.db.college_posts.find(query).sort('created_at', -1))
+        
+        if year and year != 'all':
+            posts = [p for p in posts if p.get('placement_data', {}).get('batch_year') == int(year)]
+        
+        if min_pkg and min_pkg != 'all':
+            pkg_val = float(min_pkg)
+            posts = [p for p in posts if float(p.get('placement_data', {}).get('package', 0) or 0) >= pkg_val]
+
+        for p in posts:
+            p['author_info'] = None
+            if not p.get('is_anonymous') and p.get('author'):
+                user = mongo.db.users.find_one({'_id': p['author']}, {'name': 1, 'avatar_url': 1})
+                if user: p['author_info'] = user
+
+        # Aggregate stats
+        total_students = len(posts)
+        companies = set([p.get('placement_data', {}).get('company') for p in posts if p.get('placement_data', {}).get('company')])
+        packages = [float(p.get('placement_data', {}).get('package', 0) or 0) for p in posts]
+        avg_pkg = round(sum(packages) / len(packages), 1) if packages else 0
+        max_pkg = round(max(packages), 1) if packages else 0
+
+        return jsonify({
+            'stats': {
+                'total_placed': total_students,
+                'companies_visited': len(companies),
+                'avg_package': avg_pkg,
+                'highest_package': max_pkg
+            },
+            'placements': serialize_doc(posts)
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@colleges_bp.route('/<college_id>/placements', methods=['POST'])
+@jwt_required()
+def add_placement(college_id):
+    try:
+        data = request.get_json(silent=True) or {}
+        user_id = get_jwt_identity()
+
+        member = mongo.db.college_members.find_one({'user_id': ObjectId(user_id), 'college_id': ObjectId(college_id)})
+        if not member:
+            return jsonify({'error': 'Must join college first'}), 403
+
+        dept_id = data.get('department_id')
+        placement_data = data.get('placement_data', {})
+        
+        post = {
+            'college_id': ObjectId(college_id),
+            'department_id': ObjectId(dept_id) if dept_id and dept_id != 'all' else None,
+            'post_type': 'placement_info',
+            'title': f"Placed at {placement_data.get('company', 'a great company')}",
+            'content': data.get('content', 'Excited to start my new role!'),
+            'author': ObjectId(user_id),
+            'is_anonymous': bool(data.get('is_anonymous', False)),
+            'placement_data': {
+                'company': placement_data.get('company'),
+                'role': placement_data.get('role'),
+                'package': placement_data.get('package'),
+                'location': placement_data.get('location'),
+                'batch_year': placement_data.get('batch_year'),
+                'photo_url': data.get('photo_url')
+            },
+            'upvotes': [],
+            'replies': [],
+            'views': 0,
+            'is_hidden': False,
+            'is_pinned': False,
+            'created_at': datetime.utcnow()
+        }
+
+        res = mongo.db.college_posts.insert_one(post)
+        post['_id'] = res.inserted_id
+
+        return jsonify(serialize_doc(post)), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@colleges_bp.route('/<college_id>/achievements', methods=['GET'])
+def get_achievements(college_id):
+    try:
+        # Mocking achievements returning as they are usually static / managed by admin
+        # In actual prod we would query 'achievements' collection or college field
+        achievements = {
+            'rankings': [
+                {'name': 'NIRF 2024', 'rank': '#12'},
+                {'name': 'QS World', 'rank': '#450'},
+                {'name': 'India Today', 'rank': '#8'}
+            ],
+            'awards': [
+                {'title': 'Best Engineering College - TN 2023'},
+                {'title': 'Excellence in Research Award'},
+                {'title': 'NBA Accredited Programs (CSE, ECE, MECH)'}
+            ],
+            'alumni': [
+                {'name': 'Sundar Pichai', 'achievement': 'CEO Google', 'year': 1993, 'photo': ''},
+                {'name': 'Satya Nadella', 'achievement': 'CEO Microsoft', 'year': 1988, 'photo': ''}
+            ]
+        }
+        return jsonify(achievements), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@colleges_bp.route('/<college_id>/ask', methods=['POST'])
+@jwt_required()
+def ask_question(college_id):
+    try:
+        data = request.get_json(silent=True) or {}
+        user_id = get_jwt_identity()
+
+        member = mongo.db.college_members.find_one({'user_id': ObjectId(user_id), 'college_id': ObjectId(college_id)})
+        if not member:
+            return jsonify({'error': 'Must join college first'}), 403
+
+        question = {
+            'college_id': ObjectId(college_id),
+            'post_type': 'qna',
+            'title': data.get('title', 'Question'),
+            'content': data.get('content', ''),
+            'author': ObjectId(user_id),
+            'is_anonymous': True, # Overrides default
+            'upvotes': [],
+            'replies': [],
+            'views': 0,
+            'is_hidden': False,
+            'is_pinned': False,
+            'created_at': datetime.utcnow()
+        }
+
+        res = mongo.db.college_posts.insert_one(question)
+        question['_id'] = res.inserted_id
+
+        mongo.db.colleges.update_one({'_id': ObjectId(college_id)}, {'$inc': {'stats.total_posts': 1}})
+
+        return jsonify(serialize_doc(question)), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@colleges_bp.route('/posts/<post_id>/answer', methods=['POST'])
+@jwt_required()
+def answer_question(post_id):
+    try:
+        data = request.get_json(silent=True) or {}
+        user_id = get_jwt_identity()
+        user = mongo.db.users.find_one({'_id': ObjectId(user_id)})
+        
+        reply = {
+            '_id': ObjectId(), 
+            'author': ObjectId(user_id),
+            'author_name': user.get('name', 'User') if not data.get('is_anonymous') else 'Anonymous',
+            'author_role': user.get('role', 'student'),
+            'content': data.get('content', ''),
+            'is_anonymous': bool(data.get('is_anonymous', False)),
+            'upvotes': [], # Allow upvoting answers
+            'created_at': datetime.utcnow()
+        }
+
+        mongo.db.college_posts.update_one({'_id': ObjectId(post_id)}, {'$push': {'replies': reply}})
+        return jsonify(serialize_doc(reply)), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
