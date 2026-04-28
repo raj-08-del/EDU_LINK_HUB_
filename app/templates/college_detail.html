@@ -683,7 +683,7 @@
             method: 'POST',
             body: {
                title: title,
-               content: \`PROS: $\{pros}\\n\\nCONS: $\{cons}\`,
+               content: `PROS: ${pros}\n\nCONS: ${cons}`,
             is_anonymous: document.getElementById('revAnon').checked,
             rating: RATING_DATA
          }
@@ -701,7 +701,7 @@ function renderDepartments() {
    grid.innerHTML = (COLLEGE.departments || []).map((d, i) => {
       const cls = colors[i % colors.length];
       return `
-               < div class= "card glass dept-grad-card ${cls} animate-in-modal" onclick="window.location.href='/colleges/${CID}/dept/${d._id}'" >
+               <div class="card glass dept-grad-card ${cls} animate-in-modal" onclick="window.location.href='/colleges/${CID}/dept/${d._id}'">
          <div class="dept-cover"></div>
          <div class="dept-content">
             <h3>💻 ${d.name}</h3>
@@ -725,7 +725,7 @@ async function loadPlacements() {
    
    document.getElementById('placementsGrid').innerHTML = '<div class="spinner"></div>';
    try {
-      const res = await apiFetch(`/ api / colleges / ${ CID } / placements ? year = ${ y } & dept=${ d } & min_package=${ p }`);
+      const res = await apiFetch(`/api/colleges/${CID}/placements?year=${y}&dept=${d}&min_package=${p}`);
       
       // Update counters with animation
       animateValue('statPlCompanies', res.stats.companies_visited);
@@ -734,7 +734,7 @@ async function loadPlacements() {
       document.getElementById('statPlMax').textContent = res.stats.highest_package + ' LPA';
       
       document.getElementById('placementsGrid').innerHTML = res.placements.map(pl => `
-         < div class= "card glass placement-card animate-in-modal" >
+         <div class="card glass placement-card animate-in-modal">
          <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px; border-bottom:1px solid var(--border-light); padding-bottom:15px;">
              <div class="avatar-circle" style="width:50px; height:50px; font-size:1.5rem;">${pl.placement_data?.photo_url ? `<img src="${pl.placement_data.photo_url}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` : (pl.is_anonymous ? '👤' : (pl.author_info?.name[0] || '?'))}</div>
              <div>
@@ -748,14 +748,14 @@ async function loadPlacements() {
             <span style="color:#ff2a6d; font-family:'Rajdhani'; font-weight:800;">💰 ${pl.placement_data?.package || '-'} LPA</span>
             <span style="font-size:0.85rem; color:var(--text-muted);">📍 ${pl.placement_data?.location || '-'}</span>
          </div>
-      </div > `).join('');
+      </div>`).join('');
       
    } catch(e) { document.getElementById('placementsGrid').innerHTML = 'Error loading placements.'; }
 }
 
 async function submitPlacement() {
    try {
-      await apiFetch(`/ api / colleges / ${ CID } / placements`, {
+      await apiFetch(`/api/colleges/${CID}/placements`, {
          method: 'POST',
          body: {
             department_id: document.getElementById('plmDept').value || null,
@@ -779,7 +779,7 @@ async function submitPlacement() {
 // ------ ASK A SENIOR ------
 function renderQnACard(p) {
    return `
-         < div class= "card glass animate-in-modal" style = "padding:20px; border-left:4px solid var(--accent);" >
+         <div class="card glass animate-in-modal" style="padding:20px; border-left:4px solid var(--accent);">
       <h4 style="margin-bottom:10px; font-size:1.2rem;">Q: ${p.title}</h4>
       <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">Asked by Anonymous Student • ${new Date(p.created_at).toLocaleDateString()}</div>
       
@@ -796,14 +796,14 @@ function renderQnACard(p) {
             <button class="btn btn-sm btn-outline" onclick="submitAnswer('${p._id}')">POST</button>
          </div>
       </div>
-   </div > `;
+   </div>`;
 }
 
 async function submitQuestion() {
    const t = document.getElementById('askInputTitle').value.trim();
    if(!t) return showToast('Please enter a question', 'warning');
    try {
-      await apiFetch(`/ api / colleges / ${ CID } / ask`, { method: 'POST', body: { title: t, is_anonymous: true } });
+      await apiFetch(`/api/colleges/${CID}/ask`, { method: 'POST', body: { title: t, is_anonymous: true } });
       document.getElementById('askInputTitle').value = '';
       showToast('Question posted!', 'success');
       switchTab('ask');
@@ -814,7 +814,7 @@ async function submitAnswer(pid) {
    const txt = document.getElementById(`ansInp_${ pid }`).value.trim();
    if(!txt) return;
    try {
-      await apiFetch(`/ api / colleges / posts / ${ pid } / answer`, { method: 'POST', body: { content: txt, is_anonymous: false } });
+      await apiFetch(`/api/colleges/posts/${pid}/answer`, { method: 'POST', body: { content: txt, is_anonymous: false } });
       showToast('Answer posted!', 'success');
       switchTab('ask');
    } catch(e) { showToast('Error', 'error'); }
@@ -824,20 +824,20 @@ async function submitAnswer(pid) {
 async function loadAchievements() {
    document.getElementById('achievementsRankings').innerHTML = '<div class="spinner"></div>';
    try {
-      const ach = await apiFetch(`/ api / colleges / ${ CID } / achievements`);
+      const ach = await apiFetch(`/api/colleges/${CID}/achievements`);
       document.getElementById('achievementsRankings').innerHTML = ach.rankings.map(r => `
-         < div class= "card glass" style = "display:flex; justify-content:space-between; padding:20px; align-items:center; border-left:4px solid #ffd700;" >
+         <div class="card glass" style="display:flex; justify-content:space-between; padding:20px; align-items:center; border-left:4px solid #ffd700;">
             <span style="font-size:1.2rem; font-weight:bold;">${r.name}</span>
             <span style="font-size:1.5rem; color:#ffd700; font-family:'Rajdhani'; font-weight:800;">${r.rank}</span>
-         </div >
+         </div>
             `).join('');
       
       document.getElementById('achievementsAwards').innerHTML = ach.awards.map(a => `
-            < div class= "card glass" style = "padding:15px 20px; border-left:4px solid var(--accent);" >✔️ ${ a.title }</div >
+            <div class="card glass" style="padding:15px 20px; border-left:4px solid var(--accent);">✔️ ${a.title}</div>
             `).join('');
       
       document.getElementById('achievementsAlumni').innerHTML = ach.alumni.map(a => `
-         < div class= "card glass" style = "display:flex; gap:15px; align-items:center; padding:20px;" >
+         <div class="card glass" style="display:flex; gap:15px; align-items:center; padding:20px;">
             <div class="avatar-circle" style="width:60px; height:60px; font-size:1.5rem;">${a.photo ? '-' : a.name[0]}</div>
             <div>
                <div style="font-weight:bold; font-size:1.1rem; color:var(--cyan);">${a.name}</div>
@@ -845,7 +845,7 @@ async function loadAchievements() {
                <div style="font-size:0.8rem; color:var(--text-muted);">Class of ${a.year}</div>
             </div>
             <button class="btn btn-sm btn-outline" style="margin-left:auto;">Connect</button>
-         </div >
+         </div>
             `).join('');
    } catch(e) { document.getElementById('achievementsRankings').innerHTML = 'Error loading achievements'; }
 }
@@ -876,7 +876,7 @@ async function fetchTabPosts(type, containerId, renderer) {
    const container = document.getElementById(containerId);
    container.innerHTML = '<div class="spinner"></div>';
    try {
-      const posts = await apiFetch(`/ api / colleges / ${ CID } / posts /? type = ${ type }`);
+      const posts = await apiFetch(`/api/colleges/${CID}/posts/?type=${type}`);
       container.innerHTML = posts.length ? posts.map(renderer).join('') : '<div style="padding:40px; text-align:center; color:var(--text-muted)">No items found.</div>';
    } catch(e) { container.innerHTML = 'Error loading posts.'; }
 }
