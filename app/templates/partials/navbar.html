@@ -6,9 +6,21 @@
   </div>
   <div class="navbar-right">
     <!-- F11: Theme Toggle -->
-    <button id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">☀️</button>
+    <button id="theme-toggle" class="nav-icon-btn" onclick="toggleTheme()" title="Toggle dark/light mode">☀️</button>
     <!-- F10: PWA Install -->
-    <button id="pwa-install-btn" onclick="pwaInstall()">📲 Install App</button>
+    <button id="pwa-install-btn" class="pwa-install-btn" onclick="pwaInstall()">📲 Install App</button>
+    <!-- Admin Button (JS-rendered for admin/moderator only) -->
+    <a id="navbar-admin-btn" href="/admin" style="display:none; padding:6px 14px; background:linear-gradient(135deg,#ff2a6d,#b0003a); color:#fff; border-radius:8px; font-size:13px; font-weight:700; text-decoration:none; letter-spacing:0.05em; box-shadow:0 0 10px rgba(255,42,109,0.4); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">🛡️ Admin</a>
   </div>
 </header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const u = typeof getUser === 'function' ? getUser() : null;
+    if (u && u.role && ['admin', 'moderator'].includes(u.role.toLowerCase())) {
+      const btn = document.getElementById('navbar-admin-btn');
+      if (btn) btn.style.display = 'inline-flex';
+    }
+  });
+</script>
 

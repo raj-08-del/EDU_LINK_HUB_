@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+{% block title %}Edit College - EDU Link Hub{% endblock %}
+
+{% block head %}
+<style>
+  .edit-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #1a1a2e;
+    border: 1px solid rgba(108, 99, 255, 0.3);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+
+  .edit-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .edit-header h2 {
+    color: #fff;
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    color: #a0a0c0;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="url"],
+  .form-group input[type="number"],
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: #0d0d14;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 15px;
+    font-family: inherit;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: #6c63ff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #6c63ff, #00d2ff);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.3s, transform 0.2s;
+  }
+
+  .btn-submit:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  .btn-cancel {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    color: #a0a0c0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s;
+  }
+
+  .btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content">
+      
+      <div class="edit-container">
+        <div class="edit-header">
+          <h2>✏️ Edit College</h2>
+          <p style="color: var(--text-muted);">Update details and banner for the college.</p>
+        </div>
+
+        <form id="editCollegeForm" onsubmit="submitEditCollege(event)">
+          <input type="hidden" id="college_id" value="{{ college._id }}">
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label>College Name *</label>
+              <input type="text" id="name" value="{{ college.name }}" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Short Name</label>
+              <input type="text" id="short_name" value="{{ college.short_name }}">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label>City *</label>
+              <input type="text" id="city" value="{{ college.city }}" required>
+            </div>
+            
+            <div class="form-group">
+              <label>State</label>
+              <input type="text" id="state" value="{{ college.state }}">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label>Type</label>
+              <select id="type">
+                <option value="government" {% if college.type == 'government' %}selected{% endif %}>Government</option>
+                <option value="private" {% if college.type == 'private' %}selected{% endif %}>Private</option>
+                <option value="deemed" {% if college.type == 'deemed' %}selected{% endif %}>Deemed</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Established Year</label>
+              <input type="number" id="established" value="{{ college.established or '' }}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Website URL</label>
+            <input type="url" id="website" value="{{ college.website or '' }}">
+          </div>
+
+          <!-- Contact & Social Links -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label>Contact Email</label>
+              <input type="email" id="email" value="{{ college.email or '' }}" class="glass" style="width: 100%; padding: 12px 16px; background: #0d0d14; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff;">
+            </div>
+            
+            <div class="form-group">
+              <label>Contact Phone</label>
+              <input type="text" id="phone" value="{{ college.phone or '' }}" class="glass" style="width: 100%; padding: 12px 16px; background: #0d0d14; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff;">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Social Links</label>
+            <div id="social-links-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+              <!-- Dynamic rows will go here -->
+            </div>
+            <button type="button" class="btn-cancel" style="width: auto; padding: 8px 16px; margin-top: 0; font-size: 14px;" onclick="addSocialLinkRow()">➕ Add Social Link</button>
+          </div>
+
+          <div class="form-group">
+            <label>Campus Facilities (Comma separated)</label>
+            <div style="font-size: 12px; color: #888; margin-bottom: 8px;">e.g., Library, Sports Complex, Hostels, WiFi Campus</div>
+            <input type="text" id="facilities" value="{{ college.facilities|join(', ') if college.facilities else '' }}">
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="description">{{ college.description or '' }}</textarea>
+          </div>
+
+          <!-- Banner and Logo Link Update -->
+          <div class="form-group" id="banner-section">
+            <label>Logo Image (Optional)</label>
+            <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Upload a new logo to replace the current one. Leave empty to keep the existing image.</div>
+            <input type="file" id="logo_file" accept="image/*" style="width: 100%; padding: 10px; background: #0d0d14; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
+          </div>
+          
+          <div class="form-group">
+            <label>Hero Banner Image (Optional)</label>
+            <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Upload a new banner to replace the current one. Leave empty to keep the existing image.</div>
+            <input type="file" id="hero_file" accept="image/*" style="width: 100%; padding: 10px; background: #0d0d14; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
+          </div>
+
+          <div style="margin-top: 30px;">
+            <button type="submit" class="btn-submit" id="submitBtn">Save Changes</button>
+            <button type="button" class="btn-cancel" onclick="window.history.back()">Cancel</button>
+          </div>
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script id="social-links-data" type="application/json">{{ (college.social_links or {}) | tojson | safe }}</script>
+  <script>
+  const existingSocialLinks = JSON.parse(document.getElementById('social-links-data').textContent);
+
+  // Scroll to banner if hash is present
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.hash === '#banner') {
+        const bannerSection = document.getElementById('banner-section');
+        if (bannerSection) {
+            bannerSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('hero_file').focus();
+        }
+    }
+
+    // Populate Social Links
+    const container = document.getElementById('social-links-container');
+    if (Object.keys(existingSocialLinks).length > 0) {
+      for (const [platform, url] of Object.entries(existingSocialLinks)) {
+        addSocialLinkRow(platform, url);
+      }
+    } else {
+      addSocialLinkRow(); // Add an empty row by default
+    }
+  });
+
+  function addSocialLinkRow(platform = '', url = '') {
+    const container = document.getElementById('social-links-container');
+    const row = document.createElement('div');
+    row.className = 'social-link-row';
+    row.style = 'display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; align-items: center;';
+    
+    // Check if platform is one of the predefined ones, otherwise it's 'other' and the custom name is the platform
+    const predefined = ['linkedin', 'instagram', 'facebook', 'whatsapp', 'twitter', 'youtube'];
+    const isCustom = platform && !predefined.includes(platform);
+    const selectValue = isCustom ? 'other' : (platform || 'linkedin');
+    const customDisplay = isCustom ? 'block' : 'none';
+    const customValue = isCustom ? platform : '';
+
+    row.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        <select class="platform-select glass" onchange="this.nextElementSibling.style.display = this.value === 'other' ? 'block' : 'none'" style="width: 100%; padding: 12px; background: #0d0d14; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff;">
+          <option value="linkedin" ${selectValue === 'linkedin' ? 'selected' : ''}>LinkedIn</option>
+          <option value="instagram" ${selectValue === 'instagram' ? 'selected' : ''}>Instagram</option>
+          <option value="facebook" ${selectValue === 'facebook' ? 'selected' : ''}>Facebook</option>
+          <option value="whatsapp" ${selectValue === 'whatsapp' ? 'selected' : ''}>WhatsApp Community</option>
+          <option value="twitter" ${selectValue === 'twitter' ? 'selected' : ''}>Twitter / X</option>
+          <option value="youtube" ${selectValue === 'youtube' ? 'selected' : ''}>YouTube</option>
+          <option value="other" ${selectValue === 'other' ? 'selected' : ''}>Other / Custom</option>
+        </select>
+        <input type="text" class="custom-platform-name glass" placeholder="Enter platform name..." value="${customValue}" style="display: ${customDisplay}; width: 100%; padding: 10px; background: #0d0d14; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 13px;">
+      </div>
+      <input type="url" class="platform-url glass" value="${url}" placeholder="https://..." style="width: 100%; height: 46px; padding: 12px; background: #0d0d14; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff;">
+      <button type="button" onclick="this.parentElement.remove()" style="background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); color: #ff4757; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; height: 46px;" title="Remove">🗑️</button>
+    `;
+    container.appendChild(row);
+  }
+
+  async function uploadFile(fileInputId) {
+    const fileInput = document.getElementById(fileInputId);
+    if (!fileInput || !fileInput.files[0]) return null;
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    
+    try {
+        const res = await fetch('/api/colleges/upload/', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${getCookie('access_token_cookie')}`
+            },
+            body: formData
+        });
+        
+        if (res.ok) {
+            const data = await res.json();
+            return data.url; // Returns the uploaded URL
+        } else {
+            console.error('File upload failed');
+            return null;
+        }
+    } catch (e) {
+        console.error('Error during file upload:', e);
+        return null;
+    }
+  }
+
+  async function submitEditCollege(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
+    const collegeId = document.getElementById('college_id').value;
+    
+    const socialLinks = {};
+    document.querySelectorAll('.social-link-row').forEach(row => {
+        let platform = row.querySelector('.platform-select').value;
+        if (platform === 'other') {
+            platform = row.querySelector('.custom-platform-name').value.trim();
+        }
+        const url = row.querySelector('.platform-url').value.trim();
+        if (platform && url) {
+            socialLinks[platform] = url;
+        }
+    });
+
+    const payload = {
+        name: document.getElementById('name').value,
+        short_name: document.getElementById('short_name').value,
+        city: document.getElementById('city').value,
+        state: document.getElementById('state').value,
+        type: document.getElementById('type').value,
+        established: document.getElementById('established').value,
+        description: document.getElementById('description').value,
+        website: document.getElementById('website').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        social_links: socialLinks,
+        facilities: document.getElementById('facilities').value
+    };
+
+    // Handle File Uploads
+    const logoUrl = await uploadFile('logo_file');
+    if (logoUrl) {
+        payload.logo_url = logoUrl;
+    }
+
+    const heroUrl = await uploadFile('hero_file');
+    if (heroUrl) {
+        payload.hero_image = heroUrl;
+    }
+
+    try {
+      // Make sure apiFetch handles the stringification if we don't do it.
+      // But just to be safe, if we are not sure apiFetch stringifies, we can use fetch directly:
+      const response = await fetch(`/api/colleges/${collegeId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getCookie('access_token_cookie')}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        showToast('College updated successfully!', 'success');
+        setTimeout(() => {
+            window.location.href = `/colleges/${collegeId}`;
+        }, 1000);
+      } else {
+        const errorData = await response.json();
+        showToast(`Error: ${errorData.error || 'Failed to update college'}`, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Changes';
+      }
+    } catch (error) {
+      console.error('Error updating college:', error);
+      showToast('A network error occurred while updating.', 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save Changes';
+    }
+  }
+
+  // Helper to get cookie for auth token if needed
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+
+  // Basic toast implementation if not available globally
+  if (typeof showToast !== 'function') {
+      window.showToast = function(msg, type) {
+          alert(msg);
+      }
+  }
+</script>
+{% endblock %}

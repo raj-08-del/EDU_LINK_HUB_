@@ -649,6 +649,113 @@
     transform: scale(1.04) !important;
     box-shadow: 0 0 24px rgba(5, 217, 232, 0.5) !important;
   }
+  /* ─── Filter Bar ─── */
+  .filter-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+    position: relative;
+    z-index: 10;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+
+  .filter-chip {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .filter-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .filter-chip.active {
+    background: var(--accent);
+    color: #010a13;
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(5, 217, 232, 0.4);
+    font-weight: 700;
+  }
+
+  /* ─── Hide Confirmation Popover ─── */
+  .hide-confirm-popover {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: rgba(13, 27, 42, 0.95);
+    backdrop-filter: blur(15px);
+    border: 2px solid #ff2a6d;
+    border-radius: 16px;
+    padding: 32px;
+    z-index: 10000;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(255, 42, 109, 0.2);
+    display: none;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hide-confirm-popover.show {
+    display: block;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .hide-confirm-popover h4 {
+    margin: 0 0 12px 0;
+    font-size: 22px;
+    color: #fff;
+  }
+
+  .hide-confirm-popover p {
+    margin: 0 0 24px 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .hide-confirm-btns {
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn-confirm-hide {
+    flex: 1;
+    background: #ff2a6d;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .btn-cancel-hide {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+  }
 </style>
 <div id="new-event-modal"
      style="display:none;
@@ -1277,7 +1384,9 @@
                 <span class="card-badge badge-${e.category}">${e.category.replace('-', ' ')}</span>
               </div>
               <h2 class="tc-title">${escapeHtml(e.title)}</h2>
-              <h3 class="tc-org">🎓 ${escapeHtml(e.college_name || e.organizer || 'College')}</h3>
+              <h3 class="tc-org">🎓 ${escapeHtml(e.college_name || e.organizer || 'College')}
+                ${e.is_auto_collected ? `<span style="background:rgba(5,217,232,0.1); border:1px solid #05d9e8; color:#05d9e8; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; margin-left:8px; vertical-align: middle;">🤖 AUTO</span>` : ''}
+              </h3>
               ${isAdmin && e.creator_name ? `
                 <div style="font-size:11px; color:#05d9e8; margin: 4px 0 12px; font-weight:600; line-height: 1.4;">
                   👤 Posted by: ${escapeHtml(e.creator_name)}
@@ -1314,31 +1423,21 @@
         </div>
         `;
       }).join('');
-      
-      // Fix 3: Hide all spinners/loading indicators after load
-      setTimeout(() => {
-        document.querySelectorAll('.spinner, .loading-dot, .pulse-dot').forEach(el => {
-          if (el) el.style.display = 'none';
-        });
-      }, 500);
     } catch (err) {
       console.error('FAILED TO LOAD EVENTS:', err);
-      showError('Could not load events timeline. Please check your connection.');
+      const grid = document.getElementById('eventsGrid');
+      if (grid) {
+        grid.innerHTML = `
+          <div class="load-error" style="text-align:center; padding:40px; color:#ff2a6d;">
+            <div style="font-size:32px; margin-bottom:12px;">⚠️</div>
+            <p>Could not load events. ${err.message || 'Check your connection.'}</p>
+            <button class="btn btn-secondary" style="margin-top:16px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; padding:8px 20px; border-radius:8px; cursor:pointer;" onclick="loadEvents(currentFilter)">
+              🔄 Try Again
+            </button>
+          </div>
+        `;
+      }
     }
-  }
-
-  function showError(msg) {
-    const grid = document.getElementById('eventsGrid');
-    if (!grid) return;
-    grid.innerHTML = `
-      <div class="load-error">
-        <span>⚠️</span>
-        <p>${msg}</p>
-        <button class="btn btn-secondary" onclick="loadEvents(currentFilter)">
-          🔄 Try Again
-        </button>
-      </div>
-    `;
   }
 
   function filterEvents(category, btn) {
@@ -1613,8 +1712,23 @@
     } catch(e) { showToast(e.message, 'error'); }
   }
 
-  async function hideEvent(id) {
-    console.log(`=== HIDE EVENT DEBUG: ${id} ===`);
+  function hideEvent(id) {
+    const popover = document.getElementById('hideConfirmPopover');
+    if (!popover) return;
+    const confirmBtn = document.getElementById('confirmHideBtn');
+    if (confirmBtn) {
+      confirmBtn.onclick = () => doHideEvent(id);
+    }
+    popover.classList.add('show');
+  }
+
+  function closeHidePopover() {
+    const popover = document.getElementById('hideConfirmPopover');
+    if (popover) popover.classList.remove('show');
+  }
+
+  async function doHideEvent(id) {
+    closeHidePopover();
     if (!id) return;
     
     try {
@@ -1622,8 +1736,6 @@
         method: 'POST',
         body: JSON.stringify({ hide: true })
       });
-
-      console.log('Hide Response:', data);
 
       if (data && !data.error) {
         const node = document.getElementById(`node-${id}`);
@@ -1636,7 +1748,6 @@
         showToast('❌ Error: ' + (data?.error || data?.message || 'Failed to hide'), 'error');
       }
     } catch(e) {
-      console.error('Hide Network Error:', e);
       showToast('❌ Network error. Try again.', 'error');
     }
   }

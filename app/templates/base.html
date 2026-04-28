@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="/static/css/card_dropdown.css">
   {% block head %}{% endblock %}
 </head>
-<body>
+<body data-is-admin="{{ 'true' if is_admin else ('true' if current_user and (current_user.get('is_admin') or current_user.get('role', '')|lower == 'admin') else 'false') }}">
   <div class="space-bg" id="spaceBg">
     <div class="mesh-gradient"></div>
     <div class="starfield"></div>
@@ -63,6 +63,33 @@
   </div>
 
   {% block body %}{% endblock %}
+
+  <!-- Flash Messages Data -->
+  <div id="flash-messages-data" style="display:none;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-data-item" data-category="{{ category }}" data-message="{{ message }}"></div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.flash-data-item').forEach(item => {
+        const category = item.dataset.category;
+        const message = item.dataset.message;
+        const type = category === 'success' ? 'success' : (category === 'danger' || category === 'error' ? 'error' : 'info');
+        
+        if (window.showToast) {
+          window.showToast(message, type);
+        } else {
+          console.log("Flash:", message);
+        }
+      });
+    });
+  </script>
   <script src="/static/js/app.js"></script>
   <script src="/static/js/card_dropdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

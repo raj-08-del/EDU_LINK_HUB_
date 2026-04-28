@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Study Groups - EDU Link Hub{% endblock %}
+{% block title %}Synapse Society - EDU Link Hub{% endblock %}
 
 {% block body %}
 <div class="app-layout">
@@ -11,19 +11,22 @@
         <div class="header-title-wrapper">
           <h1 class="glow-heading">
             <span class="emoji-icon">👥</span>
-            <span class="text-gradient-animated">Study Groups</span>
+            <span class="text-gradient-animated">Synapse Society</span>
           </h1>
           <div class="glow-line"></div>
-          <p class="header-subtitle">Join study groups or create your own to collaborate with peers.</p>
+          <p class="header-subtitle">Join Synapse Societies or create your own to collaborate with peers.</p>
         </div>
         <button class="btn btn-primary" onclick="openModal('createGroupModal')">+ Create Group</button>
       </div>
 
       <!-- Filters & Search -->
-      <div class="filter-bar" style="display:flex; gap: 10px; align-items: center; margin-bottom: 24px;">
+      <div class="filter-bar">
         <button class="filter-chip active" onclick="filterGroups('all', this)">All Groups</button>
         <button class="filter-chip" onclick="filterGroups('my', this)">My Groups</button>
-        <input type="text" id="groupSearch" placeholder="Search groups..." class="form-control" style="max-width:300px; margin-left:auto; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; padding:8px 16px; border-radius:20px;">
+        <div class="search-wrapper" style="margin-left:auto;">
+          <input type="text" id="groupSearch" placeholder="Search groups..." class="search-input">
+          <span class="search-icon">🔍</span>
+        </div>
       </div>
 
       <!-- Groups Container -->
@@ -141,7 +144,7 @@
         {% if not groups %}
           <div class="empty-state" style="grid-column: 1 / -1; padding: 40px; text-align: center;">
             <div class="empty-icon" style="font-size:48px; margin-bottom:16px;">👥</div>
-            <h3 style="color:white; margin-bottom:8px;">No study groups yet</h3>
+            <h3 style="color:white; margin-bottom:8px;">No societies yet</h3>
             <p style="color:var(--text-secondary);">Be the first to create one!</p>
           </div>
         {% endif %}
@@ -207,11 +210,75 @@
         </div>
       </div>
 
-    </div>
-  </div>
-</div>
-
 <style>
+  /* --- Premium Filter Bar & Chips --- */
+  .filter-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .filter-chip {
+    padding: 10px 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    line-height: 1;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .filter-chip:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  .filter-chip.active {
+    background: linear-gradient(135deg, #05d9e8 0%, #005670 100%);
+    border-color: #05d9e8;
+    color: white !important;
+    box-shadow: 0 0 20px rgba(5, 217, 232, 0.4);
+    transform: scale(1.05);
+  }
+
+  /* Search Bar */
+  .search-wrapper {
+    position: relative;
+    max-width: 300px;
+    width: 100%;
+  }
+  .search-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 12px 16px 12px 40px;
+    border-radius: 12px;
+    font-size: 14px;
+    transition: all 0.3s;
+  }
+  .search-input:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #05d9e8;
+    box-shadow: 0 0 15px rgba(5, 217, 232, 0.2);
+    outline: none;
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
   .group-card {
     background: linear-gradient(135deg, rgba(30, 20, 50, 0.6) 0%, rgba(15, 10, 30, 0.8) 100%);
     backdrop-filter: blur(25px);
@@ -222,7 +289,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    overflow: visible !important; /* Ensure menu is visible */
+    overflow: visible !important;
   }
   .group-card:hover {
     transform: translateY(-10px);
@@ -271,20 +338,37 @@
     align-items: center;
     gap: 6px;
   }
-  /* ─── Standardized Card Menus ─── */
-  .group-card { position: relative !important; }
-  .card-menu-container { position: absolute !important; top: 15px !important; right: 20px !important; z-index: 100 !important; }
-  .menu-trigger { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; width: 32px !important; height: 32px !important; border-radius: 50% !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; transition: all 0.3s !important; font-size: 18px !important; }
-  .menu-trigger:hover { background: rgba(5,217,232,0.2) !important; color: var(--accent) !important; border-color: var(--accent) !important; transform: rotate(90deg) !important; }
-  .menu-dropdown { position: absolute !important; top: 40px !important; right: 0 !important; background: rgba(10, 5, 25, 0.98) !important; backdrop-filter: blur(20px) !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 12px !important; width: 200px !important; display: none; flex-direction: column !important; padding: 8px !important; box-shadow: 0 15px 45px rgba(0,0,0,0.85) !important; z-index: 1000 !important; gap: 4px !important; }
-  .menu-dropdown.show { display: flex !important; }
-  .menu-item { padding: 10px 14px !important; border-radius: 8px !important; font-size: 13px !important; color: white !important; cursor: pointer !important; display: flex !important; align-items: center !important; gap: 10px !important; transition: all 0.2s !important; }
-  .menu-item:hover { background: rgba(255,255,255,0.1) !important; color: var(--accent) !important; transform: translateX(5px) !important; }
-  .menu-item.danger:hover { background: rgba(255,71,87,0.1) !important; color: #ff4757 !important; }
-
+  .group-three-dot {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    transition: color 0.2s;
+  }
+  .group-three-dot:hover { color: #05d9e8; }
+  
+  .group-dropdown {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 12px;
+    background: #0d1b2a;
+    border: 1px solid #05d9e8;
+    border-radius: 10px;
+    min-width: 175px;
+    z-index: 9999;
+    padding: 4px 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
   .members-badge {
     position: absolute;
-    bottom: 85px; /* Above the main button */
+    bottom: 85px;
     right: 24px;
     background: rgba(5, 217, 232, 0.1);
     border: 1px solid rgba(5, 217, 232, 0.2);

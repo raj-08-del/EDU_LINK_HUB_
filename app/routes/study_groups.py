@@ -45,7 +45,7 @@ def create_group():
 @jwt_required()
 def list_groups():
     # Only list public groups
-    groups = list(mongo.db.study_groups.find({'is_private': False}).sort('created_at', -1))
+    groups = list(mongo.db.study_groups.find({'is_private': {'$ne': True}}).sort('created_at', -1))
     return jsonify(serialize_doc(groups)), 200
 
 
@@ -71,17 +71,17 @@ def get_group(group_id):
 
         # Private group: non-members get limited info + is_private flag so FE can show join prompt
         if group.get('is_private') and not is_member:
-            return jsonify({
-                '_id': str(group['_id']),
+            return jsonify(serialize_doc({
+                '_id': group['_id'],
                 'name': group.get('name'),
                 'subject': group.get('subject'),
                 'description': group.get('description', ''),
                 'is_private': True,
                 'is_member': False,
                 'member_count': len(group.get('members', [])),
-                'created_by': str(group.get('created_by', '')),
-                'created_at': group.get('created_at').isoformat() if group.get('created_at') else None
-            }), 200
+                'created_by': group.get('created_by'),
+                'created_at': group.get('created_at')
+            })), 200
 
         # Full details for members / public groups
         member_docs = list(mongo.db.users.find(
@@ -97,24 +97,17 @@ def get_group(group_id):
         creator_id_str = str(group.get('created_by'))
         for m in member_docs:
             m_id_str = str(m['_id'])
-            m['_id'] = m_id_str
             m['is_creator'] = m_id_str == creator_id_str
             
             # Anonymize if not admin and not self
             if not is_page_admin and m_id_str != str(user_id):
                 m['name'] = 'Group Creator' if m['is_creator'] else 'Member'
 
-        # Serialize properly as requested
-        group['_id'] = str(group['_id'])
-        group['created_by'] = creator_id_str
-        group['members'] = [str(m) for m in group.get('members', [])]
+        # Serialize properly using serialize_doc
         group['member_details'] = member_docs
         group['is_member'] = is_member
         
-        if 'created_at' in group and group['created_at']:
-            group['created_at'] = group['created_at'].isoformat()
-
-        return jsonify(group), 200
+        return jsonify(serialize_doc(group)), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -237,8 +230,6 @@ def get_messages(group_id):
         )
         
         for m in messages:
-            m['_id'] = str(m['_id'])
-            m['group_id'] = str(m['group_id'])
             author_id = m.get('author')
             if author_id:
                 u = mongo.db.users.find_one({'_id': ObjectId(str(author_id))}, {'name': 1})
@@ -246,10 +237,7 @@ def get_messages(group_id):
             else:
                 m['author_name'] = 'Anonymous'
 
-            if 'created_at' in m and m['created_at']:
-                m['created_at'] = m['created_at'].isoformat()
-                
-        return jsonify(messages), 200
+        return jsonify(serialize_doc(messages)), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -290,9 +278,7 @@ def send_message(group_id):
         }
         
         result = mongo.db.study_group_messages.insert_one(message)
-        message['_id'] = str(result.inserted_id)
-        message['group_id'] = str(message['group_id'])
-        message['author'] = str(message['author'])
+        message['_id'] = result.inserted_id
         
         # Award points for messaging
         try:
@@ -301,7 +287,7 @@ def send_message(group_id):
         except:
             pass
             
-        return jsonify(message), 201
+        return jsonify(serialize_doc(message)), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -485,4 +471,5 @@ def toggle_group_privacy(group_id):
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 

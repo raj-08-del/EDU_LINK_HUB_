@@ -1,0 +1,483 @@
+{% if current_user and (current_user.role in ['admin', 'moderator'] or current_user._id|string == college.created_by|string) %}
+<!-- ==============================
+     ADMIN CRUD MODALS AND SCRIPTS
+     ============================== -->
+
+<!-- Modal Styles -->
+<style>
+.crud-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.crud-modal.active {
+  display: flex;
+}
+.crud-modal-content {
+  background: #0d1b2a;
+  border: 1px solid rgba(5,217,232,0.3);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  position: relative;
+}
+.crud-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.crud-form-group {
+  margin-bottom: 16px;
+}
+.crud-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #aaa;
+  font-size: 14px;
+}
+.crud-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #0a1020;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #fff;
+}
+.crud-btn {
+  background: #05d9e8;
+  color: #000;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 800;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 20px;
+}
+</style>
+
+<!-- PLACEMENT MODAL -->
+<div id="modal-placement" class="crud-modal">
+  <div class="crud-modal-content">
+    <button class="crud-close" onclick="closeCrudModal('placement')">✖</button>
+    <h2 id="placement-modal-title" style="margin:0 0 20px; color:#fff;">Add Placement</h2>
+    <form id="form-placement" onsubmit="submitCrud(event, 'placements')">
+      <input type="hidden" id="placement_id" value="">
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="crud-form-group">
+          <label>Student Name</label>
+          <input type="text" id="placement_student_name" class="crud-input" required>
+        </div>
+        <div class="crud-form-group">
+          <label>Batch Year</label>
+          <input type="number" id="placement_batch_year" class="crud-input" required>
+        </div>
+      </div>
+
+      <div class="crud-form-group">
+        <label>Student Photo Upload (Optional)</label>
+        <input type="file" id="placement_student_file" class="crud-input" accept="image/*">
+        <!-- Hidden URL input to maintain JS logic without UI clutter -->
+        <input type="hidden" id="placement_student_photo" value="">
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="crud-form-group">
+          <label>Company</label>
+          <input type="text" id="placement_company" class="crud-input" required>
+        </div>
+        <div class="crud-form-group">
+          <label>Role / Designation</label>
+          <input type="text" id="placement_role" class="crud-input" required>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="crud-form-group">
+          <label>Package (LPA)</label>
+          <input type="number" step="0.01" id="placement_package_lpa" class="crud-input" required>
+        </div>
+        <div class="crud-form-group">
+          <label>Department</label>
+          <select id="placement_dept_id" class="crud-input">
+            <option value="">-- Select Department --</option>
+            {% for d in departments %}
+            <option value="{{ d._id }}">{{ d.name }} ({{ d.short_name }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="crud-form-group">
+        <label>Company Logo Upload (Optional)</label>
+        <input type="file" id="placement_company_file" class="crud-input" accept="image/*">
+        <input type="hidden" id="placement_company_logo" value="">
+      </div>
+
+      <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.05); padding-top:15px;">
+        <h4 style="margin:0 0 15px; color:#05d9e8; font-size:14px; text-transform:uppercase; letter-spacing:1px;">Social Links (Optional)</h4>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div class="crud-form-group">
+            <label>LinkedIn URL</label>
+            <input type="url" id="placement_linkedin_url" class="crud-input" placeholder="https://linkedin.com/in/...">
+          </div>
+          <div class="crud-form-group">
+            <label>Twitter URL</label>
+            <input type="url" id="placement_twitter_url" class="crud-input" placeholder="https://twitter.com/...">
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div class="crud-form-group">
+            <label>Instagram URL</label>
+            <input type="url" id="placement_instagram_url" class="crud-input" placeholder="https://instagram.com/...">
+          </div>
+          <div class="crud-form-group">
+            <label>Other Social Platform Name</label>
+            <input type="text" id="placement_other_social_name" class="crud-input" placeholder="e.g. GitHub, Portfolio">
+          </div>
+        </div>
+        <div class="crud-form-group">
+          <label>Other Social URL</label>
+          <input type="url" id="placement_other_social_url" class="crud-input" placeholder="https://...">
+        </div>
+      </div>
+
+      <button type="submit" class="crud-btn">Save Placement</button>
+    </form>
+  </div>
+</div>
+
+<!-- DEPARTMENT MODAL -->
+<div id="modal-department" class="crud-modal">
+  <div class="crud-modal-content">
+    <button class="crud-close" onclick="closeCrudModal('department')">✖</button>
+    <h2 id="department-modal-title" style="margin:0 0 20px; color:#fff;">Add Department</h2>
+    <form id="form-department" onsubmit="submitCrud(event, 'departments')">
+      <input type="hidden" id="department_id" value="">
+      
+      <div class="crud-form-group">
+        <label>Department Name</label>
+        <input type="text" id="department_name" class="crud-input" required>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="crud-form-group">
+          <label>Short Name (e.g., CSE)</label>
+          <input type="text" id="department_short_name" class="crud-input" required>
+        </div>
+        <div class="crud-form-group">
+          <label>Head of Department (Optional)</label>
+          <input type="text" id="department_head_of_dept" class="crud-input">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+        <div class="crud-form-group">
+          <label>Faculty Count</label>
+          <input type="number" id="department_faculty_count" class="crud-input">
+        </div>
+        <div class="crud-form-group">
+          <label>Student Count</label>
+          <input type="number" id="department_student_count" class="crud-input">
+        </div>
+        <div class="crud-form-group">
+          <label>Established</label>
+          <input type="number" id="department_established" class="crud-input">
+        </div>
+      </div>
+
+      <div class="crud-form-group">
+        <label>Description</label>
+        <textarea id="department_description" class="crud-input" rows="3"></textarea>
+      </div>
+
+      <button type="submit" class="crud-btn">Save Department</button>
+    </form>
+  </div>
+</div>
+
+<!-- ALUMNI MODAL -->
+<div id="modal-alumni" class="crud-modal">
+  <div class="crud-modal-content">
+    <button class="crud-close" onclick="closeCrudModal('alumni')">✖</button>
+    <h2 id="alumni-modal-title" style="margin:0 0 20px; color:#fff;">Add Alumni</h2>
+    <form id="form-alumni" onsubmit="submitCrud(event, 'alumni')">
+      <input type="hidden" id="alumni_id" value="">
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="crud-form-group">
+          <label>Name</label>
+          <input type="text" id="alumni_name" class="crud-input" required>
+        </div>
+        <div class="crud-form-group">
+          <label>Batch Year</label>
+          <input type="number" id="alumni_batch" class="crud-input" required>
+        </div>
+      </div>
+
+      <div class="crud-form-group">
+        <label>Photo Upload (Optional)</label>
+        <input type="file" id="alumni_file" class="crud-input" accept="image/*">
+        <input type="hidden" id="alumni_photo" value="">
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="crud-form-group">
+          <label>Company</label>
+          <input type="text" id="alumni_company" class="crud-input" required>
+        </div>
+        <div class="crud-form-group">
+          <label>Role</label>
+          <input type="text" id="alumni_role" class="crud-input" required>
+        </div>
+      </div>
+
+        <div class="crud-form-group">
+          <label>Department</label>
+          <select id="alumni_dept_id" class="crud-input">
+            <option value="">-- Select Department --</option>
+            {% for d in departments %}
+            <option value="{{ d._id }}">{{ d.name }} ({{ d.short_name }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="crud-form-group">
+          <label>Package LPA (Optional)</label>
+          <input type="number" step="0.01" id="alumni_package" class="crud-input">
+        </div>
+
+      <div class="crud-form-group" style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="alumni_is_wall_of_fame" style="width:20px; height:20px;">
+        <label style="margin:0;">Highlight on Wall of Fame?</label>
+      </div>
+
+      <button type="submit" class="crud-btn">Save Alumni</button>
+    </form>
+  </div>
+</div>
+
+<!-- GALLERY MODAL -->
+<div id="modal-gallery" class="crud-modal">
+  <div class="crud-modal-content">
+    <button class="crud-close" onclick="closeCrudModal('gallery')">✖</button>
+    <h2 id="gallery-modal-title" style="margin:0 0 20px; color:#fff;">Add Gallery Event</h2>
+    <form id="form-gallery" onsubmit="submitCrud(event, 'gallery')">
+      <input type="hidden" id="gallery_id" value="">
+      
+      <div class="crud-form-group">
+        <label>Event Title</label>
+        <input type="text" id="gallery_title" class="crud-input" required>
+      </div>
+
+      <div class="crud-form-group">
+        <label>Image Upload</label>
+        <input type="file" id="gallery_file" class="crud-input" accept="image/*">
+        <input type="hidden" id="gallery_image_url" value="">
+      </div>
+
+      <div class="crud-form-group">
+        <label>Date (Optional)</label>
+        <input type="date" id="gallery_date" class="crud-input">
+      </div>
+
+      <div class="crud-form-group">
+        <label>Description (Optional)</label>
+        <textarea id="gallery_description" class="crud-input" rows="3"></textarea>
+      </div>
+
+      <button type="submit" class="crud-btn">Save Event</button>
+    </form>
+  </div>
+</div>
+
+<script>
+// --- Admin CRUD Functions ---
+
+const collegeId = '{{ college._id }}';
+
+function openCrudModal(type, data = null) {
+  const modal = document.getElementById(`modal-${type}`);
+  if (!modal) return;
+  
+  const form = document.getElementById(`form-${type}`);
+  form.reset();
+  document.getElementById(`${type}-modal-title`).innerText = data ? `Edit ${type.charAt(0).toUpperCase() + type.slice(1)}` : `Add ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+  
+  if (data) {
+    document.getElementById(`${type}_id`).value = data._id;
+    // Populate fields based on type
+    Object.keys(data).forEach(key => {
+      const el = document.getElementById(`${type}_${key}`);
+      if (el) {
+        if (el.type === 'checkbox') {
+          el.checked = data[key];
+        } else {
+          el.value = data[key];
+        }
+      }
+    });
+  } else {
+    document.getElementById(`${type}_id`).value = '';
+  }
+  
+  modal.classList.add('active');
+}
+
+function closeCrudModal(type) {
+  document.getElementById(`modal-${type}`).classList.remove('active');
+}
+
+async function handleFileUpload(fileInputId, fallbackUrlId) {
+  const fileInput = document.getElementById(fileInputId);
+  if (fileInput && fileInput.files.length > 0) {
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    try {
+      const res = await fetch('/api/colleges/upload/', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access_token') },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.url) return data.url;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  return document.getElementById(fallbackUrlId) ? document.getElementById(fallbackUrlId).value : '';
+}
+
+async function submitCrud(event, collectionType) {
+  event.preventDefault();
+  const type = collectionType === 'departments' ? 'department' : 
+               collectionType === 'placements' ? 'placement' : 
+               collectionType === 'alumni' ? 'alumni' : 'gallery';
+
+  const id = document.getElementById(`${type}_id`).value;
+  const method = id ? 'PUT' : 'POST';
+  const url = id ? `/api/colleges/${collegeId}/${collectionType}/${id}` : `/api/colleges/${collegeId}/${collectionType}`;
+  
+  let payload = {};
+  
+  // Build payload based on type
+  if (type === 'placement') {
+    const studentPhotoUrl = await handleFileUpload('placement_student_file', 'placement_student_photo');
+    const companyLogoUrl = await handleFileUpload('placement_company_file', 'placement_company_logo');
+    payload = {
+      student_name: document.getElementById('placement_student_name').value,
+      student_photo: studentPhotoUrl,
+      batch_year: document.getElementById('placement_batch_year').value,
+      company: document.getElementById('placement_company').value,
+      role: document.getElementById('placement_role').value,
+      package_lpa: document.getElementById('placement_package_lpa').value,
+      dept_id: document.getElementById('placement_dept_id').value,
+      company_logo: companyLogoUrl,
+      linkedin_url: document.getElementById('placement_linkedin_url').value,
+      twitter_url: document.getElementById('placement_twitter_url').value,
+      instagram_url: document.getElementById('placement_instagram_url').value,
+      other_social_name: document.getElementById('placement_other_social_name').value,
+      other_social_url: document.getElementById('placement_other_social_url').value,
+    };
+  } else if (type === 'department') {
+    payload = {
+      name: document.getElementById('department_name').value,
+      short_name: document.getElementById('department_short_name').value,
+      head_of_dept: document.getElementById('department_head_of_dept').value,
+      faculty_count: document.getElementById('department_faculty_count').value,
+      student_count: document.getElementById('department_student_count').value,
+      established: document.getElementById('department_established').value,
+      description: document.getElementById('department_description').value,
+    };
+  } else if (type === 'alumni') {
+    const alumniPhotoUrl = await handleFileUpload('alumni_file', 'alumni_photo');
+    payload = {
+      name: document.getElementById('alumni_name').value,
+      batch: document.getElementById('alumni_batch').value,
+      photo: alumniPhotoUrl,
+      company: document.getElementById('alumni_company').value,
+      role: document.getElementById('alumni_role').value,
+      package: document.getElementById('alumni_package').value,
+      dept_id: document.getElementById('alumni_dept_id').value,
+      linkedin: document.getElementById('alumni_linkedin').value,
+      is_wall_of_fame: document.getElementById('alumni_is_wall_of_fame').checked,
+    };
+  } else if (type === 'gallery') {
+    const finalImageUrl = await handleFileUpload('gallery_file', 'gallery_image_url');
+    payload = {
+      title: document.getElementById('gallery_title').value,
+      image_url: finalImageUrl,
+      date: document.getElementById('gallery_date').value,
+      description: document.getElementById('gallery_description').value,
+    };
+  }
+
+  const token = localStorage.getItem('access_token');
+  if (!token) return alert('You must be logged in');
+
+  try {
+    const res = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      alert(id ? 'Updated successfully!' : 'Created successfully!');
+      location.reload();
+    } else {
+      alert('Error: ' + data.error);
+    }
+  } catch (err) {
+    console.error(err);
+    alert('An error occurred.');
+  }
+}
+
+function deleteCrudItem(collectionType, id) {
+  if (!confirm('Are you sure you want to delete this item?')) return;
+  const token = localStorage.getItem('access_token');
+  fetch(`/api/colleges/${collegeId}/${collectionType}/${id}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(r => r.json())
+  .then(d => {
+    if(d.message) {
+      alert('Deleted!');
+      location.reload();
+    } else {
+      alert(d.error || 'Failed to delete');
+    }
+  })
+  .catch(e => {
+    console.error(e);
+    alert('Error deleting item');
+  });
+}
+</script>
+{% endif %}

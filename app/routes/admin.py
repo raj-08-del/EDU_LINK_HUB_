@@ -46,6 +46,8 @@ def get_stats():
         'pending_opportunities': mongo.db.opportunities.count_documents({'status': 'pending'}),
         'events': mongo.db.events.count_documents({}),
         'opportunities': mongo.db.opportunities.count_documents({}),
+        'auto_events': mongo.db.events.count_documents({'is_auto_collected': True}),
+        'auto_opps': mongo.db.opportunities.count_documents({'is_auto_collected': True}),
         'community_posts': mongo.db.community_posts.count_documents({}),
         'chat_messages': mongo.db.chat_messages.count_documents({}),
     }
@@ -77,6 +79,7 @@ def get_stats():
 def get_users():
     search = request.args.get('search')
     role = request.args.get('role')
+    limit = int(request.args.get('limit', 100))
 
     query = {}
     if role:
@@ -87,7 +90,7 @@ def get_users():
             {'email': {'$regex': search, '$options': 'i'}},
         ]
 
-    users = list(mongo.db.users.find(query, {'password': 0}).sort('created_at', -1))
+    users = list(mongo.db.users.find(query, {'password': 0}).sort('created_at', -1).limit(limit))
     return jsonify(serialize_doc(users))
 
 
@@ -231,3 +234,28 @@ def get_report_counts():
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/collect-now', methods=['POST'])
+@jwt_required()
+@role_required('admin')
+def trigger_collection():
+    from app.services.auto_collector import run_all_collectors
+    import os
+    import threading
+
+    config = {
+        "ADZUNA_APP_ID": os.getenv("ADZUNA_APP_ID", ""),
+        "ADZUNA_APP_KEY": os.getenv("ADZUNA_APP_KEY", "")
+    }
+
+    def run_in_background():
+        try:
+            run_all_collectors(mongo, config)
+            print("[AutoCollector] Manual collection completed.")
+        except Exception as e:
+            print(f"[AutoCollector] Manual collection error: {e}")
+
+    t = threading.Thread(target=run_in_background, daemon=True)
+    t.start()
+
+    return jsonify({"message": "✅ Auto Collector started in background. Check logs for progress."}), 202

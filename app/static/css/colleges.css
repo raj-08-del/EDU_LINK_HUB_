@@ -1,0 +1,233 @@
+/* 
+   EDU LINK HUB - Colleges & Communities Redesign
+   Aesthetics: Premium Dark / Cyan Glow / Modern Grid
+*/
+
+:root {
+    --bg-dark: #0a0a0f;
+    --card-bg: #1a1a2e;
+    --accent-purple: #6c63ff;
+    --accent-cyan: #00d4ff;
+    --text-main: #ffffff;
+    --text-dim: #a0a0c0;
+    --border-soft: rgba(255, 255, 255, 0.08);
+}
+
+/* --- Layout & Grid --- */
+.main-content {
+    background-color: var(--bg-dark);
+}
+
+#collegesGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 20px 0;
+}
+
+/* Responsive Grid */
+@media (max-width: 1024px) {
+    #collegesGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    #collegesGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- College Card Redesign --- */
+.college-card-new {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-soft);
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+.college-card-new:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 
+                0 0 20px rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+
+/* --- Banner Gradients --- */
+.card-banner {
+    height: 160px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.banner-deemed { background: linear-gradient(135deg, #1a0533, #2d1b69, #11998e); }
+.banner-government { background: linear-gradient(135deg, #0f3460, #16213e, #1a1a2e); }
+.banner-private { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); }
+.banner-default { background: linear-gradient(135deg, #0a0a0f, #1a1a2e, #2d2d44); }
+
+/* --- Letter Avatar --- */
+.letter-avatar {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    text-transform: uppercase;
+}
+
+/* --- Badges --- */
+.type-badge-top {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 20px;
+    padding: 3px 12px;
+    text-transform: uppercase;
+    backdrop-filter: blur(4px);
+    letter-spacing: 0.5px;
+}
+
+/* --- Card Body Content --- */
+.card-body-content {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.college-name-header {
+    font-size: 16px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    line-height: 1.4;
+}
+
+.location-muted {
+    font-size: 13px;
+    color: var(--accent-cyan);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.card-hr {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    margin: 0 0 20px 0;
+}
+
+/* --- Buttons --- */
+.card-actions-row {
+    display: flex;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.btn-join-ecosystem {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.btn-join-ecosystem:hover {
+    background: var(--accent-cyan);
+    color: #000;
+}
+
+.btn-explore-hub {
+    flex: 1.2;
+    background: var(--accent-purple);
+    border: none;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.btn-explore-hub:hover {
+    background: #5a52e0;
+    box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+}
+
+/* --- Filter Pills --- */
+.tab-pill {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-dim);
+    border-radius: 20px;
+    padding: 8px 22px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-pill:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+
+.tab-pill.active {
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    color: #000;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+/* --- Skeleton Loading --- */
+.skeleton-card {
+    background: linear-gradient(90deg, #1a1a2e 25%, #24243e 50%, #1a1a2e 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite;
+    border-radius: 16px;
+}
+
+@keyframes loading-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

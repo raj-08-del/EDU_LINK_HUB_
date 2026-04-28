@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block title %}Edit Opportunity - EDU Link Hub{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/opportunities.css') }}">
+<style>
+  .edit-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #1a1a2e;
+    border: 1px solid rgba(108, 99, 255, 0.3);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+
+  .edit-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .edit-header h2 {
+    color: #fff;
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    color: #a0a0c0;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="url"],
+  .form-group input[type="date"],
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: #0d0d14;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 15px;
+    font-family: inherit;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: #6c63ff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #6c63ff, #00d2ff);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.3s, transform 0.2s;
+  }
+
+  .btn-submit:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  .btn-cancel {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    color: #a0a0c0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s;
+  }
+
+  .btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/navbar.html" %}
+    <div class="page-content">
+      
+      <div class="edit-container">
+        <div class="edit-header">
+          <h2>✏️ Edit Opportunity</h2>
+          <p style="color: var(--text-muted);">Update details for your opportunity listing.</p>
+        </div>
+
+        <form id="editOpportunityForm" onsubmit="submitEditOpportunity(event)">
+          <input type="hidden" id="opp_id" value="{{ opp._id }}">
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label>Company Name</label>
+              <input type="text" id="company" value="{{ opp.company }}" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Role / Position</label>
+              <input type="text" id="role" value="{{ opp.role }}" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label>Category</label>
+              <select id="category" required>
+                <option value="internship" {% if opp.category == 'internship' %}selected{% endif %}>Internship</option>
+                <option value="job" {% if opp.category == 'job' %}selected{% endif %}>Job</option>
+                <option value="campus-placement" {% if opp.category == 'campus-placement' %}selected{% endif %}>Campus Placement</option>
+                <option value="skill-based" {% if opp.category == 'skill-based' %}selected{% endif %}>Skill Based</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Location</label>
+              <input type="text" id="location" value="{{ opp.location }}" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label>Eligibility</label>
+              <input type="text" id="eligibility" value="{{ opp.eligibility }}" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Deadline</label>
+              <input type="date" id="deadline" value="{{ opp.deadline }}" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Apply Link</label>
+            <input type="url" id="applyLink" value="{{ opp.apply_link }}" required>
+          </div>
+
+          <div class="form-group">
+            <label>Tags (Comma separated)</label>
+            <input type="text" id="tags" value="{{ opp.tags_str }}">
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="description" required>{{ opp.description }}</textarea>
+          </div>
+
+          <!-- Image/Media Link Update -->
+          <div class="form-group">
+            <label>Media Link (Optional)</label>
+            <input type="url" id="media_link" value="{{ opp.media_link or '' }}">
+          </div>
+          
+          <div class="form-group">
+            <label>Banner Image (Optional)</label>
+            <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Upload a new image to replace the current one. Leave empty to keep the existing image.</div>
+            <input type="file" id="image" accept="image/*" style="width: 100%; padding: 10px; background: #0d0d14; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
+          </div>
+
+          <div style="margin-top: 30px;">
+            <button type="submit" class="btn-submit" id="submitBtn">Save Changes</button>
+            <button type="button" class="btn-cancel" onclick="window.history.back()">Cancel</button>
+          </div>
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function submitEditOpportunity(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
+    const oppId = document.getElementById('opp_id').value;
+    const formData = new FormData();
+    
+    formData.append('company', document.getElementById('company').value);
+    formData.append('role', document.getElementById('role').value);
+    formData.append('category', document.getElementById('category').value);
+    formData.append('location', document.getElementById('location').value);
+    formData.append('eligibility', document.getElementById('eligibility').value);
+    formData.append('deadline', document.getElementById('deadline').value);
+    formData.append('applyLink', document.getElementById('applyLink').value);
+    formData.append('tags', document.getElementById('tags').value);
+    formData.append('description', document.getElementById('description').value);
+    formData.append('media_link', document.getElementById('media_link').value);
+
+    const imageFile = document.getElementById('image').files[0];
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+
+    try {
+      const response = await fetch(`/api/opportunities/${oppId}`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${getCookie('access_token_cookie')}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Opportunity updated successfully!');
+        window.location.href = `/opportunities/${oppId}`;
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error || 'Failed to update opportunity'}`);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Changes';
+      }
+    } catch (error) {
+      console.error('Error updating opportunity:', error);
+      alert('A network error occurred while updating.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save Changes';
+    }
+  }
+
+  // Helper to get cookie for auth token if needed
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+</script>
+{% endblock %}

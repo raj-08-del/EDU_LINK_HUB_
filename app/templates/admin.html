@@ -10,34 +10,37 @@
   <div class="main-content">
     {% include "partials/navbar.html" %}
     <div class="page-content">
-      <div class="page-header">
+      <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
         <div>
           <h1>🛡️ Admin Panel</h1>
           <p>Manage users, monitor activity, and oversee the platform</p>
         </div>
+        <button id="btnTriggerCollect" class="btn btn-primary" onclick="triggerAutoCollect()" style="padding:10px 20px; font-weight:700; border-radius:12px; background:linear-gradient(135deg, #05d9e8, #ff2a6d); color:#fff; border:none; box-shadow:0 0 15px rgba(5,217,232,0.4);">🤖 Run Auto Collector</button>
       </div>
 
       <!-- Stats -->
       <div class="stats-grid" id="adminStats">
-        <div class="stat-card">
+        <div class="stat-card" style="cursor:pointer; transition:transform 0.2s;" onclick="document.getElementById('usersContainer').scrollIntoView({behavior: 'smooth'})" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
           <div class="stat-icon">👥</div>
           <div class="stat-value" id="a_users">0</div>
           <div class="stat-label">Total Users</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" style="cursor:pointer; transition:transform 0.2s;" onclick="window.location.href='/explore'" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
           <div class="stat-icon">🎪</div>
           <div class="stat-value" id="a_events">0</div>
           <div class="stat-label">Events</div>
+          <div style="font-size:11px; color:#05d9e8; margin-top:4px;" id="a_auto_events">🤖 0 Auto</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" style="cursor:pointer; transition:transform 0.2s;" onclick="window.location.href='/opportunities'" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
           <div class="stat-icon">💼</div>
           <div class="stat-value" id="a_opps">0</div>
           <div class="stat-label">Opportunities</div>
+          <div style="font-size:11px; color:#05d9e8; margin-top:4px;" id="a_auto_opps">🤖 0 Auto</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" style="cursor:pointer; transition:transform 0.2s; background:rgba(255,165,0,0.05); border-color:rgba(255,165,0,0.2);" onclick="window.location.href='/moderate'" onmouseover="this.style.transform='translateY(-3px)'; this.style.borderColor='orange';" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(255,165,0,0.2)';">
           <div class="stat-icon">⏳</div>
-          <div class="stat-value" id="a_pending">0</div>
-          <div class="stat-label">Pending Review</div>
+          <div class="stat-value" id="a_pending" style="color:orange;">0</div>
+          <div class="stat-label">Pending Review (Click to view)</div>
         </div>
       </div>
 
@@ -255,8 +258,6 @@
           <div>Email</div>
           <div>College</div>
           <div>Department</div>
-          <div>Role</div>
-          <div>Actions</div>
         </div>
         <div id="usersContainer">
           <div style="text-align:center;padding:30px;color:var(--text-secondary)">Loading users...</div>
@@ -300,7 +301,7 @@
   .admin-grid { display: flex; flex-direction: column; gap: 8px; }
   .admin-row {
     display: grid;
-    grid-template-columns: 1.5fr 2fr 1.5fr 1fr 1fr 0.5fr;
+    grid-template-columns: 1.5fr 2fr 1.5fr 1fr;
     align-items: center;
     background: rgba(15, 10, 30, 0.4);
     border: 1px solid rgba(255,255,255,0.05);
@@ -423,14 +424,36 @@
 
   async function loadStats() {
     try {
-      const stats = await apiFetch('/api/admin/stats');
-      if (stats) {
+      const stats = await apiFetch('/api/admin/stats', { timeout: 30000 });
+      if (stats && !stats.error) {
         document.getElementById('a_users').textContent = stats.users;
         document.getElementById('a_events').textContent = stats.events;
         document.getElementById('a_opps').textContent = stats.opportunities;
         document.getElementById('a_pending').textContent = stats.pending_opportunities;
+        if(document.getElementById('a_auto_events')) document.getElementById('a_auto_events').textContent = `🤖 ${stats.auto_events || 0} Auto`;
+        if(document.getElementById('a_auto_opps')) document.getElementById('a_auto_opps').textContent = `🤖 ${stats.auto_opps || 0} Auto`;
+      } else if (stats?.error) {
+        console.warn('[Admin] Stats load warning:', stats.error);
       }
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error('[Admin] loadStats error:', err); }
+  }
+
+  async function triggerAutoCollect() {
+    if (!confirm('Run the auto collector now? It will run in the background — results appear in a few minutes.')) return;
+    const btn = document.getElementById('btnTriggerCollect');
+    btn.textContent = '⏳ Starting...';
+    btn.disabled = true;
+    try {
+      const res = await apiFetch('/api/admin/collect-now', { method: 'POST' });
+      showToast(res?.message || '✅ Auto Collector running in background!', 'success');
+      // Reload stats after 5s to reflect any newly added items
+      setTimeout(() => loadStats(), 5000);
+    } catch (err) {
+      showToast(err.message || 'Failed to start collector', 'error');
+    } finally {
+      btn.textContent = '🤖 Run Auto Collector';
+      btn.disabled = false;
+    }
   }
 
   async function loadUsers() {
@@ -438,12 +461,12 @@
     const role = document.getElementById('roleFilter').value;
     const container = document.getElementById('usersContainer');
     try {
-      let url = '/api/admin/users?';
+      let url = '/api/admin/users?limit=50&';
       if (search) url += `search=${encodeURIComponent(search)}&`;
       if (role) url += `role=${role}`;
-      const users = await apiFetch(url);
+      const users = await apiFetch(url, { timeout: 30000 });
 
-      if (!users || users.length === 0) {
+      if (!users || users.error || users.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted)">No users found</div>';
         return;
       }
@@ -454,18 +477,6 @@
           <div style="font-size:13px;opacity:0.8">${escapeHtml(u.email)}</div>
           <div style="font-size:13px">${escapeHtml(u.college)}</div>
           <div style="font-size:13px;opacity:0.8">${escapeHtml(u.department)}</div>
-          <div style="display:flex; gap:8px; align-items:center;">
-            ${u.role === 'admin' ? 
-              `<span class="role-indicator role-admin">Admin</span>` : 
-              `<select class="role-indicator role-${u.role}" onchange="changeRole('${u._id}', this.value)" style="cursor:pointer;outline:none;">
-                <option value="student" ${u.role === 'student' ? 'selected' : ''}>Student</option>
-                <option value="moderator" ${u.role === 'moderator' ? 'selected' : ''}>Moderator</option>
-              </select>`
-            }
-          </div>
-          <div style="display:flex; gap:8px;">
-            <button class="btn btn-danger btn-sm" onclick="deleteUser('${u._id}', '${escapeHtml(u.name)}')" style="padding:4px 8px;font-size:12px">🗑️</button>
-          </div>
         </div>
       `).join('');
     } catch (err) {

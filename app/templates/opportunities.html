@@ -1,553 +1,146 @@
 {% extends "base.html" %}
-{% block title %}Opportunities - EDU Link Hub{% endblock %}
+{% block title %}Find Your Next Opportunity - EDU Link Hub{% endblock %}
 
 {% block head %}
-<style>
-  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-  @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.95) translateY(-10px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); }
-  }
-
-  .modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.85); z-index: 9999;
-    display: none; align-items: center; justify-content: center;
-    backdrop-filter: blur(8px); transition: opacity 0.3s ease;
-  }
-  .modal-card {
-    background: #0d1b2a; border: 1px solid #05d9e8;
-    border-radius: 20px; padding: 32px; width: 680px;
-    max-width: 95vw; max-height: 90vh; overflow-y: auto;
-    position: relative; box-shadow: 0 0 40px rgba(5, 217, 232, 0.15);
-    animation: modalIn 0.25s ease;
-  }
-  
-  .modal-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 24px; border-bottom: 1px solid rgba(5, 217, 232, 0.1);
-    padding-bottom: 16px;
-  }
-  .modal-header h3 {
-    margin: 0; font-size: 20px; font-weight: 800; color: #fff;
-    text-transform: uppercase; letter-spacing: 1px;
-    font-family: 'Rajdhani', sans-serif;
-  }
-  .btn-close-modal {
-    width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05); color: #fff; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
-  }
-  .btn-close-modal:hover { background: #ff2a6d; border-color: #ff2a6d; transform: rotate(90deg); }
-
-  .modal-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .modal-form .full-width { grid-column: 1 / -1; }
-  .form-group { display: flex; flex-direction: column; gap: 8px; }
-  
-  .modal-form label {
-    display: block; font-size: 11px; color: #05d9e8;
-    font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
-    font-family: 'Rajdhani', sans-serif;
-  }
-  .modal-form input, .modal-form select, .modal-form textarea {
-    width: 100%; background: #0a1628; border: 1px solid rgba(5, 217, 232, 0.3);
-    border-radius: 10px; padding: 12px 16px; color: #ffffff;
-    font-family: 'Share Tech Mono', monospace; font-size: 14px;
-    outline: none; transition: all 0.3s ease; box-sizing: border-box;
-  }
-  .modal-form input:focus, .modal-form select:focus, .modal-form textarea:focus {
-    border-color: #ff2a6d; box-shadow: 0 0 12px rgba(255, 42, 109, 0.4);
-    background: #0d1b2a;
-  }
-  .modal-form textarea { min-height: 100px; resize: vertical; }
-  .modal-form select option { background: #0d1b2a; color: white; }
-
-  .modal-actions {
-    display: flex; gap: 16px; justify-content: flex-end; margin-top: 32px;
-    padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.05);
-  }
-  .btn-cancel {
-    padding: 12px 28px; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
-    background: rgba(255,255,255,0.03); color: #aaa; cursor: pointer;
-    font-weight: 600; transition: all 0.2s;
-  }
-  .btn-cancel:hover { background: rgba(255,255,255,0.08); color: #fff; }
-  .btn-save {
-    padding: 12px 32px; border: none; border-radius: 10px;
-    background: linear-gradient(135deg, #ff2a6d, #05d9e8);
-    color: #0c0c14; font-weight: 800; cursor: pointer; font-size: 14px;
-    text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s;
-  }
-  .btn-save:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(5, 217, 232, 0.3); }
-
-  .dropdown-menu {
-    display: none; position: absolute; right: 0; top: 100%; 
-    background: rgba(15, 15, 25, 0.95) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    border-radius: 12px; z-index: 100; min-width: 220px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6); padding: 8px;
-    margin-top: 10px;
-    animation: modalIn 0.2s ease;
-  }
-  .dropdown-menu.open { display: block; }
-  .dropdown-menu li {
-    padding: 12px 16px; color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: 0.2s;
-    list-style: none; display: flex; align-items: center; gap: 12px;
-    border-radius: 8px;
-    font-family: 'Rajdhani', sans-serif;
-    letter-spacing: 0.5px;
-  }
-  .dropdown-menu li i, .dropdown-menu li span { font-size: 16px; width: 20px; text-align: center; }
-  .dropdown-menu li:hover { background: rgba(255,255,255,0.08); color: #fff; }
-  .dropdown-menu li.danger-item { color: #ff4757; }
-  .dropdown-menu li.danger-item:hover { background: rgba(255,71,87,0.1); }
-  
-  .card-dropdown-trigger {
-    background: rgba(0,0,0,0.4) !important; 
-    border: 1px solid rgba(255,255,255,0.15) !important;
-    color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
-    position: absolute; top: 15px; right: 15px; z-index: 10;
-    transition: all 0.2s;
-  }
-  .card-dropdown-trigger:hover { background: rgba(0,0,0,0.7) !important; transform: scale(1.1); }
-
-  /* ═══ Cyber Calendar Styles ═══ */
-  .calendar-dropdown {
-    position: absolute; top: 100%; left: 0; z-index: 100;
-    background: #0d1b2a; border: 1px solid #05d9e8;
-    border-radius: 12px; padding: 16px; width: 280px; margin-top: 8px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    animation: modalIn 0.2s ease;
-  }
-  .calendar-day {
-    color: #ccc;
-    font-family: 'Share Tech Mono', monospace;
-    border-radius: 50%;
-    transition: all 0.2s;
-  }
-  .calendar-day.selected {
-    background: linear-gradient(135deg, #ff2a6d, #05d9e8);
-    color: #fff;
-    font-weight: bold;
-    box-shadow: 0 0 10px rgba(5, 217, 232, 0.4);
-  }
-  .calendar-day:hover:not(.selected) {
-    background: rgba(5, 217, 232, 0.2);
-    color: #05d9e8;
-  }
-
-  /* ═══ Opportunity Card Redesign (Modern Futuristic SaaS Style) ═══ */
-  .opp-card {
-    background: rgba(13, 27, 42, 0.4);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(5, 217, 232, 0.15);
-    border-radius: 24px;
-    overflow: visible;
-    position: relative;
-    margin-bottom: 40px;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-    display: flex;
-    flex-direction: row; /* Split Side-by-Side Layout */
-    min-height: 380px;
-    max-width: 1100px; /* Centering it in the middle */
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .opp-card:hover {
-    transform: translateY(-8px);
-    border-color: rgba(5, 217, 232, 0.5);
-    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.8), 
-                0 0 20px rgba(5, 217, 232, 0.2),
-                0 0 40px rgba(255, 42, 109, 0.1);
-  }
-
-  /* ═══ Opportunity Reaction Button (Like Style) ═══ */
-  .opp-reaction-wrapper {
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .opp-reaction-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 18px;
-    background: rgba(245, 158, 11, 0.08); /* Amber/Orange */
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    border-radius: 30px;
-    color: #f59e0b;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-family: 'Rajdhani', sans-serif;
-    letter-spacing: 0.5px;
-  }
-
-  .opp-reaction-btn:hover {
-    background: rgba(245, 158, 11, 0.2);
-    border-color: #f59e0b;
-    box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
-    transform: scale(1.05);
-  }
-
-  .opp-reaction-btn.active {
-    background: #f59e0b;
-    color: #fff;
-    border-color: #f59e0b;
-    box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
-  }
-
-  .opp-reaction-btn i, .opp-reaction-btn span.emoji {
-    font-size: 16px;
-  }
-
-  /* ═══ Opportunity Image Layout (Single Full-Height Style) ═══ */
-  .opportunity-image-single {
-    width: 370px;
-    flex-shrink: 0;
-    position: relative;
-    border-radius: 24px 0 0 24px;
-    overflow: hidden;
-  }
-
-  .opportunity-image-single img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  /* Image Overlay - Floating Badges */
-  .opp-image-overlay {
-    position: absolute;
-    top: 32px; left: 32px; right: 32px; bottom: 32px;
-    z-index: 3;
-    pointer-events: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 0;
-  }
-
-  .opp-category-badge {
-    align-self: flex-start;
-    background: rgba(5, 217, 232, 0.15);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(5, 217, 232, 0.4);
-    color: #05d9e8;
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 800;
-    font-family: 'Rajdhani', sans-serif;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .opp-location-badge {
-    align-self: flex-end;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(10px);
-    color: #fff;
-    padding: 6px 16px;
-    border-radius: 30px;
-    font-size: 11px;
-    font-weight: 700;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  /* Body Refinement - Vertically Centered Content */
-  .opp-card-body {
-    padding: 32px 48px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* Asigned in middle */
-    background: linear-gradient(135deg, rgba(13, 27, 42, 0.4), rgba(10, 10, 18, 0.8));
-    overflow: hidden;
-  }
-
-  .opp-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 21px;
-    font-weight: 800;
-    color: #fff;
-    margin: 0 0 4px;
-    letter-spacing: 0.02em;
-    line-height: 1.2;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-  }
-
-  .opp-company {
-    color: #05d9e8;
-    font-size: 14px;
-    font-weight: 700;
-    margin: 0 0 16px;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-  }
-
-  .opp-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    font-size: 13px;
-    color: #a8d8ea;
-    margin-bottom: 20px;
-    opacity: 0.8;
-  }
-
-  .opp-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-
-  .opp-tag {
-    background: rgba(255, 42, 109, 0.1);
-    border: 1px solid rgba(255, 42, 109, 0.3);
-    color: #ff2a6d;
-    padding: 4px 12px;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-  }
-
-  .opp-card:hover .opp-tag {
-    background: rgba(255, 42, 109, 0.2);
-    border-color: rgba(255, 42, 109, 0.6);
-    box-shadow: 0 0 10px rgba(255, 42, 109, 0.2);
-  }
-
-  .opp-description {
-    font-size: 14px;
-    color: #6a9ab5;
-    margin-bottom: 24px;
-    line-height: 1.6;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    height: 67px; /* Fix height for alignment */
-  }
-
-  .opp-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-top: auto;
-    width: 100%;
-  }
-
-  @media (max-width: 850px) {
-    .opp-card {
-      flex-direction: column;
-      min-height: auto;
-    }
-    .opp-image-wrapper {
-      width: 100%;
-      min-width: unset;
-      height: 300px;
-      border-right: none;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    .opp-card-body {
-      padding: 24px;
-    }
-    .opp-actions {
-      flex-direction: column;
-    }
-  }
-
-  .btn-opp-action {
-    flex: 1;
-    height: 48px;
-    border-radius: 12px;
-    font-weight: 800;
-    font-size: 12px;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-family: 'Rajdhani', sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    border: 2px solid transparent;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-
-  .btn-view-details {
-    background: #00f2ff;
-    color: #0c0c14;
-    border-color: #00f2ff;
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
-  }
-  .btn-view-details:hover {
-    background: #00e0eb;
-    transform: translateY(-3px);
-    box-shadow: 0 0 25px rgba(0, 242, 255, 0.5);
-  }
-
-  .btn-apply-now {
-    background: linear-gradient(135deg, #ff2a6d, #d100ff, #8f00ff);
-    color: #fff;
-    box-shadow: 0 0 15px rgba(255, 42, 109, 0.3);
-  }
-  .btn-apply-now:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0 25px rgba(255, 42, 109, 0.6), 0 0 40px rgba(143, 0, 255, 0.4);
-    filter: brightness(1.2);
-  }
-
-  .btn-discuss-chat {
-    background: transparent;
-    border-color: #00f2ff;
-    color: #00f2ff;
-  }
-  .btn-discuss-chat:hover {
-    background: rgba(0, 242, 255, 0.1);
-    transform: translateY(-3px);
-    box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
-  }
-</style>
+<!-- Link to redesigned styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/opportunities.css') }}">
+<meta name="description" content="Discover jobs, internships, hackathons and events from top platforms like Adzuna, Remotive, Devpost and more.">
+<meta name="is-admin" content="{{ 'true' if is_admin else 'false' }}">
 {% endblock %}
 
 {% block body %}
+<script>
+    // Ensure body dataset for admin access matches user requirement
+    const adminVal = "{{ 'true' if is_admin else 'false' }}";
+    document.body.dataset.isAdmin = adminVal;
+    document.body.setAttribute('data-is-admin', adminVal);
+</script>
+
 <div class="app-layout">
   {% include "partials/sidebar.html" %}
-  <div class="main-content">
+  
+  <div class="main-content" style="width:100%; max-width:100%; overflow-x:hidden; box-sizing:border-box;">
     {% include "partials/navbar.html" %}
+    
     <div class="page-content">
-      <div class="page-header" style="margin-bottom: 40px; border-bottom: 1px solid rgba(5, 217, 232, 0.1); padding-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
-        <div class="header-title-wrapper" style="flex: 1;">
-          <h1 class="glow-heading" style="font-size: 38px; letter-spacing: 2px; margin: 0;">
-            <span class="emoji-icon">💼</span>
-            <span class="text-gradient-animated" style="font-weight: 900; text-transform: uppercase;">Opportunities</span>
-          </h1>
-          <div class="glow-line" style="height: 3px; background: linear-gradient(90deg, #ff2a6d, #05d9e8); width: 120px; margin-top: 10px;"></div>
-          <p class="header-subtitle" style="font-size: 15px; margin-top: 15px; color: rgba(255,255,255,0.5); font-family: 'Share Tech Mono', monospace;">Discover internships, jobs, and campus placements</p>
+      <!-- Animated Header -->
+      <header class="animated-header">
+        <h1 id="pageTitle">Find Your Next Opportunity</h1>
+        <p class="header-subtitle" style="color: var(--text-muted); margin-top: 10px;">Curated jobs, internships, and hackathons from across the web.</p>
+      </header>
+
+      <!-- Sticky Filter Bar -->
+      <div class="sticky-filter-wrapper">
+        <div class="filter-bar-pill">
+          <a href="/opportunities" class="filter-pill {{ 'active' if not request.args.get('category') }}">All</a>
+          <a href="/opportunities?category=job" class="filter-pill {{ 'active' if request.args.get('category') == 'job' }}">Jobs</a>
+          <a href="/opportunities?category=internship" class="filter-pill {{ 'active' if request.args.get('category') == 'internship' }}">Internships</a>
+          <a href="/opportunities?category=campus-placement" class="filter-pill {{ 'active' if request.args.get('category') == 'campus-placement' }}">Campus</a>
+          <a href="/opportunities?category=skill-based" class="filter-pill {{ 'active' if request.args.get('category') == 'skill-based' }}">Skill Based</a>
         </div>
-        <button class="btn btn-primary" onclick="openModal('create-opportunity-modal')" style="padding: 14px 28px; font-weight: 800; letter-spacing: 1px; height: fit-content; border-radius: 12px;">+ SUBMIT OPPORTUNITY</button>
       </div>
 
-      <!-- Filters -->
-      <div class="filter-bar">
-        <a href="/opportunities" class="filter-chip {{ 'active' if not request.args.get('category') or request.args.get('category') == 'all' }}" style="text-decoration:none">All</a>
-        <a href="/opportunities?category=internship" class="filter-chip {{ 'active' if request.args.get('category') == 'internship' }}" style="text-decoration:none">🎓 Internships</a>
-        <a href="/opportunities?category=job" class="filter-chip {{ 'active' if request.args.get('category') == 'job' }}" style="text-decoration:none">💼 Jobs</a>
-        <a href="/opportunities?category=campus-placement" class="filter-chip {{ 'active' if request.args.get('category') == 'campus-placement' }}" style="text-decoration:none">🏫 Campus Placements</a>
-        <a href="/opportunities?category=skill-based" class="filter-chip {{ 'active' if request.args.get('category') == 'skill-based' }}" style="text-decoration:none">⚡ Skill Based</a>
-      </div>
-
-      <!-- Visual Feed -->
-      <div class="opps-feed" id="oppsGrid">
+      <!-- Main Feed -->
+      <div class="opportunities-feed" id="oppsGrid">
         {% if not opportunities %}
           <div class="empty-state">
-            <div class="empty-icon">💼</div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
             <h3>No opportunities found</h3>
-            <p>Be the first to share one!</p>
+            <p>Try adjusting your filters or search keywords.</p>
+            <button class="btn-opp btn-apply" style="margin-top: 20px;" onclick="location.href='/opportunities'">Clear All Filters</button>
           </div>
         {% else %}
           {% for opp in opportunities %}
-            <div class="opp-card" data-opp-id="{{ opp._id }}">
-              
-              <!-- Floating Menu (Moved to the top right of the entire card) -->
-              <div class="card-dropdown-container menu-wrapper" style="position:absolute; top:24px; right:24px; z-index:20;">
-                <button class="card-dropdown-trigger" type="button" onclick="event.stopPropagation(); toggleMenu('{{ opp._id }}')" 
-                  style="background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.2); color:#fff; width:36px; height:36px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px;">⋮</button>
-                <div class="dropdown-menu" id="menu-{{ opp._id }}" onclick="event.stopPropagation();" style="right:0; top:45px;">
-                  <li onclick="bookmarkOpportunity('{{ opp._id }}')" class="bookmark-btn"><span>🔖</span> Bookmark Opportunity</li>
-                  <li onclick="shareOpp('{{ opp._id }}', '{{ opp.role|escape }}')"><span>🔗</span> Share Opportunity</li>
-                  
-                  {% set is_owner = current_user and current_user._id|string == opp.created_by|string %}
-                  {% set is_admin = current_user and current_user.role|lower == 'admin' %}
-                  
-                  {% if is_owner or is_admin %}
-                    <li onclick="editOpportunity('{{ opp._id }}')"><span>✏️</span> Edit Opportunity</li>
-                    {% if is_owner %}
-                      <li onclick="hideOpportunity('{{ opp._id }}')"><span>🙈</span> Hide Opportunity</li>
+            {% set type = (opp.opportunity_type or opp.category or 'job')|lower %}
+            {% set is_remote = 'remote' in (opp.location|lower if opp.location else '') %}
+            {% set banner_grad = 'var(--grad-remote)' if is_remote else 'var(--grad-' ~ (type or 'job') ~ ')' %}
+            
+            <div class="opp-card opportunity-card" data-id="{{ opp._id }}">
+                <div class="card-banner" style="background: {{ banner_grad }};">
+                    {% if opp.image %}
+                        <img src="{{ opp.image }}" alt="{{ opp.company }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     {% endif %}
-                    <li onclick="deleteOpportunity('{{ opp._id }}')" class="danger-item"><span>🗑️</span> Delete Opportunity</li>
-                  {% endif %}
-                  
-                  {% if not is_owner %}
-                    <li onclick="reportOpportunity('{{ opp._id }}')"><span>🚩</span> Report Opportunity</li>
-                  {% endif %}
-                </div>
-              </div>
+                    <div class="letter-avatar" {{ 'style="display:none;"' if opp.image else '' }}>{{ (opp.company|first|upper) if opp.company else '?' }}</div>
+                    
+                    <!-- NEW BANNER TOP RIGHT DESIGN -->
+                    <div style="position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:6px;z-index:50;">
+                      
+                      <!-- Source badge -->
+                      <span style="background:rgba(0,0,0,0.5);color:#aaa;
+                                   font-size:11px;padding:3px 8px;border-radius:20px;
+                                   display:flex;align-items:center;gap:4px;">
+                        {% if (opp.source|lower) == 'adzuna' %}🔍
+                        {% elif (opp.source|lower) == 'remotive' %}🌐
+                        {% elif (opp.source|lower) == 'themuse' %}🎨
+                        {% elif (opp.source|lower) == 'jobicy' %}💼
+                        {% elif (opp.source|lower) == 'devpost' %}💻
+                        {% elif (opp.source|lower) == 'mlh' %}⚡
+                        {% elif (opp.source|lower) == 'eventbrite' %}🎟️
+                        {% elif (opp.source|lower) == 'internshala' %}🎓
+                        {% elif (opp.source|lower) == 'unstop' %}🏆
+                        {% else %}💼{% endif %}
+                        via {{ opp.source or 'Direct' }}
+                      </span>
 
-              <div class="opportunity-image-single">
-                <img src="{{ opp.image or url_for('static', filename='images/default_opportunity.jpg') }}" alt="{{ opp.title }}">
-                
-                <!-- Category/Location Badges -->
-                <div class="opp-image-overlay" style="position:absolute; bottom:16px; left:0; width:100%; top:auto; height:auto; background:none; display:flex; flex-direction:row; justify-content:space-between; align-items:flex-end; padding:0 20px; box-sizing:border-box;">
-                  <span class="opp-category-badge" style="margin:0;">{{ opp.category|replace('-', ' ')|upper }}</span>
-                  <span class="opp-location-badge" style="margin:0;">📍 {{ opp.location }}</span>
-                </div>
-              </div>
+                      <!-- THREE DOT BUTTON — inline onclick, no external listener needed -->
+                      <button 
+                        onclick="handleThreeDot(event, this)"
+                        data-id="{{ opp._id }}"
+                        data-source="{{ opp.source or '' }}"
+                        title="More options"
+                        style="background:rgba(255,255,255,0.12);
+                               border:1px solid rgba(255,255,255,0.25);
+                               color:#fff;
+                               width:28px;height:28px;
+                               border-radius:50%;
+                               cursor:pointer;
+                               font-size:18px;
+                               font-weight:bold;
+                               display:flex;align-items:center;justify-content:center;
+                               line-height:1;
+                               flex-shrink:0;
+                               z-index:50;
+                               position:relative;
+                               padding:0;">&#8942;</button>
+                    </div>
 
-              <div class="opp-card-body">
-                <h2 class="opp-title">{{ opp.role | upper }}</h2>
-                <p class="opp-company">{{ opp.company }}</p>
-                
-                {% if current_user and current_user.role|lower == 'admin' and opp.creator_name %}
-                <p style="font-size:11px; color:#05d9e8; margin: 4px 0 14px; font-weight:600; line-height: 1.4;">
-                  👤 Submitted by: {{ opp.creator_name }}
-                  <span style="background:rgba(255,71,87,0.15);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:3px;padding:1px 5px;font-size:9px;margin-left:4px;">ADMIN VIEW</span>
-                </p>
-                {% endif %}
-                
-                <div class="opp-meta">
-                  <span>🗓️ {{ opp.deadline }}</span>
-                  <span>🎓 {{ opp.eligibility }}</span>
-                </div>
-
-                <div class="opp-tags">
-                  {% for tag in opp.tags %}
-                  <span class="opp-tag">#{{ tag }}</span>
-                  {% endfor %}
-                </div>
-
-                <p class="opp-description">{{ opp.description | truncate(110) }}</p>
-
-                <div class="opp-reaction-wrapper">
-                  <button class="opp-reaction-btn {{ 'active' if opp.has_liked }}" 
-                    onclick="reactToOpportunity('{{ opp._id }}', this)">
-                    <span class="emoji">👍</span> 
-                    <span class="count" id="count-{{ opp._id }}">{{ opp.total_reactions or 0 }}</span>
-                    <span>LIKES</span>
-                  </button>
+                    <div class="type-badge">{{ (opp.opportunity_type or opp.category or 'Job')|upper }}</div>
+                    <div class="location-badge">📍 {{ opp.location or 'Remote' }}</div>
                 </div>
 
-                <div class="opp-actions">
-                  <a href="/opportunities/{{ opp._id }}" class="btn-opp-action btn-view-details">VIEW DETAILS</a>
-                  <a href="{{ opp.apply_link or opp.registration_link or opp.application_url or '#' }}"
-                    target="_blank" class="btn-opp-action btn-apply-now">APPLY NOW →</a>
-                  <a href="javascript:void(0)" onclick="discussInChat('{{ opp._id }}', '{{ opp.role|escape }}')"
-                    class="btn-opp-action btn-discuss-chat"><span>💬</span> DISCUSS IN CHAT</a>
+                <div class="opp-card-body">
+                    <div class="company-name">{{ opp.company }}</div>
+                    <h2 class="opp-title" title="{{ opp.role }}">{{ opp.role }}</h2>
+                    
+                    <div class="opp-meta-row">
+                        <div class="opp-meta-item">🗓️ {{ opp.deadline or 'N/A' }}</div>
+                        <div class="opp-meta-item">🎓 {{ opp.eligibility or 'Any' }}</div>
+                    </div>
+
+                    <div class="tag-pills">
+                        {% for tag in opp.tags %}
+                        <span class="tag-pill">#{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <p class="opp-desc">{{ opp.description or 'No description provided.' }}</p>
+
+                    <div class="opp-action-row">
+                        <div class="action-likes {{ 'active' if opp.has_liked }}" onclick="reactToOpportunity('{{ opp._id }}', this)">
+                            <span class="emoji">👍</span> 
+                            <span class="count" id="count-{{ opp._id }}">{{ opp.total_reactions or 0 }}</span>
+                            <span>LIKES</span>
+                        </div>
+                        <div class="action-buttons">
+                            <a href="/opportunities/{{ opp._id }}" class="btn-opp btn-details">Details</a>
+                            <a href="{{ opp.apply_link or '#' }}" target="_blank" class="btn-opp btn-apply">Apply →</a>
+                            <a href="javascript:void(0)" onclick="discussInChat('{{ opp._id }}', '{{ opp.role|escape }}')" class="btn-opp btn-discuss">💬</a>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
           {% endfor %}
         {% endif %}
@@ -557,698 +150,14 @@
   </div>
 </div>
 
-<!-- Edit Opportunity Modal -->
-<div id="edit-opportunity-modal" class="modal-overlay">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h3>✏️ Edit Opportunity</h3>
-      <button class="btn-close-modal" onclick="closeModal('edit-opportunity-modal')">✕</button>
-    </div>
-    <div class="modal-form">
-      <div class="form-group">
-        <label>Company Name</label>
-        <input id="edit-opp-company" placeholder="e.g. Google">
-      </div>
-      <div class="form-group">
-        <label>Job Role</label>
-        <input id="edit-opp-role" placeholder="e.g. Frontend Engineer">
-      </div>
-      <div class="form-group">
-        <label>Location</label>
-        <input id="edit-opp-location" placeholder="e.g. Remote / Bangalore">
-      </div>
-      <div class="form-group">
-        <label>Opportunity Type</label>
-        <select id="edit-opp-category">
-          <option value="internship">🎓 Internship</option>
-          <option value="job">💼 Job</option>
-          <option value="campus-placement">🏫 Campus Placement</option>
-          <option value="skill-based">⚡ Skill Based</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Eligibility Criteria</label>
-        <input id="edit-opp-eligibility" placeholder="e.g. 2024 Graduates">
-      </div>
-      <div class="form-group">
-        <label>Deadline Date</label>
-        <div style="position:relative;">
-          <input type="text" id="edit-opp-deadline" placeholder="dd-mm-yyyy" readonly
-            onclick="toggleCalendar('edit')"
-            style="width:100%; background:#0a1628; border:1px solid #05d9e8;
-            border-radius:8px; padding:10px 14px; color:#fff; cursor:pointer;">
-          <span onclick="toggleCalendar('edit')"
-            style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
-            color:#05d9e8; cursor:pointer; font-size:16px;">📅</span>
-          <div id="calendar-dropdown-edit" class="calendar-dropdown" style="display:none;"></div>
-        </div>
-      </div>
-      <div class="form-group full-width">
-        <label>Description</label>
-        <textarea id="edit-opp-description" placeholder="Share key details about the role..." rows="4"></textarea>
-      </div>
-      <div class="form-group full-width">
-        <label>Opportunity Image</label>
-        <div class="image-upload-box" onclick="document.getElementById('edit-opp-image-input').click()"
-          style="border: 2px dashed #05d9e8; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; background: #0a1628; color: #05d9e8;">
-          <div id="edit-image-preview-wrap">
-            <p style="font-size:13px; margin:0;">📷 Click to change company logo or banner</p>
-          </div>
-          <img id="edit-opp-image-preview" src="" style="display:none; max-height:100px; border-radius:8px; margin-top:10px; margin-left: auto; margin-right: auto; max-width:100%;">
-        </div>
-        <input type="file" id="edit-opp-image-input" accept="image/*" style="display:none;" onchange="previewOppImage(this, 'edit')">
-      </div>
-      <div class="form-group full-width">
-        <label>Application URL</label>
-        <input id="edit-opp-apply-link" placeholder="https://careers.google.com/...">
-      </div>
-      <div class="form-group full-width">
-        <label>Media / Social Link</label>
-        <input type="url" id="edit-opp-media-link" placeholder="e.g. https://linkedin.com/company/adobe">
-        <p style="font-size:11px; color:#888; margin:4px 0 0;">LinkedIn, YouTube, Instagram, or any promo link</p>
-      </div>
-      <div class="form-group full-width">
-        <label>Tags (Comma Separated)</label>
-        <input id="edit-opp-tags" placeholder="e.g. react, python, fresher">
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button onclick="closeModal('edit-opportunity-modal')" class="btn-cancel">Cancel</button>
-      <button onclick="saveEditOpportunity()" class="btn-save">Save Changes</button>
-    </div>
-  </div>
-</div>
-
-<!-- Create Opportunity Modal -->
-<div id="create-opportunity-modal" class="modal-overlay">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h3>🚀 Submit Opportunity</h3>
-      <button class="btn-close-modal" onclick="closeModal('create-opportunity-modal')">✕</button>
-    </div>
-    <form onsubmit="submitNewOpportunity(event)">
-      <div class="modal-form">
-        <div class="form-group">
-          <label>Company Name</label>
-          <input id="new-opp-company" placeholder="e.g. Microsoft" required>
-        </div>
-        <div class="form-group">
-          <label>Job Role</label>
-          <input id="new-opp-role" placeholder="e.g. SDE Intern" required>
-        </div>
-        <div class="form-group">
-          <label>Location</label>
-          <input id="new-opp-location" placeholder="e.g. Hyderabad / Remote" required>
-        </div>
-        <div class="form-group">
-          <label>Opportunity Type</label>
-          <select id="new-opp-category" required>
-            <option value="internship">🎓 Internship</option>
-            <option value="job">💼 Job</option>
-            <option value="campus-placement">🏫 Campus Placement</option>
-            <option value="skill-based">⚡ Skill Based</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Eligibility Criteria</label>
-          <input id="new-opp-eligibility" placeholder="e.g. Final Year Students" required>
-        </div>
-        <div class="form-group">
-          <label>Deadline Date</label>
-          <div style="position:relative;">
-            <input type="text" id="new-opp-deadline" placeholder="dd-mm-yyyy" readonly
-              onclick="toggleCalendar('new')"
-              style="width:100%; background:#0a1628; border:1px solid #05d9e8;
-              border-radius:8px; padding:10px 14px; color:#fff; cursor:pointer;">
-            <span onclick="toggleCalendar('new')"
-              style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
-              color:#05d9e8; cursor:pointer; font-size:16px;">📅</span>
-            <div id="calendar-dropdown-new" class="calendar-dropdown" style="display:none;"></div>
-          </div>
-        </div>
-        <div class="form-group full-width">
-          <label>Description</label>
-          <textarea id="new-opp-description" placeholder="Briefly describe the responsibilities and perks..." rows="4"></textarea>
-        </div>
-        <div class="form-group full-width">
-          <label>Opportunity Image</label>
-          <div class="image-upload-box" onclick="document.getElementById('new-opp-image-input').click()"
-            style="border: 2px dashed #05d9e8; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; background: #0a1628; color: #05d9e8;">
-            <div id="new-image-preview-wrap">
-              <p style="font-size:13px; margin:0;">📷 Click to upload company logo or banner</p>
-              <p style="font-size:11px; color:#888; margin:4px 0 0;">PNG, JPG, WEBP — Max 5MB</p>
-            </div>
-            <img id="new-opp-image-preview" src="" style="display:none; max-height:100px; border-radius:8px; margin-top:10px; margin-left: auto; margin-right: auto; max-width:100%;">
-          </div>
-          <input type="file" id="new-opp-image-input" accept="image/*" style="display:none;" onchange="previewOppImage(this, 'new')">
-        </div>
-        <div class="form-group full-width">
-          <label>Application URL</label>
-          <input id="new-opp-apply-link" placeholder="https://microsoft.com/jobs/..." type="url" required>
-        </div>
-        <div class="form-group full-width">
-          <label>Media / Social Link</label>
-          <input type="url" id="new-opp-media-link" placeholder="e.g. https://linkedin.com/company/microsoft">
-          <p style="font-size:11px; color:#888; margin:4px 0 0;">LinkedIn, YouTube, Instagram, or any promo link</p>
-        </div>
-        <div class="form-group full-width">
-          <label>Tags (Comma Separated)</label>
-          <input id="new-opp-tags" placeholder="e.g. dsa, oops, cloud">
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button type="button" onclick="closeModal('create-opportunity-modal')" class="btn-cancel">Cancel</button>
-        <button type="submit" class="btn-save">Submit for Review</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Report Modal -->
-<div id="report-modal" class="modal-overlay">
-  <div class="modal-card" style="max-width: 500px;">
-    <div class="modal-header">
-      <h3>🚩 Report Content</h3>
-      <button class="btn-close-modal" onclick="closeModal('report-modal')">✕</button>
-    </div>
-    <div class="modal-form" style="display: flex; flex-direction: column; gap: 16px;">
-      <p style="color:#aaa; font-family: 'Share Tech Mono', monospace; font-size: 14px; margin: 0 0 8px 0;">Help us keep the platform safe.</p>
-      
-      <div class="form-group full-width">
-        <label>Reason for Report</label>
-        <select id="report-reason">
-          <option value="">Select a reason...</option>
-          <option value="spam">Spam or misleading</option>
-          <option value="inappropriate">Inappropriate content</option>
-          <option value="misleading">False information</option>
-          <option value="harassment">Harassment</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-
-      <div class="form-group full-width">
-        <label>Description (Optional)</label>
-        <textarea id="report-description" placeholder="Describe the issue in more detail..." rows="4"></textarea>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button onclick="closeModal('report-modal')" class="btn-cancel">Cancel</button>
-      <button onclick="submitReport()" class="btn-save" style="background: linear-gradient(135deg, #ff4757, #ff6b81); color: white; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);">Submit Report</button>
-    </div>
-  </div>
-</div>
+{% include "partials/modals/opportunity_modals.html" ignore missing %}
 
 {% endblock %}
 
 {% block scripts %}
 <script>
-  // Context
-  const currentUserId = "{{ current_user._id|string if current_user else '' }}";
-  const currentUserRole = "{{ current_user.role|lower if current_user else '' }}";
-
-  // 1. BOOKMARK OPPORTUNITY
-  async function bookmarkOpportunity(oppId) {
-    console.log('[Bookmark] Requesting for Opp ID:', oppId);
-    try {
-      const result = await apiFetch('/api/bookmarks/', {
-        method: 'POST',
-        body: JSON.stringify({
-          contentId: oppId,
-          contentType: 'opportunity'
-        })
-      });
-      if (result && (result.success || !result.error)) {
-        showToast('✅ Saved to bookmarks', 'success');
-        const menuItem = document.querySelector(`[data-opp-id="${oppId}"] .bookmark-btn`);
-        if (menuItem) menuItem.innerHTML = '🔖 Remove Bookmark';
-      } else {
-        showToast(result?.error || result?.message || 'Failed to bookmark', 'warning');
-      }
-    } catch(e) {
-      console.error('[Bookmark Error]', e);
-      showToast('Error saving bookmark', 'error');
-    }
-  }
-
-  // 2. HIDE OPPORTUNITY
-  function previewOppImage(input, prefix) {
-    const file = input.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('Image must be under 5MB');
-      input.value = '';
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = e => {
-      const preview = document.getElementById(`${prefix}-opp-image-preview`);
-      preview.src = e.target.result;
-      preview.style.display = 'block';
-      document.getElementById(`${prefix}-image-preview-wrap`).style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-  }
-
-  async function hideOpportunity(oppId) {
-    const card = document.querySelector(`[data-opp-id="${oppId}"]`);
-    if (!confirm('Hide this opportunity?\nIt will move to your Archive.')) return;
-    
-    try {
-      const result = await apiFetch(`/api/opportunities/${oppId}/hide`, {
-        method: 'PATCH',
-        body: JSON.stringify({ hide: true })
-      });
-      
-      if (result && !result.error) {
-        if (card) {
-          card.style.transition = 'opacity 0.4s, transform 0.4s';
-          card.style.opacity = '0';
-          card.style.transform = 'scale(0.95)';
-          setTimeout(() => card.remove(), 400);
-        }
-        showToast('🙈 Hidden. Find it in Saved Items → Archive');
-      } else {
-        showToast(result?.error || 'Failed to hide');
-      }
-    } catch(e) {
-      showToast('Error hiding opportunity');
-    }
-  }
-
-  // 3. EDIT OPPORTUNITY
-  async function editOpportunity(oppId) {
-    try {
-      openModal('edit-opportunity-modal');
-      document.getElementById('edit-opp-company').value = 'Loading...';
-      
-      const data = await apiFetch(`/api/opportunities/${oppId}`);
-      if (!data || data.error) {
-        closeModal('edit-opportunity-modal');
-        showToast('Could not load opportunity data');
-        return;
-      }
-      
-      document.getElementById('edit-opp-company').value = data.company || '';
-      document.getElementById('edit-opp-role').value = data.role || '';
-      document.getElementById('edit-opp-location').value = data.location || '';
-      document.getElementById('edit-opp-category').value = data.category || 'internship';
-      document.getElementById('edit-opp-eligibility').value = data.eligibility || '';
-      document.getElementById('edit-opp-deadline').value = data.deadline || '';
-      document.getElementById('edit-opp-description').value = data.description || '';
-      document.getElementById('edit-opp-apply-link').value = data.apply_link || '';
-      document.getElementById('edit-opp-media-link').value = data.media_link || '';
-      document.getElementById('edit-opp-tags').value = (data.tags || []).join(', ');
-      
-      const preview = document.getElementById('edit-opp-image-preview');
-      const wrap = document.getElementById('edit-image-preview-wrap');
-      if (data.image) {
-        preview.src = data.image;
-        preview.style.display = 'block';
-        wrap.style.display = 'none';
-      } else {
-        preview.src = '';
-        preview.style.display = 'none';
-        wrap.style.display = 'block';
-      }
-      
-      document.getElementById('edit-opportunity-modal').setAttribute('data-id', oppId);
-    } catch(e) {
-      closeModal('edit-opportunity-modal');
-      showToast('Error loading opportunity');
-    }
-  }
-  
-  async function saveEditOpportunity() {
-    const modal = document.getElementById('edit-opportunity-modal');
-    const oppId = modal.getAttribute('data-id');
-    if (!oppId) return;
-    
-    const formData = new FormData();
-    formData.append('company', document.getElementById('edit-opp-company').value.trim());
-    formData.append('role', document.getElementById('edit-opp-role').value.trim());
-    formData.append('location', document.getElementById('edit-opp-location').value.trim());
-    formData.append('category', document.getElementById('edit-opp-category').value);
-    formData.append('eligibility', document.getElementById('edit-opp-eligibility').value.trim());
-    formData.append('deadline', document.getElementById('edit-opp-deadline').value.trim());
-    formData.append('description', document.getElementById('edit-opp-description').value.trim());
-    formData.append('applyLink', document.getElementById('edit-opp-apply-link').value.trim());
-    formData.append('media_link', document.getElementById('edit-opp-media-link').value.trim());
-    formData.append('tags', document.getElementById('edit-opp-tags').value);
-    
-    const imageInput = document.getElementById('edit-opp-image-input');
-    if (imageInput.files[0]) {
-      formData.append('image', imageInput.files[0]);
-    }
-    
-    try {
-      const result = await apiFetch(`/api/opportunities/${oppId}`, {
-        method: 'PUT',
-        body: formData
-      });
-      if (result && !result.error) {
-        closeModal('edit-opportunity-modal');
-        showToast('✅ Opportunity updated');
-        setTimeout(() => location.reload(), 1000);
-      } else {
-        showToast(result?.error || 'Save failed');
-      }
-    } catch(e) {
-      showToast('Error saving changes');
-    }
-  }
-
-  // 4. DELETE OPPORTUNITY
-  async function deleteOpportunity(oppId) {
-    if (!confirm('Delete this opportunity permanently?\nThis cannot be undone.')) return;
-    try {
-      const result = await apiFetch(`/api/opportunities/${oppId}`, { method: 'DELETE' });
-      if (result && !result.error) {
-        const card = document.querySelector(`[data-opp-id="${oppId}"]`);
-        if (card) {
-          card.style.opacity = '0';
-          setTimeout(() => card.remove(), 300);
-        }
-        showToast('🗑️ Opportunity deleted');
-      } else {
-        showToast(result?.error || 'Delete failed');
-      }
-    } catch(e) {
-      showToast('Error deleting');
-    }
-  }
-
-  // 5. REPORT OPPORTUNITY
-  function reportOpportunity(oppId) {
-    document.getElementById('report-modal').setAttribute('data-id', oppId);
-    document.getElementById('report-modal').setAttribute('data-type', 'opportunity');
-    openModal('report-modal');
-  }
-  
-  async function submitReport() {
-    const modal = document.getElementById('report-modal');
-    const itemId = modal.getAttribute('data-id');
-    const itemType = modal.getAttribute('data-type');
-    const reason = document.getElementById('report-reason').value;
-    const description = document.getElementById('report-description').value.trim();
-    
-    if (!reason) { showToast('Please select a reason'); return; }
-    
-    try {
-      const result = await apiFetch('/api/reports/', {
-        method: 'POST',
-        body: JSON.stringify({
-          item_id: itemId,
-          item_type: itemType,
-          reason: reason,
-          description: description
-        })
-      });
-      if (result && !result.error) {
-        closeModal('report-modal');
-        showToast('🚩 Report submitted. Thank you.');
-        document.getElementById('report-reason').value = '';
-        document.getElementById('report-description').value = '';
-      } else {
-        showToast(result?.error || 'Report failed');
-      }
-    } catch(e) {
-      showToast('Error submitting report');
-    }
-  }
-
-  // Shared Helpers
-  function openModal(modalId) {
-    const m = document.getElementById(modalId);
-    if (m) {
-      m.style.display = 'flex';
-      setTimeout(() => m.style.opacity = '1', 10);
-    }
-  }
-  function closeModal(modalId) {
-    const m = document.getElementById(modalId);
-    if (m) {
-      m.style.opacity = '0';
-      setTimeout(() => m.style.display = 'none', 300);
-    }
-  }
-  
-  function showToast(message, duration = 3000) {
-    const existing = document.getElementById('toast-notification');
-    if (existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.id = 'toast-notification';
-    toast.textContent = message;
-    toast.style.cssText = `position: fixed; bottom: 24px; right: 24px; background: #1e1e2e; color: #f0f0f0; border: 1px solid #4ecca3; padding: 12px 20px; border-radius: 8px; z-index: 99999; font-size: 0.9rem; box-shadow: 0 4px 20px rgba(0,0,0,0.4); animation: slideIn 0.3s ease;`;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      setTimeout(() => toast.remove(), 300);
-    }, duration);
-  }
-
-  function toggleMenu(id) {
-    const menu = document.getElementById(`menu-${id}`);
-    const isOpen = menu.classList.contains('open');
-    document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
-    if (!isOpen) menu.classList.add('open');
-  }
-
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.menu-wrapper') && !e.target.closest('.dropdown-menu')) {
-      document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
-    }
-  });
-
-  async function submitNewOpportunity(e) {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('company', document.getElementById('new-opp-company').value.trim());
-    formData.append('role', document.getElementById('new-opp-role').value.trim());
-    formData.append('location', document.getElementById('new-opp-location').value.trim());
-    formData.append('category', document.getElementById('new-opp-category').value);
-    formData.append('eligibility', document.getElementById('new-opp-eligibility').value.trim());
-    formData.append('deadline', document.getElementById('new-opp-deadline').value.trim());
-    formData.append('description', document.getElementById('new-opp-description').value.trim());
-    formData.append('applyLink', document.getElementById('new-opp-apply-link').value.trim());
-    formData.append('media_link', document.getElementById('new-opp-media-link').value.trim());
-    formData.append('tags', document.getElementById('new-opp-tags').value);
-
-    const imageInput = document.getElementById('new-opp-image-input');
-    if (imageInput.files[0]) {
-      formData.append('image', imageInput.files[0]);
-    }
-
-    try {
-      const result = await apiFetch('/api/opportunities/', { 
-        method: 'POST', 
-        body: formData 
-      });
-      if (result && !result.error) {
-        showToast('✅ Submitted for review!');
-        closeModal('create-opportunity-modal');
-        setTimeout(() => location.reload(), 1000);
-      } else {
-        showToast(result?.error || 'Submission failed');
-      }
-    } catch(e) {
-      showToast('Error submitting opportunity');
-    }
-  }
-
-  function viewOpportunityDetails(id) {
-    // Implement or redirect to full details page
-    // For now, let's keep it simple or open a refined details modal
-  }
-
-  /* ═══ Custom Cyber Calendar Logic ═══ */
-  let tempSelectedDate = null;
-  let currentCalDate = new Date(); // To track month in the widget
-
-  function toggleCalendar(prefix) {
-    const dropdown = document.getElementById(`calendar-dropdown-${prefix}`);
-    const wasOpen = dropdown.style.display === 'block';
-    
-    // Close other
-    document.querySelectorAll('.calendar-dropdown').forEach(d => d.style.display = 'none');
-    
-    if (!wasOpen) {
-      dropdown.style.display = 'block';
-      renderCalendar(prefix, currentCalDate.getMonth(), currentCalDate.getFullYear());
-    }
-  }
-
-  function renderCalendar(prefix, month, year) {
-    const dropdown = document.getElementById(`calendar-dropdown-${prefix}`);
-    const monthNames = ["January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"];
-    
-    let html = `
-      <div class="calendar-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(5,217,232,0.1); padding-bottom:8px;">
-        <button type="button" onclick="changeMonth('${prefix}', -1)" style="background:none; border:none; color:#05d9e8; cursor:pointer;">◀</button>
-        <span style="font-size:14px; font-weight:700; color:#fff; font-family:'Rajdhani',sans-serif;">${monthNames[month].toUpperCase()} ${year}</span>
-        <button type="button" onclick="changeMonth('${prefix}', 1)" style="background:none; border:none; color:#05d9e8; cursor:pointer;">▶</button>
-      </div>
-      <div class="calendar-grid" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; text-align:center;">
-        <div style="font-size:10px; color:#888;">S</div><div style="font-size:10px; color:#888;">M</div><div style="font-size:10px; color:#888;">T</div><div style="font-size:10px; color:#888;">W</div><div style="font-size:10px; color:#888;">T</div><div style="font-size:10px; color:#888;">F</div><div style="font-size:10px; color:#888;">S</div>
-    `;
-
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
-    for (let i = 0; i < firstDay; i++) html += '<div></div>';
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${String(day).padStart(2,'0')}-${String(month+1).padStart(2,'0')}-${year}`;
-      const isSelected = tempSelectedDate === dateStr;
-      html += `<div class="calendar-day ${isSelected ? 'selected' : ''}" 
-                   onclick="onDayClick('${dateStr}', this)"
-                   data-date="${dateStr}"
-                   style="padding:6px 0; font-size:12px; cursor:pointer;">${day}</div>`;
-    }
-
-    html += `</div>
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0 0; border-top:1px solid rgba(5,217,232,0.1); margin-top:12px;">
-        <button type="button" onclick="clearDate('${prefix}')" style="background:transparent; border:none; color:#888; font-size:11px; cursor:pointer;">Clear</button>
-        <button type="button" onclick="setToday('${prefix}')" style="background:transparent; border:none; color:#05d9e8; font-size:11px; cursor:pointer;">Today</button>
-        <button type="button" onclick="confirmDate('${prefix}')" style="background:linear-gradient(135deg,#ff2a6d,#05d9e8); border:none; color:#fff; font-size:11px; font-weight:bold; cursor:pointer; padding:6px 14px; border-radius:6px;">OK</button>
-      </div>`;
-
-    dropdown.innerHTML = html;
-  }
-
-  function changeMonth(prefix, delta) {
-    currentCalDate.setMonth(currentCalDate.getMonth() + delta);
-    renderCalendar(prefix, currentCalDate.getMonth(), currentCalDate.getFullYear());
-  }
-
-  function onDayClick(dateStr, el) {
-    document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
-    el.classList.add('selected');
-    tempSelectedDate = dateStr;
-  }
-
-  function confirmDate(prefix) {
-    if (!tempSelectedDate) { showToast('Please select a date first', 'warning'); return; }
-    document.getElementById(`${prefix}-opp-deadline`).value = tempSelectedDate;
-    document.getElementById(`calendar-dropdown-${prefix}`).style.display = 'none';
-    tempSelectedDate = null;
-  }
-
-  function clearDate(prefix) {
-    document.getElementById(`${prefix}-opp-deadline`).value = '';
-    document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
-    tempSelectedDate = null;
-    document.getElementById(`calendar-dropdown-${prefix}`).style.display = 'none';
-  }
-
-  function setToday(prefix) {
-    const today = new Date();
-    const dateStr = `${String(today.getDate()).padStart(2,'0')}-${String(today.getMonth()+1).padStart(2,'0')}-${today.getFullYear()}`;
-    tempSelectedDate = dateStr;
-    renderCalendar(prefix, today.getMonth(), today.getFullYear());
-  }
-
-  // Close calendar on outside click
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.calendar-dropdown') && !e.target.closest('input[readonly]') && !e.target.closest('span[onclick*="toggleCalendar"]')) {
-      document.querySelectorAll('.calendar-dropdown').forEach(d => d.style.display = 'none');
-    }
-  });
-
-  function discussInChat(oppId, oppTitle) {
-    const encoded = encodeURIComponent('Discussing: ' + oppTitle + ' - ');
-    window.location.href = '/community/channel/career-internships?prefill=' + encoded + '&opp_id=' + oppId;
-  }
-  function shareOpp(id, title) {
-    document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('open'));
-    const url = window.location.origin + '/opportunities?highlight=' + id;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(url).then(() => showToast('Opportunity link copied! 🔗', 'success'));
-    } else {
-      prompt('Copy this link:', url);
-    }
-  }
-
-  async function reactToOpportunity(oppId, btn) {
-    if (!oppId) return;
-    
-    // Optimistic UI
-    const countSpan = document.getElementById(`count-${oppId}`);
-    let currentCount = parseInt(countSpan.innerText) || 0;
-    const isActive = btn.classList.contains('active');
-    
-    if (isActive) {
-      btn.classList.remove('active');
-      countSpan.innerText = Math.max(0, currentCount - 1);
-    } else {
-      btn.classList.add('active');
-      countSpan.innerText = currentCount + 1;
-      
-      // Heart explosion effect (subtle)
-      const rect = btn.getBoundingClientRect();
-      createPulse(rect.left + rect.width/2, rect.top + rect.height/2);
-    }
-    
-    try {
-      const res = await fetch(`/api/opportunities/${oppId}/react`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      const data = await res.json();
-      if (data.error) {
-        // Rollback on error
-        showToast(data.error, 'error');
-        if (isActive) {
-          btn.classList.add('active');
-          countSpan.innerText = currentCount;
-        } else {
-          btn.classList.remove('active');
-          countSpan.innerText = currentCount;
-        }
-      } else {
-        // Sync final count from server
-        countSpan.innerText = data.total_reactions;
-        if (data.action === 'added') {
-          btn.classList.add('active');
-          showToast('👍 Opportunity Liked! +1 point awarded', 'success');
-        } else {
-          btn.classList.remove('active');
-        }
-      }
-    } catch (err) {
-      console.error('Reaction error:', err);
-      showToast('Error connecting to server', 'error');
-    }
-  }
-
-  function createPulse(x, y) {
-    const pulse = document.createElement('div');
-    pulse.style.position = 'fixed';
-    pulse.style.left = x + 'px';
-    pulse.style.top = y + 'px';
-    pulse.style.width = '10px';
-    pulse.style.height = '10px';
-    pulse.style.background = '#f59e0b';
-    pulse.style.borderRadius = '50%';
-    pulse.style.pointerEvents = 'none';
-    pulse.style.zIndex = '9999';
-    pulse.style.transform = 'translate(-50%, -50%)';
-    pulse.style.animation = 'pulseAnim 0.6s ease-out forwards';
-    document.body.appendChild(pulse);
-    setTimeout(() => pulse.remove(), 600);
-  }
-
-  const style = document.createElement('style');
-  style.innerHTML = `
-    @keyframes pulseAnim {
-      0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-      100% { transform: translate(-50%, -50%) scale(10); opacity: 0; }
-    }
-  `;
-  document.head.appendChild(style);
+    const currentUserId = "{{ current_user._id|string if current_user else '' }}";
+    const currentUserRole = "{{ current_user.role|lower if current_user else '' }}";
 </script>
+<script src="/static/js/opportunities.js?v={{ range(1, 9999) | random }}"></script>
 {% endblock %}

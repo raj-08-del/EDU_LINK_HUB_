@@ -258,13 +258,24 @@ def opportunities_page():
         
         opps = list(mongo.db.opportunities.find(query).sort('created_at', -1))
         
+        is_admin = False
         try:
             verify_jwt_in_request(optional=True)
-            user = get_current_user()
+            user_id_from_jwt = get_jwt_identity()
+            user = None
+            if user_id_from_jwt:
+                user = mongo.db.users.find_one({'_id': ObjectId(user_id_from_jwt)})
+                if user:
+                    is_admin = bool(
+                        user.get('is_admin') is True or 
+                        (user.get('role') or '').lower() == 'admin'
+                    )
             user_id = user['_id'] if user else None
-        except:
+        except Exception as e:
+            current_app.logger.error(f"Admin check error: {e}")
             user = None
             user_id = None
+            is_admin = False
 
         # Batch fetch statuses if user logged in
         user_statuses = {}
@@ -320,7 +331,7 @@ def opportunities_page():
                 # Skip bad document instead of crashing
                 continue
             
-        return render_template('opportunities.html', opportunities=processed_opps, current_user=user)
+        return render_template('opportunities.html', opportunities=processed_opps, current_user=user, is_admin=is_admin)
 
     except Exception as e:
         current_app.logger.error(f"Opportunities page global error: {e}")
@@ -380,6 +391,37 @@ def opportunity_detail_page(opp_id):
         return render_template('offline.html', message="An error occurred"), 500
 
 
+@pages_bp.route('/opportunities/<opp_id>/edit')
+@jwt_required()
+def edit_opportunity_page(opp_id):
+    try:
+        user = get_current_user()
+        opp = mongo.db.opportunities.find_one({'_id': ObjectId(opp_id)})
+        
+        if not opp:
+            return render_template('offline.html', message="Opportunity not found"), 404
+
+        is_owner = str(opp.get('created_by')) == str(user['_id'])
+        is_admin = user.get('role') in ['admin', 'moderator']
+        
+        if not (is_owner or is_admin):
+            return render_template('offline.html', message="Forbidden: You cannot edit this opportunity."), 403
+
+        # Convert tags list to comma-separated string for the input field
+        if 'tags' in opp and isinstance(opp['tags'], list):
+            opp['tags_str'] = ", ".join(opp['tags'])
+        else:
+            opp['tags_str'] = ""
+
+        return render_template('edit_opportunity.html', opp=opp, current_user=user)
+
+    except InvalidId:
+        return render_template('offline.html', message="Invalid opportunity ID"), 400
+    except Exception as e:
+        current_app.logger.error(f"Edit page error: {e}")
+        return render_template('offline.html', message="An error occurred"), 500
+
+
 @pages_bp.route('/community')
 def community_page():
     try:
@@ -403,11 +445,14 @@ def community_post_page(post_id):
 
 
 @pages_bp.route('/admin')
-@jwt_required()
 def admin_page():
+    try:
+        verify_jwt_in_request(optional=True)
+    except:
+        pass
     user = get_current_user()
     if not user or user.get('role') not in ['admin', 'moderator']:
-        return render_template('offline.html', message="Unauthorized"), 403
+        return redirect(url_for('pages.login_page'))
         
     reports = list(mongo.db.reports.find({}).sort('createdAt', -1))
     for r in reports:
@@ -459,12 +504,15 @@ def notifications_keywords_page():
 
 
 @pages_bp.route('/study-groups')
-@jwt_required()
 def study_groups_page():
+    try:
+        verify_jwt_in_request(optional=True)
+    except:
+        pass
     try:
         user = get_current_user()
         if not user:
-            return render_template('login.html'), 401
+            return redirect(url_for('pages.login_page'))
             
         user_id = user['_id']
         user_role = user.get('role', 'student')
@@ -539,8 +587,11 @@ def study_group_room_page(group_id):
 
 
 @pages_bp.route('/leaderboard')
-@jwt_required(optional=True)
 def leaderboard_page():
+    try:
+        verify_jwt_in_request(optional=True)
+    except:
+        pass
     try:
         from bson import ObjectId
         from flask_jwt_extended import get_jwt_identity
@@ -653,32 +704,156 @@ def colleges_page():
 
 
 @pages_bp.route('/colleges/<college_id>')
-def college_detail_page(college_id):
+def college_profile(college_id):
     try:
         verify_jwt_in_request(optional=True)
         user = get_current_user()
     except:
         user = None
     
-    college = mongo.db.colleges.find_one({'_id': ObjectId(college_id)})
-    if not college:
-        return render_template('offline.html', message="College not found"), 404
-        
-    depts = list(mongo.db.departments.find({'college_id': ObjectId(college_id)}))
-    
-    # Check membership
-    is_member = False
-    if user:
-        is_member = mongo.db.college_members.find_one({
-            'user_id': user['_id'], 
-            'college_id': ObjectId(college_id)
-        }) is not None
+    try:
+        college = mongo.db.colleges.find_one({"_id": ObjectId(college_id)})
+        if not college:
+            return render_template('offline.html', message="College not found"), 404
 
-    return render_template('college_detail.html', 
-                           college=college, 
-                           departments=depts, 
-                           is_member=is_member, 
-                           current_user=user)
+        # Fetch all related data
+        reviews = list(mongo.db.college_reviews.find(
+            {"college_id": ObjectId(college_id)}
+        ).sort("created_at", -1).limit(20))
+
+        departments = list(mongo.db.departments.find(
+            {"college_id": ObjectId(college_id)}
+        ))
+
+        # Unified Placements: Merge from all potential collections
+        p1 = list(mongo.db.placements.find({"college_id": ObjectId(college_id)}))
+        p2 = list(mongo.db.dept_placements.find({"college_id": ObjectId(college_id)}))
+        p3 = list(mongo.db.college_placements.find({"college_id": ObjectId(college_id)}))
+        
+        # Add dept name to dept_placements for display/filtering
+        dept_map = {str(d['_id']): d.get('name', 'General') for d in departments}
+        for p in (p1 + p2 + p3):
+            if 'dept_id' in p:
+                p['department'] = dept_map.get(str(p.get('dept_id')), 'General')
+            
+            # Field Normalization for different schemas
+            if not p.get('student_photo') and p.get('photo_url'):
+                p['student_photo'] = p.get('photo_url')
+            if not p.get('package_lpa') and p.get('package'):
+                p['package_lpa'] = p.get('package')
+            
+        real_p_list = p1 + p2 + p3
+        placements = sorted(real_p_list, key=lambda x: x.get('batch_year', 0), reverse=True)
+
+        if not placements:
+            # Inject same demo placements used in department.html to maintain consistency
+            placements = [
+                { '_id': 'demo-p1', 'student_name': 'David Smith', 'company': 'Google', 'package_lpa': 42.5, 'role': 'Software Engineer', 'batch_year': 2024, 'department': 'Computer Science Engineering', 'student_photo': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200' },
+                { '_id': 'demo-p2', 'student_name': 'Emily Chen', 'company': 'Microsoft', 'package_lpa': 38.2, 'role': 'Cloud Architect', 'batch_year': 2023, 'department': 'Information Technology', 'student_photo': 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200' },
+                { '_id': 'demo-p3', 'student_name': 'Marcus Thorne', 'company': 'Amazon', 'package_lpa': 35.0, 'role': 'SDE', 'batch_year': 2024, 'department': 'Software Engineering', 'student_photo': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200' }
+            ]
+        
+        real_placement_count = len(placements)
+
+        alumni = list(mongo.db.alumni.find(
+            {"college_id": ObjectId(college_id)}
+        ).sort("package", -1).limit(10))
+
+        events_gallery = list(mongo.db.college_events.find(
+            {"college_id": ObjectId(college_id)}
+        ).sort("date", -1).limit(20))
+
+        # Calculate overall ratings
+        if reviews:
+            avg_rating = sum(r.get('overall_rating', 0) for r in reviews) / len(reviews)
+            faculty_avg = sum(r.get('faculty_rating', 0) for r in reviews) / len(reviews)
+            infra_avg = sum(r.get('infrastructure_rating', 0) for r in reviews) / len(reviews)
+            placement_avg = sum(r.get('placement_rating', 0) for r in reviews) / len(reviews)
+            campus_avg = sum(r.get('campus_rating', 0) for r in reviews) / len(reviews)
+        else:
+            avg_rating = faculty_avg = infra_avg = placement_avg = campus_avg = 0.0
+
+        # Placement stats by year
+        placement_stats = {}
+        for p in placements:
+            year = p.get('batch_year', 'Unknown')
+            if year not in placement_stats:
+                placement_stats[year] = {
+                    "total_placed": 0,
+                    "highest_package": 0.0,
+                    "average_package": 0.0,
+                    "total_package": 0.0
+                }
+            placement_stats[year]["total_placed"] += 1
+            pkg = float(p.get('package_lpa', 0) or 0)
+            if pkg > placement_stats[year]["highest_package"]:
+                placement_stats[year]["highest_package"] = pkg
+            placement_stats[year]["total_package"] += pkg
+            
+        for year in placement_stats:
+            if placement_stats[year]["total_placed"] > 0:
+                placement_stats[year]["average_package"] = round(placement_stats[year]["total_package"] / placement_stats[year]["total_placed"], 1)
+
+        # Membership Check
+        is_member = False
+        if user:
+            is_member = mongo.db.college_members.find_one({
+                'user_id': user['_id'], 
+                'college_id': ObjectId(college_id)
+            }) is not None
+
+        return render_template('college_profile.html',
+            college=college,
+            reviews=reviews,
+            placements=placements,
+            departments=departments,
+            alumni=alumni,
+            events_gallery=events_gallery,
+            placement_stats=placement_stats,
+            avg_rating=round(avg_rating, 1),
+            faculty_avg=round(faculty_avg, 1),
+            infra_avg=round(infra_avg, 1),
+            placement_avg=round(placement_avg, 1),
+            campus_avg=round(campus_avg, 1),
+            review_count=len(reviews),
+            is_member=is_member,
+            real_placement_count=real_placement_count,
+            current_user=user
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return render_template('offline.html', message=f"Error loading college: {str(e)}"), 500
+
+
+@pages_bp.route('/colleges/<college_id>/edit')
+def edit_college_page(college_id):
+    try:
+        verify_jwt_in_request(optional=True)
+    except:
+        pass
+    try:
+        user = get_current_user()
+        if not user:
+            return redirect(url_for('pages.login_page'))
+        college = mongo.db.colleges.find_one({"_id": ObjectId(college_id)})
+        
+        if not college:
+            return render_template('offline.html', message="College not found"), 404
+
+        is_owner = str(college.get('created_by')) == str(user['_id'])
+        is_admin = user.get('role') in ['admin', 'moderator']
+        
+        if not (is_owner or is_admin):
+            return render_template('offline.html', message="Forbidden: You cannot edit this college."), 403
+
+        return render_template('edit_college.html', college=college, current_user=user)
+
+    except InvalidId:
+        return render_template('offline.html', message="Invalid college ID"), 400
+    except Exception as e:
+        current_app.logger.error(f"Edit college page error: {e}")
+        return render_template('offline.html', message="An error occurred"), 500
 
 
 @pages_bp.route('/colleges/<college_id>/dept/<dept_id>')

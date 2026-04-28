@@ -1,5 +1,9 @@
 from flask import Blueprint, request, jsonify, session
-from flask_jwt_extended import create_access_token, set_access_cookies, unset_jwt_cookies
+from flask_jwt_extended import (
+    create_access_token, create_refresh_token, 
+    set_access_cookies, set_refresh_cookies, 
+    unset_jwt_cookies, jwt_required, get_jwt_identity
+)
 from app import mongo, bcrypt
 from app.utils import serialize_doc
 from app.utils_security import (
@@ -143,10 +147,12 @@ def register():
         print(f'>>> Points init error: {pe}')
 
     token = create_access_token(identity=str(user['_id']))
+    refresh_token = create_refresh_token(identity=str(user['_id']))
     user.pop('password', None)
 
     response = jsonify({'user': serialize_doc(user)})
     set_access_cookies(response, token)
+    set_refresh_cookies(response, refresh_token)
     return response, 201
 
 
@@ -185,6 +191,7 @@ def login():
         return jsonify({'message': 'Invalid credentials'}), 400
 
     token = create_access_token(identity=str(user['_id']))
+    refresh_token = create_refresh_token(identity=str(user['_id']))
     user.pop('password', None)
 
     log_security_event('user_login', ip, sanitized_id)
@@ -193,6 +200,7 @@ def login():
 
     response = jsonify({'user': serialize_doc(user)})
     set_access_cookies(response, token)
+    set_refresh_cookies(response, refresh_token)
     return response, 200
 
 
@@ -218,8 +226,7 @@ def forgot_password():
         
         if not user:
             # Inform the user that the email is not registered
-            # We use 200 status so the frontend correctly displays our custom error message
-            return jsonify({'error': 'This email is not used in EDU_LINK_HUB. Please create an account.'}), 200
+            return jsonify({'error': 'This email is not registered in EDU LINK HUB.'}), 404
         
         # Check if Google-only account
         if user.get('auth_provider') == 'google' and not user.get('password'):
@@ -249,7 +256,7 @@ def forgot_password():
             upsert=True
         )
         
-        # Build reset link (Assuming local for now)
+        # Build reset link
         base_url = request.host_url.rstrip('/')
         reset_link = f"{base_url}/reset-password?token={raw_token}"
         
@@ -264,9 +271,18 @@ def forgot_password():
         }), 200
         
     except Exception as e:
-        import traceback
-        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
+
+@auth_bp.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    """Handle JWT silent refresh."""
+    current_user_id = get_jwt_identity()
+    new_token = create_access_token(identity=current_user_id)
+    response = jsonify({'refreshed': True})
+    set_access_cookies(response, new_token)
+    return response, 200
 
 
 @auth_bp.route('/reset-password', methods=['POST'])
@@ -337,6 +353,15 @@ def google_login():
             return jsonify({'error': 'No credential'}), 400
         
         CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+        
+        # Bug 6: Dynamic redirect_uri construction
+        redirect_uri = os.environ.get('GOOGLE_REDIRECT_URI')
+        if not redirect_uri:
+            # Fallback to dynamic host URL
+            base_url = request.host_url.rstrip('/')
+            redirect_uri = f"{base_url}/api/auth/google/callback"
+            
+        print(f">>> GOOGLE AUTH: Using redirect_uri: {redirect_uri}")
         print(f">>> GOOGLE AUTH: Attempting to verify token for client_id: {CLIENT_ID}")
         
         try:

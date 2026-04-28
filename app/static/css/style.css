@@ -1,4 +1,11 @@
 @charset "UTF-8";
+
+/* Glassmorphism Fallback for older browsers (e.g. older Firefox/Safari) */
+@supports not (backdrop-filter: blur(10px)) {
+  .glass-card, .sidebar, .navbar, .card-dropdown-menu, .report-modal, .auth-card, .stat-card, .report-card {
+    background: rgba(10, 22, 40, 0.98) !important;
+  }
+}
 :root {
   --primary: #ff2a6d;
   --primary-light: #ff6b9d;
@@ -200,6 +207,63 @@ a:hover {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-dark); }
 ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+/* ─── Navbar Buttons ─── */
+.nav-icon-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+}
+
+.nav-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.pwa-install-btn {
+  display: none; /* Hidden by default */
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  margin-left: 8px;
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 15px rgba(5, 217, 232, 0.3);
+  transition: all 0.2s ease;
+  align-items: center;
+  gap: 6px;
+}
+
+.pwa-install-btn.visible {
+  display: inline-flex;
+  animation: pulseNeon 2s infinite alternate;
+}
+
+.pwa-install-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(5, 217, 232, 0.5);
+}
+
+@keyframes pulseNeon {
+  from { box-shadow: 0 0 10px rgba(5, 217, 232, 0.3); }
+  to { box-shadow: 0 0 20px rgba(5, 217, 232, 0.6); }
+}
 
 /* ─── Cyber Card ─── */
 .glass-card {

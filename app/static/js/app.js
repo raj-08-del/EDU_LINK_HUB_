@@ -126,26 +126,21 @@ async function apiFetch(url, options = {}) {
       `[apiFetch] status: ${response.status}`
     );
     
-    // Handle non-JSON responses
-    const contentType = response.headers.get(
-      'content-type'
-    );
-    if (!contentType || 
-        !contentType.includes('application/json')) {
-      const text = await response.text();
-      console.error(
-        '[apiFetch] Non-JSON response:', text
-      );
-      return { 
-        error: `Server error: ${response.status}` 
-      };
-    }
-    
-    const data = await response.json();
-    
-    // Handle 401 unauthorized
-    if (response.status === 401) {
-      console.warn('[apiFetch] 401 - redirecting');
+    // Bug 3: Handle 401 with Silent Refresh
+    if (response.status === 401 && !options._retry) {
+      console.warn('[apiFetch] 401 detected, attempting silent refresh...');
+      
+      try {
+        const refreshRes = await fetch('/api/auth/refresh', { method: 'POST' });
+        if (refreshRes.ok) {
+          console.log('[apiFetch] Refresh successful, retrying original request...');
+          return apiFetch(url, { ...options, _retry: true });
+        }
+      } catch (refreshErr) {
+        console.error('[apiFetch] Refresh request failed:', refreshErr);
+      }
+      
+      console.warn('[apiFetch] Refresh failed or not possible, redirecting to login');
       localStorage.removeItem('token');
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
@@ -153,6 +148,16 @@ async function apiFetch(url, options = {}) {
       return null;
     }
     
+    // Handle non-JSON responses
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('[apiFetch] Non-JSON response:', text);
+      return { error: `Server error: ${response.status}` };
+    }
+    
+    const data = await response.json();
+    if (data && data.error) throw new Error(data.error);
     return data;
     
   } catch(e) {
@@ -255,15 +260,20 @@ function setActiveNav() {
 // ─── User Info in Sidebar ───
 function renderUserInfo() {
   const user = getUser();
-  if (!user) return;
-
   const nameEl = document.querySelector('.user-name');
   const roleEl = document.querySelector('.user-role');
   const avatarEl = document.querySelector('.user-avatar');
 
-  if (nameEl) nameEl.textContent = user.name;
-  if (roleEl) roleEl.textContent = user.role;
-  if (avatarEl) avatarEl.textContent = user.name ? user.name[0].toUpperCase() : '?';
+  if (!user) {
+    if (nameEl) nameEl.textContent = 'Guest User';
+    if (roleEl) roleEl.textContent = 'Not Logged In';
+    if (avatarEl) avatarEl.textContent = '?';
+    return;
+  }
+
+  if (nameEl) nameEl.textContent = user.name || 'User';
+  if (roleEl) roleEl.textContent = user.role || 'Student';
+  if (avatarEl) avatarEl.textContent = (user.name && user.name.length > 0) ? user.name[0].toUpperCase() : '?';
 }
 
 // ─── Mobile Menu ───
@@ -374,6 +384,15 @@ async function logout() {
 
 // ─── Init ───
 document.addEventListener('DOMContentLoaded', () => {
+  const path = window.location.pathname;
+  const publicPaths = ['/login', '/register', '/', '/reset-password'];
+  
+  if (!publicPaths.includes(path) && !getUser()) {
+    console.warn('[Auth] No user found in localStorage, redirecting...');
+    window.location.href = '/login';
+    return;
+  }
+
   setActiveNav();
   renderUserInfo();
 
@@ -416,11 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('show'));
   };
 
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.card-menu-container')) {
-      closeAllMenus();
-    }
-  });
+  // Card menu closing is now handled centrally in card_dropdown.js
 
   // Initial and periodic update
   updateNotificationBadges();

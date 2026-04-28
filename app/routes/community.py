@@ -303,17 +303,19 @@ def create_post():
         if post_type == 'poll':
             poll = data.get('poll')
             print("Poll data received:", poll)
-            if poll:
-                poll_data = {
-                    'question': str(poll.get('question', '')),
-                    'options': [
-                        {'id': str(idx + 1), 'text': str(opt), 'votes': []}
-                        for idx, opt in enumerate(poll.get('options', []))
-                        if str(opt).strip()
-                    ],
-                    'total_votes': 0,
-                    'voted_by': []
-                }
+            if not poll or not isinstance(poll.get('options'), list) or len([o for o in poll.get('options', []) if str(o).strip()]) < 2:
+                return jsonify({"error": "Polls must have at least 2 valid options"}), 400
+                
+            poll_data = {
+                'question': str(poll.get('question', title)),
+                'options': [
+                    {'id': str(idx + 1), 'text': str(opt).strip(), 'votes': []}
+                    for idx, opt in enumerate(poll.get('options', []))
+                    if str(opt).strip()
+                ],
+                'total_votes': 0,
+                'voted_by': []
+            }
 
         current_user_id = get_jwt_identity()
 
@@ -343,7 +345,7 @@ def create_post():
             if post_type == 'poll':
                 award_points(current_user_id, 4, action_type='polls_created') # Standardized +4 for poll
         except Exception as pe:
-             print(f'>>> Points award error: {pe}')
+             print(f'>>> Points award error: pe')
 
         # Keyword Notifications (Optional, non-blocking)
         try:
@@ -358,11 +360,12 @@ def create_post():
                 tags=post_doc['tags']
             )
         except Exception as n_err:
-            print(f"Notification error: {n_err}")
+            print(f"Notification error: n_err")
 
         return jsonify({
             "message": "Post created successfully",
-            "id": str(result.inserted_id)
+            "id": str(result.inserted_id),
+            "success": True
         }), 201
 
     except Exception as e:
@@ -370,6 +373,7 @@ def create_post():
         traceback.print_exc()
         print("Error:", str(e))
         return jsonify({"error": str(e)}), 500
+
 
 
 @community_bp.route('/api/community/<post_id>', methods=['PUT'])

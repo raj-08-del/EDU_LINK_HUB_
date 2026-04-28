@@ -88,6 +88,14 @@ def get_opportunities():
                 {'company': {'$regex': search, '$options': 'i'}},
                 {'role': {'$regex': search, '$options': 'i'}},
             ]
+            
+        source_filter = request.args.get('source')
+        if source_filter:
+            query['source'] = source_filter
+            
+        type_filter = request.args.get('type')
+        if type_filter:
+            query['opportunity_type'] = type_filter
 
         opps = list(mongo.db.opportunities.find(query).sort('created_at', -1))
 
@@ -559,4 +567,49 @@ def react_to_opportunity(opp_id):
             
     except Exception as e:
         traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@opportunities_bp.route('/stats', methods=['GET'])
+def get_stats():
+    try:
+        # Base query for approved opportunities
+        base_query = {'status': 'approved', 'is_archived': {'$ne': True}, 'is_hidden': {'$ne': True}}
+        
+        total = mongo.db.opportunities.count_documents(base_query)
+        jobs = mongo.db.opportunities.count_documents({**base_query, 'category': 'job'})
+        internships = mongo.db.opportunities.count_documents({**base_query, 'category': 'internship'})
+        
+        # Hackathons often come from Devpost/MLH or are tagged in opportunity_type
+        hackathons = mongo.db.opportunities.count_documents({
+            **base_query, 
+            '$or': [
+                {'opportunity_type': {'$regex': 'hackathon', '$options': 'i'}},
+                {'source': {'$in': ['devpost', 'mlh']}}
+            ]
+        })
+        
+        # Events often from Eventbrite
+        events = mongo.db.opportunities.count_documents({
+            **base_query,
+            '$or': [
+                {'opportunity_type': {'$regex': 'event', '$options': 'i'}},
+                {'source': 'eventbrite'}
+            ]
+        })
+        
+        remote = mongo.db.opportunities.count_documents({
+            **base_query,
+            'location': {'$regex': 'remote', '$options': 'i'}
+        })
+        
+        return jsonify({
+            "total": total,
+            "jobs": jobs,
+            "hackathons": hackathons,
+            "events": events,
+            "remote": remote,
+            "internships": internships
+        }), 200
+    except Exception as e:
+        logging.error(f"Stats Error: {e}")
         return jsonify({'error': str(e)}), 500

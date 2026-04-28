@@ -274,10 +274,12 @@
       b.style.fontWeight = '600';
     });
     const activeBtn = document.getElementById(`btn-${sortType}`);
-    activeBtn.style.background = '#ff2a6d';
-    activeBtn.style.color = '#fff';
-    activeBtn.style.borderColor = '#ff2a6d';
-    activeBtn.style.fontWeight = '700';
+    if (activeBtn) {
+        activeBtn.style.background = '#ff2a6d';
+        activeBtn.style.color = '#fff';
+        activeBtn.style.borderColor = '#ff2a6d';
+        activeBtn.style.fontWeight = '700';
+    }
 
     currentPage = 1;
     loadPosts();

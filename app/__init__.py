@@ -16,9 +16,22 @@ jwt = JWTManager()
 bcrypt = Bcrypt()
 init_lock = threading.Lock()
 
+from flask.json.provider import DefaultJSONProvider
+from bson import ObjectId
+from datetime import datetime
+
+class MongoJSONProvider(DefaultJSONProvider):
+    def default(self, obj):
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        return super().default(obj)
+
 
 def create_app():
     app = Flask(__name__)
+    app.json = MongoJSONProvider(app)
 
     # Read GOOGLE_CLIENT_ID
     app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID', '')
@@ -37,7 +50,7 @@ def create_app():
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key')
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)
     app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-    app.config['JWT_COOKIE_SECURE'] = False
+    app.config['JWT_COOKIE_SECURE'] = os.getenv('JWT_COOKIE_SECURE', 'False').lower() == 'true'
     app.config['JWT_COOKIE_SAMESITE'] = 'Lax'
     app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 
@@ -87,6 +100,7 @@ def create_app():
     from app.routes.colleges import colleges_bp
     from app.routes.resources import resources_bp
     from app.routes.stats import stats_bp
+    from app.routes.social_integrations import social_integrations_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
@@ -105,6 +119,7 @@ def create_app():
     app.register_blueprint(colleges_bp, url_prefix='/api/colleges')
     app.register_blueprint(resources_bp, url_prefix='/api/resources')
     app.register_blueprint(stats_bp, url_prefix='/api/stats')
+    app.register_blueprint(social_integrations_bp, url_prefix='/api/social')
 
     @app.cli.command('backfill-points')
     def backfill_points_command():

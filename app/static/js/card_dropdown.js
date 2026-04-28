@@ -30,8 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 3. Clear all on outside click
-        if (!e.target.closest('.card-dropdown-container')) {
+        if (!e.target.closest('.card-dropdown-container') && !e.target.closest('.card-menu-container')) {
             closeAllDropdowns();
+            // Also call global closer if it exists (from app.js legacy)
+            if (window.closeAllMenus) window.closeAllMenus();
         }
     });
 

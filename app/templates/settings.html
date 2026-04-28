@@ -98,6 +98,25 @@
                 </div>
               </div>
 
+              <!-- LinkedIn Integration Section -->
+              <div class="form-row" style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <div class="form-group" style="width: 100%;">
+                  <label style="color: #05d9e8; font-size: 16px;">🔗 Social Integrations</label>
+                  <div id="linkedin-section" style="background: rgba(0, 119, 181, 0.1); border: 1px solid rgba(0, 119, 181, 0.4); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display:flex; align-items:center; gap: 15px;">
+                      <div id="linkedin-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: #0077b5; display: flex; justify-content: center; align-items: center; font-size: 24px; color: white;">in</div>
+                      <div>
+                        <h4 style="margin: 0; color: #fff; font-family: 'Rajdhani';" id="linkedin-name">LinkedIn</h4>
+                        <p style="margin: 4px 0 0; color: #aaa; font-size: 13px;" id="linkedin-status">Connect your profile to showcase it to peers</p>
+                      </div>
+                    </div>
+                    <div id="linkedin-actions">
+                      <button type="button" onclick="connectLinkedIn()" class="btn" style="background: #0077b5; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer;">Connect</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div class="form-actions">
                 <button type="submit" class="btn btn-primary btn-glow" id="saveProfBtn">Save Changes ✨</button>
               </div>
@@ -245,6 +264,64 @@
     } else {
       document.getElementById('avatarInitials').textContent = user.name[0].toUpperCase();
     }
+    
+    // LinkedIn Integration initialization
+    if (user.linkedin_connected && user.linkedin_profile) {
+      document.getElementById('linkedin-name').textContent = user.linkedin_profile.name || user.name;
+      document.getElementById('linkedin-status').textContent = 'Connected ✅';
+      document.getElementById('linkedin-status').style.color = '#2ed573';
+      if (user.linkedin_profile.picture) {
+        document.getElementById('linkedin-avatar').innerHTML = `<img src="${user.linkedin_profile.picture}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+      }
+      document.getElementById('linkedin-actions').innerHTML = `
+        <button type="button" onclick="shareProfileToLinkedIn()" class="btn" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size:12px; margin-right:8px;">Share Profile</button>
+        <button type="button" onclick="disconnectLinkedIn()" class="btn" style="background: transparent; color: #ff4757; border: 1px solid #ff4757; padding: 6px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size:12px;">Disconnect</button>
+      `;
+    }
+  }
+  
+  async function connectLinkedIn() {
+    try {
+      const res = await apiFetch('/api/social/linkedin/connect');
+      if (res && res.auth_url) {
+        window.location.href = res.auth_url;
+      } else {
+        showToast('LinkedIn integration is not configured properly.', 'error');
+      }
+    } catch (e) {
+      showToast('Error connecting to LinkedIn', 'error');
+    }
+  }
+  
+  async function disconnectLinkedIn() {
+    if (!confirm('Are you sure you want to disconnect your LinkedIn profile?')) return;
+    try {
+      const res = await apiFetch('/api/social/linkedin/disconnect', { method: 'POST' });
+      if (res && !res.error) {
+        showToast('LinkedIn disconnected', 'success');
+        // Update local user object
+        const user = getUser();
+        delete user.linkedin_connected;
+        delete user.linkedin_profile;
+        localStorage.setItem('user', JSON.stringify(user));
+        // Reset UI
+        document.getElementById('linkedin-name').textContent = 'LinkedIn';
+        document.getElementById('linkedin-status').textContent = 'Connect your profile to showcase it to peers';
+        document.getElementById('linkedin-status').style.color = '#aaa';
+        document.getElementById('linkedin-avatar').innerHTML = 'in';
+        document.getElementById('linkedin-actions').innerHTML = `<button type="button" onclick="connectLinkedIn()" class="btn" style="background: #0077b5; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer;">Connect</button>`;
+      } else {
+        showToast('Failed to disconnect', 'error');
+      }
+    } catch (e) {
+      showToast('Error disconnecting', 'error');
+    }
+  }
+  
+  function shareProfileToLinkedIn() {
+    const url = encodeURIComponent(window.location.origin); // You can put the user's public profile URL here
+    const title = encodeURIComponent('Check out my profile on EDU Link Hub!');
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=600');
   }
 
   async function saveProfile(e) {

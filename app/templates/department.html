@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Department Community - EDU Link Hub{% endblock %}
+{% block title %}Department Hub - EDU Link Hub{% endblock %}
 
 {% block body %}
 {% include 'partials/navbar.html' %}
@@ -10,212 +10,220 @@
     <main class="main-content" style="padding:0">
         <div id="loader" style="padding: 100px; text-align: center;">
             <div class="spinner"></div>
-            <p style="margin-top:20px; color:var(--accent); font-family:'Rajdhani'; font-weight:bold;">CONNECTING TO
-                DEPARTMENT...</p>
+            <p style="margin-top:20px; color:var(--accent); font-family:'Rajdhani'; font-weight:bold;">INITIALIZING DEPARTMENT HUB...</p>
         </div>
 
         <div id="deptContent" style="display: none;">
-            <!-- BREADCRUMB -->
-            <div class="breadcrumb"
-                style="padding: 20px 40px; background: rgba(1,10,19,0.5); border-bottom: 1px solid var(--border); font-size: 0.9rem; letter-spacing: 0.5px;">
-                <a href="/colleges" style="color: var(--cyan); text-decoration: none;">Communities</a> &rsaquo;
-                <a href="/colleges/{{college_id}}" id="bcCollegeText"
-                    style="color: var(--cyan); text-decoration: none;">College</a> &rsaquo;
-                <span id="bcDeptText" style="color: var(--text-muted);">Department</span>
-            </div>
+            <!-- PREMIUM HERO SECTION -->
+            <section style="position:relative; padding:60px 60px 40px; background:radial-gradient(circle at top right, #1a2340 0%, #050a14 70%); overflow:hidden; border-bottom:1px solid #1e1e2e;">
+                <!-- Glowing Orbs Background -->
+                <div style="position:absolute; top:-100px; right:-100px; width:400px; height:400px; background:radial-gradient(circle, rgba(78,204,163,0.15) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+                <div style="position:absolute; bottom:-100px; left:-100px; width:400px; height:400px; background:radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+                
+                <div class="container" style="position:relative; z-index:2; max-width:1200px; margin:0 auto;">
+                    
+                    <!-- Breadcrumbs -->
+                    <div style="font-size:0.85rem; letter-spacing:1px; color:#888; margin-bottom:20px; font-weight:600; text-transform:uppercase;">
+                        <a href="/colleges" style="color:#4ecca3; text-decoration:none; transition:0.3s;">COLLEGES</a> 
+                        <span style="margin:0 8px; color:#555;">/</span> 
+                        <a href="/colleges/{{college_id}}" id="bcCollegeText" style="color:#4ecca3; text-decoration:none; transition:0.3s;">UNIVERSITY</a> 
+                        <span style="margin:0 8px; color:#555;">/</span> 
+                        <span id="bcDeptText" style="color:#f0f0f0;">DEPARTMENT</span>
+                    </div>
 
-            <!-- HEADER -->
-            <section class="pattern-bg"
-                style="padding: 60px 40px; background: linear-gradient(135deg, rgba(20,20,40,0.95), rgba(10,10,20,0.95)), url('/static/pattern.svg'); border-bottom: 2px solid var(--border);">
-                <div
-                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 30px;">
-                    <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-                            <span class="chip chip-prominent"
-                                style="background: var(--accent); color: #000; font-weight: 800;">ACTIVE
-                                COMMUNITY</span>
-                            <span id="memberCountBadge" class="chip chip-outline"
-                                style="border-color: var(--cyan); color: var(--cyan); font-weight: bold;">👥 0
-                                MEMBERS</span>
+                    <!-- Main Content Grid -->
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:40px;">
+                        
+                        <!-- Left Side: Title & Badges -->
+                        <div style="flex:1; min-width:300px;">
+                            <!-- Status Badges -->
+                            <div style="display:flex; gap:12px; align-items:center; margin-bottom:24px; flex-wrap:wrap;">
+                                <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(78,204,163,0.1); border:1px solid rgba(78,204,163,0.3); color:#4ecca3; padding:6px 12px; border-radius:30px; font-size:0.8rem; font-weight:700; letter-spacing:1px;">
+                                    <span style="width:8px; height:8px; background:#4ecca3; border-radius:50%; box-shadow:0 0 10px #4ecca3; animation:pulse 2s infinite;"></span>
+                                    LIVE HUB
+                                </div>
+                                <div id="memberCountBadge" style="display:inline-flex; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#ccc; padding:6px 12px; border-radius:30px; font-size:0.8rem; font-weight:600;">
+                                    👥 0 STUDENTS
+                                </div>
+                                <div id="facultyCountBadge" style="display:inline-flex; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#ccc; padding:6px 12px; border-radius:30px; font-size:0.8rem; font-weight:600;">
+                                    👨‍🏫 0 FACULTY
+                                </div>
+                            </div>
+                            
+                            <!-- Title -->
+                            <h1 id="deptName" style="font-size:4rem; font-weight:900; margin:0 0 10px 0; color:#fff; line-height:1.1; letter-spacing:-1px; text-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                                Department Name
+                            </h1>
+                            <p id="deptSubtitle" style="font-size:1.5rem; font-weight:500; color:#888; margin:0; letter-spacing:2px; text-transform:uppercase;">
+                                BRANCH CODE
+                            </p>
                         </div>
-                        <h1 id="deptName" style="font-size: 3rem; margin-bottom: 5px; color: #fff;">Department Name</h1>
-                        <p id="deptSubtitle"
-                            style="color: var(--text-secondary); font-size: 1.25rem; font-family: 'Rajdhani';">Branch
-                            Short Name</p>
+                        
+                        <!-- Right Side: Actions -->
+                        <div style="display:flex; flex-direction:column; gap:16px;">
+
+                            <button id="createPostBtn" onclick="openCreateModal()" style="display:none; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.2); padding:16px 32px; border-radius:12px; font-size:1rem; font-weight:800; letter-spacing:1px; cursor:pointer; transition:0.3s; text-transform:uppercase;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                                + POST UPDATE
+                            </button>
+                        </div>
                     </div>
-                    <div style="display: flex; gap: 15px; align-items: center;">
-                        <button class="btn btn-primary" id="joinBtn" onclick="joinDept()"
-                            style="padding: 15px 35px; border-radius: 40px;">JOIN COMMUNITY</button>
-                        <button class="btn btn-success" id="createPostBtn" onclick="openCreateModal()"
-                            style="display:none; padding: 15px 35px; border-radius: 40px; box-shadow: 0 0 20px var(--accent);">+
-                            CREATE POST</button>
+                </div>
+            </section>
+            <style>
+                @keyframes pulse {
+                    0% { transform: scale(0.95); opacity: 0.5; }
+                    50% { transform: scale(1.2); opacity: 1; }
+                    100% { transform: scale(0.95); opacity: 0.5; }
+                }
+                
+                .sub-nav-sticky {
+                    background: rgba(5, 10, 20, 0.8);
+                    backdrop-filter: blur(10px);
+                    border-bottom: 1px solid rgba(255,255,255,0.05);
+                    position: sticky;
+                    top: 0;
+                    z-index: 100;
+                }
+                .sub-tabs-scroller {
+                    display: flex;
+                    gap: 10px;
+                    overflow-x: auto;
+                    padding: 16px 0;
+                    scrollbar-width: none;
+                }
+                .sub-tabs-scroller::-webkit-scrollbar { display: none; }
+                
+                .sub-tab-link {
+                    background: transparent;
+                    color: #888;
+                    border: 1px solid transparent;
+                    padding: 10px 20px;
+                    border-radius: 30px;
+                    font-size: 0.9rem;
+                    font-weight: 700;
+                    cursor: pointer;
+                    white-space: nowrap;
+                    transition: all 0.3s;
+                    letter-spacing: 0.5px;
+                }
+                .sub-tab-link:hover {
+                    color: #fff;
+                    background: rgba(255,255,255,0.05);
+                }
+                .sub-tab-link.active {
+                    background: rgba(78,204,163,0.1);
+                    color: #4ecca3;
+                    border: 1px solid rgba(78,204,163,0.3);
+                }
+            </style>
+
+            <!-- SUB-NAVIGATION -->
+            <section class="sub-nav-sticky">
+                <div class="container" style="padding: 0 60px;">
+                    <div class="sub-tabs-scroller" id="subTabs">
+                        <button class="sub-tab-link active" data-target="students">🎓 STUDENTS & ALUMNI</button>
+                        <button class="sub-tab-link" data-target="placements">💼 PLACEMENTS</button>
+                        <button class="sub-tab-link" data-target="features">🌟 FEATURES</button>
+                        <button class="sub-tab-link" data-target="gallery">📸 GALLERY</button>
                     </div>
                 </div>
             </section>
 
-            <!-- SUB-TABS -->
-            <section class="filter-bar"
-                style="background: rgba(1,10,19,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: var(--navbar-height); z-index: 100;">
-                <div class="container"
-                    style="display: flex; align-items: center; justify-content: center; padding: 0 40px;">
-                    <div class="filter-tabs" id="subTabs"
-                        style="display: flex; gap: 10px; overflow-x: auto; padding: 20px 0; -ms-overflow-style: none; scrollbar-width: none;">
-                        <button class="tab-btn active" data-target="feed">📢 FEED</button>
-                        <button class="tab-btn" data-target="gallery">📸 GALLERY</button>
-                        <button class="tab-btn" data-target="videos">🎬 VIDEOS</button>
-                        <button class="tab-btn" data-target="festivals">🎭 FESTIVALS</button>
-                        <button class="tab-btn" data-target="achievements">🏆 ACHIEVEMENTS</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PANES CONTENT -->
-            <section style="padding: 40px; background: rgba(0,0,0,0.2);">
+            <!-- HUB PANES -->
+            <section class="hub-panes-section">
                 <div class="container animate-in">
-                    <!-- PANE: FEED -->
-                    <div id="pane-feed" class="tab-pane active">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                            <div id="postFilters" style="display:flex; gap:10px;">
-                                <button class="btn btn-sm btn-primary" data-type="all">ALL</button>
-                                <button class="btn btn-sm btn-secondary" data-type="announcement">📢 ANNOUNCE</button>
-                                <button class="btn btn-sm btn-secondary" data-type="discussion">💬 DISCUSS</button>
-                                <button class="btn btn-sm btn-secondary" data-type="resource">📚 RES</button>
-                                <button class="btn btn-sm btn-secondary" data-type="event">📅 EVT</button>
+
+                    <!-- 1. STUDENTS & ALUMNI PANE -->
+                    <div id="pane-students" class="tab-pane active">
+                        <div class="community-module animate-in">
+                            <div class="section-header-premium">
+                                <div class="title-group">
+                                    <h2 class="premium-title">Department Community</h2>
+                                    <p class="premium-subtitle">Connecting top academic performers and notable alumni</p>
+                                </div>
+                                <div class="admin-actions" style="display:none;" id="studentsAdminActions">
+                                    <button class="premium-add-btn" onclick="openAddStudentModal()" id="addStudentBtn">
+                                        <span class="plus-icon">＋</span> ADD STUDENT
+                                    </button>
+                                    <button class="premium-add-btn alumni-btn" onclick="openAddAlumniModal()" style="display:none;" id="addAlumniBtn">
+                                        <span class="plus-icon">＋</span> ADD ALUMNI
+                                    </button>
+                                </div>
                             </div>
-                            <select id="postSort" class="input input-sm glass" style="border-radius:20px; width:130px;"
-                                onchange="loadPosts()">
-                                <option value="newest">Newest</option>
-                                <option value="popular">Popular</option>
-                                <option value="pinned">Pinned</option>
-                            </select>
-                        </div>
-                        <div id="postsFeed"
-                            style="display: grid; grid-template-columns: 1fr; gap: 25px; max-width: 900px; margin: 0 auto;">
-                        </div>
-                        <div id="emptyFeed" style="display: none; text-align: center; padding: 100px 20px;">
-                            <div style="font-size: 5rem; margin-bottom: 20px;">📭</div>
-                            <h2 style="color: var(--text-muted);">No posts found in this category.</h2>
-                            <button class="btn btn-primary" onclick="openCreateModal()" style="margin-top: 20px;">+
-                                START A CONVERSATION</button>
+
+                            <div class="filter-bar-premium">
+                                <div class="segmented-control" id="topperYearTabs">
+                                    <button onclick="switchYearTab(1, this)" class="segment-btn active" data-year="1">1st Year</button>
+                                    <button onclick="switchYearTab(2, this)" class="segment-btn" data-year="2">2nd Year</button>
+                                    <button onclick="switchYearTab(3, this)" class="segment-btn" data-year="3">3rd Year</button>
+                                    <button onclick="switchYearTab(4, this)" class="segment-btn" data-year="4">Final Year</button>
+                                    <button onclick="switchYearTab(5, this)" class="segment-btn" data-year="5">Alumni</button>
+                                </div>
+                            </div>
+                            
+                            <div id="studentsGrid" class="podium-grid">
+                                <!-- Student/Alumni Cards -->
+                            </div>
                         </div>
                     </div>
 
-                    <!-- PANE: GALLERY -->
+                    <!-- 2. PLACEMENTS PANE -->
+                    <div id="pane-placements" class="tab-pane" style="display: none;">
+                        <div class="community-module animate-in">
+                            <div class="section-header-premium">
+                                <div class="title-group">
+                                    <h2 class="premium-title">High-Package Placements</h2>
+                                    <p class="premium-subtitle">Recent career milestones from our students</p>
+                                </div>
+                                <div class="admin-actions" style="display:none;" id="placementsAdminActions">
+                                    <button class="premium-add-btn" onclick="openAddPlacementModal()">
+                                        <span class="plus-icon">＋</span> ADD PLACEMENT
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="deptPlacementsGrid" class="grid grid-3" style="gap:30px; margin-top:20px;">
+                                <!-- Placement cards -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. FEATURES PANE -->
+                    <div id="pane-features" class="tab-pane" style="display: none;">
+                        <div class="community-module animate-in">
+                            <div class="section-header-premium">
+                                <div class="title-group">
+                                    <h2 class="premium-title">Key Highlights</h2>
+                                    <p class="premium-subtitle">What makes our department unique and globally competitive</p>
+                                </div>
+                                <div class="admin-actions" style="display:none;" id="featuresAdminActions">
+                                    <button class="premium-add-btn" onclick="openAddFeatureModal()">
+                                        <span class="plus-icon">＋</span> ADD HIGHLIGHT
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="featuresGrid" class="grid grid-3" style="gap:30px; margin-top:20px;">
+                                <!-- Feature cards -->
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- 6. GALLERY PANE -->
                     <div id="pane-gallery" class="tab-pane" style="display: none;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                            <h2 style="color:var(--accent);">Department Gallery</h2>
-                            <button class="btn btn-sm btn-outline">+ UPLOAD PHOTO</button>
-                        </div>
-                        <div style="display:flex; gap:10px; margin-bottom:20px;">
-                            <span class="chip chip-prominent" style="background:var(--cyan); color:#000;">All</span>
-                            <span class="chip glass">Labs</span>
-                            <span class="chip glass">Events</span>
-                            <span class="chip glass">Fests</span>
-                            <span class="chip glass">Campus</span>
-                        </div>
-                        <div class="masonry-grid" id="galleryGrid">
-                            <!-- Mock Photos -->
-                            <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=500&h=400&fit=crop"
-                                class="gallery-photo" onclick="openLightbox(this.src)">
-                            <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=500&h=300&fit=crop"
-                                class="gallery-photo" onclick="openLightbox(this.src)">
-                            <img src="https://images.unsplash.com/photo-1519452285881-224424ceb025?w=500&h=500&fit=crop"
-                                class="gallery-photo" onclick="openLightbox(this.src)">
-                            <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=500&h=350&fit=crop"
-                                class="gallery-photo" onclick="openLightbox(this.src)">
-                        </div>
-                    </div>
-
-                    <!-- PANE: VIDEOS -->
-                    <div id="pane-videos" class="tab-pane" style="display: none;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                            <h2 style="color:var(--accent);">Videos & Reels</h2>
-                            <button class="btn btn-sm btn-outline">+ ADD VIDEO</button>
-                        </div>
-                        <div class="grid grid-3" style="gap:25px;" id="videosGrid">
-                            <!-- Mock Videos -->
-                            <div class="video-card glass">
-                                <div class="video-thumb"
-                                    style="background:url('https://images.unsplash.com/photo-1511629091441-ee46146481b6?w=600&h=400&fit=crop');">
-                                    <div class="play-btn">▶</div>
+                        <div class="community-module animate-in">
+                            <div class="section-header-premium">
+                                <div class="title-group">
+                                    <h2 class="premium-title">Department Life</h2>
+                                    <p class="premium-subtitle">A visual journey through moments captured in our campus</p>
                                 </div>
-                                <div class="video-info">
-                                    <h4>Symposium 2025 Highlights</h4>
-                                    <span style="color:var(--text-muted); font-size:0.8rem;">Fest Highlights • 2:30
-                                        mins</span>
+                                <div class="admin-actions" style="display:none;" id="galleryAdminActions">
+                                    <button class="premium-add-btn" onclick="openAddGalleryModal()">
+                                        <span class="plus-icon">📸</span> POST MOMENT
+                                    </button>
                                 </div>
                             </div>
-                            <div class="video-card glass">
-                                <div class="video-thumb"
-                                    style="background:url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop');">
-                                    <div class="play-btn">▶</div>
-                                </div>
-                                <div class="video-info">
-                                    <h4>Robotics Lab Tour</h4>
-                                    <span style="color:var(--text-muted); font-size:0.8rem;">Lab Tours • 4:15
-                                        mins</span>
-                                </div>
-                            </div>
-                            <div class="video-card glass">
-                                <div class="video-thumb"
-                                    style="background:url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=400&fit=crop');">
-                                    <div class="play-btn">▶</div>
-                                </div>
-                                <div class="video-info">
-                                    <h4>Alumni Meet 2024</h4>
-                                    <span style="color:var(--text-muted); font-size:0.8rem;">Events • 1:45 mins</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PANE: FESTIVALS -->
-                    <div id="pane-festivals" class="tab-pane" style="display: none;">
-                        <h2 style="color:var(--accent); margin-bottom:20px;">Annual Festivals</h2>
-                        <div class="fest-card glass">
-                            <div class="fest-cover"
-                                style="background:url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&h=300&fit=crop') center/cover;">
-                            </div>
-                            <div class="fest-body">
-                                <h3>🎭 TECHVISION 2026</h3>
-                                <div style="color:var(--text-muted); margin-bottom:15px;">Annual Technical Symposium
-                                </div>
-                                <p>Experience the biggest technical extravaganza. Includes paper presentations,
-                                    hackathons, and robo-wars.</p>
-                                <div style="display:flex; gap:15px; margin-top:20px; font-size:0.9rem;">
-                                    <span>📅 May 20, 2026</span>
-                                    <span>👥 500+ Participants</span>
-                                </div>
-                                <div style="margin-top:20px; display:flex; gap:10px;">
-                                    <button class="btn btn-sm btn-outline">View Photos</button>
-                                    <button class="btn btn-sm btn-outline">View Videos</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PANE: ACHIEVEMENTS -->
-                    <div id="pane-achievements" class="tab-pane" style="display: none;">
-                        <h2 style="color:var(--accent); margin-bottom:20px;">Department Achievements</h2>
-                        <div class="grid grid-2" style="gap:30px;">
-                            <div>
-                                <h4
-                                    style="margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:5px;">
-                                    Student Accolades</h4>
-                                <div class="card glass" style="margin-bottom:15px; border-left:3px solid var(--cyan);">
-                                    🥈 Smart India Hackathon Runners Up (2024)</div>
-                                <div class="card glass" style="margin-bottom:15px; border-left:3px solid var(--cyan);">
-                                    🏆 Best Paper Award @ IEEE Intl Conference (2025)</div>
-                            </div>
-                            <div>
-                                <h4
-                                    style="margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:5px;">
-                                    Department Trophies</h4>
-                                <div class="card glass" style="margin-bottom:15px; border-left:3px solid #ffd700;">🥇
-                                    Overall Athletics Champions (2025)</div>
-                                <div class="card glass" style="margin-bottom:15px; border-left:3px solid #ffd700;">🌟
-                                    Highest Placement Average in College</div>
-                            </div>
+                            <div class="masonry-grid" id="galleryGrid" style="margin-top:20px;"></div>
                         </div>
                     </div>
 
@@ -225,100 +233,236 @@
     </main>
 </div>
 
-<!-- LIGHTBOX -->
-<div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
-    <span class="lightbox-close">&times;</span>
-    <img class="lightbox-content" id="lightboxImg">
-</div>
-
-<!-- Create Post Modal -->
-<div class="modal-overlay" id="createPostModal" style="display:none;"
-    onclick="if(event.target===this) closeModal('createPostModal')">
-    <div class="modal glass-card"
-        style="max-width: 800px; width: 95%; border: 1px solid var(--accent); padding: 0; overflow: hidden; animation: zoomIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);">
-        <div
-            style="padding: 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(5,217,232,0.1);">
-            <h2 style="margin:0; color: var(--accent); letter-spacing: 2px;">NEW DEPARTMENT POST</h2>
-            <button class="btn btn-xs btn-secondary" onclick="closeModal('createPostModal')">✕</button>
-        </div>
-        <div style="max-height: 85vh; overflow-y: auto; padding: 35px;">
-
-            <div class="grid grid-2" style="gap: 30px; margin-bottom: 25px;">
+<!-- Modals for Student & Alumni -->
+<div class="modal-overlay" id="addStudentModal" onclick="if(event.target===this) closeModal('addStudentModal')">
+    <div class="modal glass-card" style="max-width: 500px; width: 95%;">
+        <h3 style="color: var(--cyan);">ADD TOP STUDENT</h3>
+        <form id="addStudentForm" onsubmit="submitAddStudent(event)">
+            <div class="form-group">
+                <label>Student Name</label>
+                <input type="text" id="stuName" class="input glass" required>
+            </div>
+            <div class="form-group">
+                <label>Photo Upload</label>
+                <input type="file" id="stuFile" class="input glass" accept="image/*">
+                <input type="hidden" id="stuPhoto" value="">
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
                 <div class="form-group">
-                    <label>Select Post Type</label>
-                    <select id="cpType" class="input glass" onchange="updateCpForm()">
-                        <option value="discussion">💬 General Discussion</option>
-                        <option value="announcement">📢 Announcement</option>
-                        <option value="resource">📚 Study Resource / Notes</option>
-                        <option value="placement_info">💼 Placement / Career Update</option>
-                        <option value="fresher_tip">💡 Tip for Freshers</option>
-                        <option value="event">📅 Campus Event</option>
+                    <label>Year</label>
+                    <select id="stuYear" class="input glass" required>
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">Final Year</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Post Title</label>
-                    <input type="text" id="cpTitle" class="input glass" placeholder="Enter a descriptive title...">
+                    <label>CGPA</label>
+                    <input type="number" step="0.01" max="10" id="stuCgpa" class="input glass" required>
                 </div>
             </div>
-
-            <!-- DYNAMIC FIELDS -->
-            <div id="cpDynamicSec"
-                style="display: none; padding: 25px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 25px;">
-            </div>
-
             <div class="form-group">
-                <label>Post Content</label>
-                <textarea id="cpContent" class="input glass" rows="6"
-                    placeholder="Write your thoughts, share details, or provide descriptions..."></textarea>
+                <label>Rank (Optional)</label>
+                <input type="number" id="stuRank" class="input glass" placeholder="e.g. 1">
             </div>
+            <div class="form-group">
+                <label>LinkedIn URL (Optional)</label>
+                <input type="url" id="stuLinkedin" class="input glass">
+            </div>
+            <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" id="stuAnonymous">
+                <label for="stuAnonymous" style="margin:0;">Post Anonymously</label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">SAVE STUDENT</button>
+        </form>
+    </div>
+</div>
 
-            <!-- MEDIA UPLOAD DROP ZONE -->
-            <div class="form-group" style="margin-top: 30px;">
-                <label>Media & Attachments</label>
-                <div id="dropZone" class="media-dropzone" onclick="document.getElementById('fileInput').click()">
-                    <div class="drop-icon">📤</div>
-                    <p class="drop-text">CLICK OR DRAG MEDIA FILES TO UPLOAD</p>
-                    <p class="drop-hint">Images · Videos · PDFs · Maximum 20MB</p>
-                    <input type="file" id="fileInput" multiple style="display:none;" onchange="handleFiles(this.files)">
+<div class="modal-overlay" id="addAlumniModal" onclick="if(event.target===this) closeModal('addAlumniModal')">
+    <div class="modal glass-card" style="max-width: 500px; width: 95%;">
+        <h3 style="color: var(--accent);">ADD ALUMNI RECORD</h3>
+        <form id="addAlumniForm" onsubmit="submitAddAlumni(event)">
+            <div class="form-group">
+                <label>Alumni Name</label>
+                <input type="text" id="alumName" class="input glass" required>
+            </div>
+            <div class="form-group">
+                <label>Photo Upload</label>
+                <input type="file" id="alumFile" class="input glass" accept="image/*">
+                <input type="hidden" id="alumPhoto" value="">
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div class="form-group">
+                    <label>Batch Year</label>
+                    <input type="number" id="alumBatch" class="input glass" placeholder="e.g. 2021" required>
                 </div>
-
-                <div id="uploadProgressContainer" style="display: none; margin-top: 20px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;">
-                        <span id="uploadStatusText" style="color: var(--accent);">Uploading media...</span>
-                        <span id="uploadPercent">0%</span>
-                    </div>
-                    <div class="progress-bar-bg"
-                        style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 30px;">
-                        <div id="uploadBar" class="progress-fill"
-                            style="width: 0%; height: 100%; border-radius: 30px; background: var(--accent); box-shadow: 0 0 10px var(--accent); transition: width 0.3s;">
-                        </div>
-                    </div>
-                </div>
-
-                <div id="filePreviewGrid" class="media-preview-grid">
-                    <!-- Uploaded file chips -->
+                <div class="form-group">
+                    <label>Package (LPA)</label>
+                    <input type="number" step="0.1" id="alumPackage" class="input glass" placeholder="Optional">
                 </div>
             </div>
-
-            <div class="form-group" style="margin-top: 30px;">
-                <label>Tags (Comma separated)</label>
-                <input type="text" id="cpTags" class="input glass" placeholder="e.g. exams, python, intern, urgent">
-            </div>
-
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 25px; border-top: 1px solid var(--border);">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <label class="switch-ui">
-                        <input type="checkbox" id="cpAnon">
-                        <span class="slider"></span>
-                    </label>
-                    <span style="font-size: 0.9rem; color: var(--text-muted);">Post Anonymously</span>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div class="form-group">
+                    <label>Company</label>
+                    <input type="text" id="alumCompany" class="input glass" required>
                 </div>
-                <button class="btn btn-primary" id="submitPostBtn" onclick="submitPost()"
-                    style="padding: 15px 50px; border-radius: 40px; font-size: 1rem;">PUBLISH POST</button>
+                <div class="form-group">
+                    <label>Role</label>
+                    <input type="text" id="alumRole" class="input glass" required>
+                </div>
             </div>
+            <div class="form-group">
+                <label>Quote / Advice</label>
+                <textarea id="alumQuote" class="input glass" rows="2" placeholder="Optional"></textarea>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:10px;">
+                <div class="form-group">
+                    <label>LinkedIn</label>
+                    <input type="url" id="alumLinkedin" class="input glass" placeholder="Link">
+                </div>
+                <div class="form-group">
+                    <label>Twitter</label>
+                    <input type="url" id="alumTwitter" class="input glass" placeholder="Link">
+                </div>
+                <div class="form-group">
+                    <label>Instagram</label>
+                    <input type="url" id="alumInstagram" class="input glass" placeholder="Link">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:10px;">
+                <div class="form-group">
+                    <label>Other Social Name</label>
+                    <input type="text" id="alumOtherName" class="input glass" placeholder="e.g. GitHub">
+                </div>
+                <div class="form-group">
+                    <label>Other Social Link</label>
+                    <input type="url" id="alumOtherUrl" class="input glass" placeholder="Link">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" style="background: linear-gradient(45deg, #05d9e8, #ff2a6d); border:none; box-shadow: 0 10px 30px rgba(255, 42, 109, 0.3); font-weight:900; letter-spacing:2px;">SAVE ALUMNI RECORD</button>
+        </form>
+    </div>
+</div>
 
-        </div>
+<!-- Placements Modal -->
+<div class="modal-overlay" id="addPlacementModal" onclick="if(event.target===this) closeModal('addPlacementModal')">
+    <div class="modal glass-card" style="max-width: 500px; width: 95%;">
+        <h3 style="color: #4ecca3;">ADD PLACEMENT RECORD</h3>
+        <form id="addPlacementForm" onsubmit="submitAddPlacement(event)">
+            <div class="form-group">
+                <label>Student Name</label>
+                <input type="text" id="plName" class="input glass" required>
+            </div>
+            <div class="form-group">
+                <label>Photo Upload</label>
+                <input type="file" id="plFile" class="input glass" accept="image/*">
+                <input type="hidden" id="plPhoto" value="">
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div class="form-group">
+                    <label>Batch Year</label>
+                    <input type="number" id="plBatch" class="input glass" required>
+                </div>
+                <div class="form-group">
+                    <label>Package (LPA)</label>
+                    <input type="number" step="0.1" id="plPackage" class="input glass" required>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div class="form-group">
+                    <label>Company</label>
+                    <input type="text" id="plCompany" class="input glass" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <input type="text" id="plRole" class="input glass" required>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:10px;">
+                <div class="form-group">
+                    <label>LinkedIn</label>
+                    <input type="url" id="plLinkedin" class="input glass" placeholder="Link">
+                </div>
+                <div class="form-group">
+                    <label>Twitter</label>
+                    <input type="url" id="plTwitter" class="input glass" placeholder="Link">
+                </div>
+                <div class="form-group">
+                    <label>Instagram</label>
+                    <input type="url" id="plInstagram" class="input glass" placeholder="Link">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:10px;">
+                <div class="form-group">
+                    <label>Other Social Name</label>
+                    <input type="text" id="plOtherName" class="input glass" placeholder="e.g. GitHub">
+                </div>
+                <div class="form-group">
+                    <label>Other Social Link</label>
+                    <input type="url" id="plOtherUrl" class="input glass" placeholder="Link">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" style="background: linear-gradient(45deg, #05d9e8, #ff2a6d); border:none; box-shadow: 0 10px 30px rgba(255, 42, 109, 0.3); font-weight:900; letter-spacing:2px;">SAVE PLACEMENT</button>
+        </form>
+    </div>
+</div>
+
+<!-- Features Modal -->
+<div class="modal-overlay" id="addFeatureModal" onclick="if(event.target===this) closeModal('addFeatureModal')">
+    <div class="modal glass-card" style="max-width: 500px; width: 95%;">
+        <h3 style="color: #6c63ff;">ADD DEPARTMENT HIGHLIGHT</h3>
+        <form id="addFeatureForm" onsubmit="submitAddFeature(event)">
+            <div class="form-group">
+                <label>Highlight Title</label>
+                <input type="text" id="featTitle" class="input glass" required>
+            </div>
+            <div class="form-group">
+                <label>Icon (Emoji)</label>
+                <input type="text" id="featIcon" class="input glass" placeholder="e.g. 🌟" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="featDesc" class="input glass" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Stat Value (Optional)</label>
+                <input type="text" id="featStat" class="input glass" placeholder="e.g. 95%">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" style="background:#6c63ff;">SAVE HIGHLIGHT</button>
+        </form>
+    </div>
+</div>
+
+<!-- Gallery Modal -->
+<div class="modal-overlay" id="addGalleryModal" onclick="if(event.target===this) closeModal('addGalleryModal')">
+    <div class="modal glass-card" style="max-width: 500px; width: 95%;">
+        <h3 style="color: #ff6b9d;">POST MOMENT TO GALLERY</h3>
+        <form id="addGalleryForm" onsubmit="submitAddGallery(event)">
+            <div class="form-group">
+                <label>Photo Upload</label>
+                <input type="file" id="galFile" class="input glass" accept="image/*" required>
+                <input type="hidden" id="galPhoto" value="">
+            </div>
+            <div class="form-group">
+                <label>Caption</label>
+                <input type="text" id="galCaption" class="input glass" required>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="galCategory" class="input glass" onchange="toggleGalleryOtherCategory(this.value)">
+                    <option value="Labs">Labs</option>
+                    <option value="Events">Events</option>
+                    <option value="Fests">Fests</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div id="galCategoryOtherContainer" class="form-group" style="display:none;">
+                <label>Custom Category Name</label>
+                <input type="text" id="galCategoryOther" class="input glass" placeholder="Enter category...">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" style="background:#ff6b9d;">POST TO GALLERY</button>
+        </form>
     </div>
 </div>
 
@@ -326,759 +470,1597 @@
 
 {% block scripts %}
 <script>
-    const CID = "{{ college_id }}";
-    const DID = "{{ dept_id }}";
-    let DEPT = null;
-    let ALL_POSTS = [];
-    let UPLOADED_MEDIA = [];
+const CID = "{{ college_id }}";
+const DID = "{{ dept_id }}";
+let DEPT = null;
+let currentYear = 1;
+window.IS_ADMIN = JSON.parse('{{ (current_user and current_user.role|lower in ["admin", "moderator"])|tojson }}');
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const cRes = await apiFetch(`/api/colleges/${CID}`);
-            document.getElementById('bcCollegeText').textContent = cRes.name;
+// Local Modal Helpers to ensure stability
+function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('show');
+}
 
-            if (DID === 'all') {
-                DEPT = {
-                    _id: null,
-                    name: "General Campus Discussions",
-                    short_name: "GENERAL",
-                    stats: { total_members: cRes.stats.total_students, total_posts: cRes.stats.total_posts },
-                    is_member: cRes.is_member
-                };
-            } else {
-                DEPT = await apiFetch(`/api/colleges/${CID}/dept/${DID}`);
-            }
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+}
 
-            renderHeader(DEPT);
-            loadPosts();
-            setupFilters();
-            setupSubTabs();
-            setupDragDrop();
+// Premium Notification System
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `premium-toast animate-in ${type}`;
+    
+    let icon = '✨';
+    if(type === 'success') icon = '✅';
+    if(type === 'error') icon = '❌';
+    if(type === 'warning') icon = '⚠️';
 
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('action') === 'create') openCreateModal();
+    toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-content">${message}</div>
+        <div class="toast-close" onclick="this.parentElement.remove()">×</div>
+    `;
+    
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 500);
+    }, 4000);
+}
 
-        } catch (e) {
-            document.getElementById('loader').innerHTML = '<div style="color:var(--danger)">ERROR ACCESSING DEPARTMENT HUB</div>';
+function createToastContainer() {
+    const container = document.getElementById('toast-container');
+    if(container) return container;
+    const newContainer = document.createElement('div');
+    newContainer.id = 'toast-container';
+    document.body.appendChild(newContainer);
+    return newContainer;
+}
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const cRes = await apiFetch(`/api/colleges/${CID}`);
+        document.getElementById('bcCollegeText').textContent = cRes.short_name || cRes.name;
+
+        DEPT = await apiFetch(`/api/colleges/${CID}/dept/${DID}`);
+        renderHeader(DEPT);
+        setupTabs();
+        
+        // Show/hide admin actions
+        if (window.IS_ADMIN) {
+            ['studentsAdminActions', 'placementsAdminActions', 'featuresAdminActions'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.style.display = 'block';
+            });
         }
+        
+        // Gallery Post button for Admins OR Members
+        if (window.IS_ADMIN || DEPT.is_member) {
+            const galActions = document.getElementById('galleryAdminActions');
+            if(galActions) galActions.style.display = 'block';
+        }
+        
+        // Initial load
+        loadStudentsByYear(1);
+        document.getElementById('pane-students').dataset.loaded = 'true';
+    } catch (e) {
+        console.error("Init failed:", e);
+        document.getElementById('loader').innerHTML = `<div style="color:#ff4757; font-weight:bold;">LOAD FAILED: ${e.message || 'Unknown Error'}</div>`;
+        // Ensure content is shown so they can at least see the header or retry
+        document.getElementById('deptContent').style.display = 'block';
+    }
+});
+
+function renderHeader(d) {
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('deptContent').style.display = 'block';
+    document.getElementById('bcDeptText').textContent = d.short_name || d.name;
+    document.getElementById('deptName').textContent = d.name;
+    document.getElementById('deptSubtitle').textContent = d.short_name || 'BRANCH';
+    document.getElementById('memberCountBadge').textContent = `👥 ${d.stats?.total_members || 0} MEMBERS`;
+    document.getElementById('facultyCountBadge').textContent = `👨‍🏫 ${d.stats?.faculty_count || 0} FACULTY`;
+
+    if (d.is_member) {
+        if (document.getElementById('createPostBtn')) {
+            document.getElementById('createPostBtn').style.display = 'block';
+        }
+    }
+    
+    // Check for admin/moderator roles manually if passed via Jinja, or let's assume we can check if they have crud access
+    // Wait, we can check via python current_user and set a global variable
+}
+
+function setupTabs() {
+    document.querySelectorAll('.sub-tab-link').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.sub-tab-link').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const target = btn.dataset.target;
+            document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+            const pane = document.getElementById(`pane-${target}`);
+            pane.style.display = 'block';
+            
+            if (pane.dataset.loaded !== 'true') {
+                if (target === 'students') loadStudentsByYear(1);
+                if (target === 'placements') loadPlacements();
+                if (target === 'features') loadFeatures();
+                if (target === 'gallery') loadGallery();
+                pane.dataset.loaded = 'true';
+            }
+        };
+    });
+}
+
+// currentYear is already declared above
+
+function switchYearTab(year, btn) {
+    currentYear = year;
+    
+    // Update button styles
+    document.querySelectorAll('#topperYearTabs .segment-btn').forEach(b => {
+        b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    
+    // Toggle admin buttons
+    const addAlumniBtn = document.getElementById('addAlumniBtn');
+    const addStudentBtn = document.getElementById('addStudentBtn');
+    
+    if (year === 5) {
+        if (addAlumniBtn) addAlumniBtn.style.display = 'inline-flex';
+        if (addStudentBtn) addStudentBtn.style.display = 'none';
+        loadAlumni();
+    } else {
+        if (addAlumniBtn) addAlumniBtn.style.display = 'none';
+        if (addStudentBtn) addStudentBtn.style.display = 'inline-flex';
+        loadStudentsByYear(year);
+    }
+}
+
+async function loadStudentsByYear(year) {
+    const container = document.getElementById('studentsGrid');
+    container.innerHTML = `
+      <div style="text-align:center; padding:30px; color:#888;">
+        ⏳ Loading...
+      </div>
+    `;
+    
+    try {
+        const result = await apiFetch(`/api/colleges/${CID}/dept/${DID}/students?year=${year}`);
+        let students = result.students || result || [];
+        
+        if (students.length === 0) {
+            // Show dynamic demo data based on year
+            const yearNames = { 1: 'First Year', 2: 'Second Year', 3: 'Third Year', 4: 'Final Year' };
+            const demoPool = {
+                1: [
+                    { _id: 'demo1', name: 'Alex Johnson', cgpa: 9.8, skills: ['React', 'Node.js'], achievements: ['Hackathon Winner'], photo_url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200' },
+                    { _id: 'demo2', name: 'Sarah Miller', cgpa: 9.5, skills: ['Python', 'AI'], achievements: ['Paper Published'], photo_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200' }
+                ],
+                2: [
+                    { _id: 'demo3', name: 'James Wilson', cgpa: 9.7, skills: ['Java', 'Spring'], achievements: ['Coding Champ'], photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200' },
+                    { _id: 'demo4', name: 'Emma Davis', cgpa: 9.6, skills: ['C++', 'Graphics'], achievements: ['Best Project'], photo_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200' }
+                ],
+                3: [
+                    { _id: 'demo5', name: 'Michael Chen', cgpa: 9.9, skills: ['Go', 'Cloud'], achievements: ['AWS Certified'], photo_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200' },
+                    { _id: 'demo6', name: 'Olivia Brown', cgpa: 9.4, skills: ['Swift', 'iOS'], achievements: ['App Store Launch'], photo_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200' }
+                ],
+                4: [
+                    { _id: 'demo7', name: 'David Lee', cgpa: 9.85, skills: ['Rust', 'Blockchain'], achievements: ['Open Source Contributor'], photo_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200' },
+                    { _id: 'demo8', name: 'Sophia Garcia', cgpa: 9.75, skills: ['R', 'Statistics'], achievements: ['Data Science intern at Google'], photo_url: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=200' }
+                ]
+            };
+            
+            const demoStudents = demoPool[year] || demoPool[1];
+            
+            container.innerHTML = `
+                ${demoStudents.map((s, i) => buildStudentCard(s, i + 1)).join('')}
+            `;
+            return;
+        }
+        
+        container.innerHTML = students.map((s, i) => buildStudentCard(s, i + 1)).join('');
+    } catch(e) {
+        container.innerHTML = `<p style="color:#ff4757; text-align:center;">Error loading students</p>`;
+    }
+}
+
+async function loadAlumni() {
+    const container = document.getElementById('studentsGrid');
+    container.innerHTML = `
+      <div style="text-align:center; padding:30px; color:#888;">
+        ⏳ Loading...
+      </div>
+    `;
+    
+    try {
+        const result = await apiFetch(`/api/colleges/${CID}/dept/${DID}/alumni`);
+        let alumni = result.alumni || result || [];
+        
+        if (alumni.length === 0) {
+            // Show demo alumni
+            const demoAlumni = [
+                { _id: 'alum1', name: 'David Smith', batch_year: 2021, company: 'Google', role: 'SDE-2', package_lpa: 42, photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200' },
+                { _id: 'alum2', name: 'Emily Chen', batch_year: 2020, company: 'Microsoft', role: 'Product Manager', package_lpa: 35, photo_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200' }
+            ];
+            container.innerHTML = `
+                ${demoAlumni.map(a => buildAlumniCard(a)).join('')}
+            `;
+            return;
+        }
+        
+        container.innerHTML = alumni.map(a => buildAlumniCard(a)).join('');
+    } catch(e) {
+        container.innerHTML = `<p style="color:#ff4757; text-align:center;">Error loading alumni</p>`;
+    }
+}
+
+function buildStudentCard(student, rank) {
+    const rankColors = {
+        1: { border: '#FFD700', medal: '🥇', bg: 'rgba(255,215,0,0.05)' },
+        2: { border: '#C0C0C0', medal: '🥈', bg: 'rgba(192,192,192,0.05)' },
+        3: { border: '#CD7F32', medal: '🥉', bg: 'rgba(205,127,50,0.05)' }
+    };
+    
+    const rc = rankColors[rank] || {
+        border: '#2a2a2e', medal: `#${rank}`, bg: 'transparent'
+    };
+    
+    // Build avatar
+    const avatarHtml = student.photo_url ?
+      `<img src="${student.photo_url}" style="width:72px; height:72px; border-radius:50%; object-fit:cover; border:2px solid ${rc.border};">` :
+      `<div style="width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg, #6c63ff, #4ecca3); display:flex; align-items:center; justify-content:center; color:white; font-size:1.5rem; font-weight:700; border:2px solid ${rc.border};">
+         ${(student.name||'?')[0].toUpperCase()}
+       </div>`;
+    
+    // CGPA progress bar
+    const cgpa = parseFloat(student.cgpa || 0);
+    const cgpaPct = (cgpa / 10) * 100;
+    
+    // Build achievements
+    const achievements = (student.achievements || []);
+    const achieveHtml = achievements.length > 0 ?
+      `<ul style="margin:8px 0 0 0; padding-left:16px; color:#aaa; font-size:0.82rem;">
+        ${achievements.slice(0,3).map(a => `<li style="margin-bottom:2px;">${a}</li>`).join('')}
+       </ul>` : '';
+    
+    // Build skills
+    const skills = (student.skills || []);
+    const skillsHtml = skills.length > 0 ?
+      `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">
+        ${skills.slice(0,6).map(s => `<span style="background:rgba(78,204,163,0.1); color:#4ecca3; border:1px solid rgba(78,204,163,0.2); padding:2px 10px; border-radius:20px; font-size:0.75rem;">${s}</span>`).join('')}
+       </div>` : '';
+    
+    // Build social links (ONLY if provided)
+    const socialLinks = student.social_links || {};
+    const socialItems = [];
+    
+    if (socialLinks.linkedin) {
+        socialItems.push(`<a href="${socialLinks.linkedin}" target="_blank" style="display:inline-flex; align-items:center; gap:4px; background:rgba(0,119,181,0.15); color:#0077B5; border:1px solid rgba(0,119,181,0.3); padding:4px 10px; border-radius:20px; font-size:0.75rem; text-decoration:none;">🔗 LinkedIn</a>`);
+    }
+    if (socialLinks.github) {
+        socialItems.push(`<a href="${socialLinks.github}" target="_blank" style="display:inline-flex; align-items:center; gap:4px; background:rgba(36,41,46,0.5); color:#f0f0f0; border:1px solid #444; padding:4px 10px; border-radius:20px; font-size:0.75rem; text-decoration:none;">💻 GitHub</a>`);
+    }
+    if (socialLinks.instagram) {
+        socialItems.push(`<a href="${socialLinks.instagram}" target="_blank" style="display:inline-flex; align-items:center; gap:4px; background:rgba(225,48,108,0.1); color:#E1306C; border:1px solid rgba(225,48,108,0.3); padding:4px 10px; border-radius:20px; font-size:0.75rem; text-decoration:none;">📷 Instagram</a>`);
+    }
+    if (socialLinks.twitter) {
+        socialItems.push(`<a href="${socialLinks.twitter}" target="_blank" style="display:inline-flex; align-items:center; gap:4px; background:rgba(29,161,242,0.1); color:#1DA1F2; border:1px solid rgba(29,161,242,0.3); padding:4px 10px; border-radius:20px; font-size:0.75rem; text-decoration:none;">🐦 Twitter</a>`);
+    }
+    
+    const socialHtml = socialItems.length > 0 ?
+      `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">
+        ${socialItems.join('')}
+       </div>` : '';
+    
+    // Admin action button
+    const actionBtn = window.IS_ADMIN ?
+      `<button onclick="handleActionMenu(event, this, 'student', '${student._id}')" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; z-index:10;">⋮</button>` : '';
+
+    return `
+      <div style="background:#141428; border:1px solid #1e1e3a; border-left:4px solid ${rc.border}; border-radius:12px; padding:20px; margin-bottom:16px; position:relative; background:${rc.bg};">
+        ${actionBtn}
+        <div style="font-size:1.5rem; margin-bottom:12px;">
+          ${rc.medal} 
+          <span style="font-size:0.8rem; color:#888; font-weight:600;">RANK ${rank}</span>
+        </div>
+        <div style="display:flex; gap:16px; align-items:flex-start;">
+          <div style="flex-shrink:0;">${avatarHtml}</div>
+          <div style="flex:1;">
+            <h3 style="color:#f0f0f0; margin:0 0 4px 0; font-size:1.1rem;">${student.name || 'Unknown'}</h3>
+            <p style="color:#888; margin:0 0 2px 0; font-size:0.85rem;">${student.department_name || ''}</p>
+            <div style="margin-top:8px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span style="color:#aaa; font-size:0.8rem;">CGPA</span>
+                <span style="color:${rc.border}; font-weight:700; font-size:0.9rem;">${cgpa.toFixed(1)} / 10</span>
+              </div>
+              <div style="background:#1e1e2e; border-radius:4px; height:6px; overflow:hidden;">
+                <div style="height:100%; width:${cgpaPct}%; background:linear-gradient(90deg, ${rc.border}, #4ecca3); border-radius:4px; transition:width 1s ease;"></div>
+              </div>
+            </div>
+            ${achievements.length > 0 ? `
+              <p style="color:#aaa; font-size:0.8rem; margin:10px 0 4px 0; font-weight:600;">🏆 Achievements:</p>
+              ${achieveHtml}
+            ` : ''}
+            ${skillsHtml}
+            ${socialHtml}
+          </div>
+        </div>
+      </div>
+    `;
+}
+
+function buildAlumniCard(alumni) {
+    const avatarHtml = alumni.photo_url ?
+      `<img src="${alumni.photo_url}" style="width:72px; height:72px; border-radius:50%; object-fit:cover; border:2px solid #6c63ff;">` :
+      `<div style="width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg, #6c63ff, #ff6b9d); display:flex; align-items:center; justify-content:center; color:white; font-size:1.5rem; font-weight:700;">
+         ${(alumni.name||'?')[0].toUpperCase()}
+       </div>`;
+    
+    const packageHtml = alumni.package_lpa ?
+      `<div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+        <span style="color:#2ed573; font-size:1rem; font-weight:700;">💰 ${alumni.package_lpa} LPA</span>
+       </div>` : '';
+    
+    const quoteHtml = alumni.quote ?
+      `<div style="background:rgba(255,255,255,0.03); border-left:3px solid #6c63ff; padding:10px 14px; border-radius:0 8px 8px 0; margin-top:12px;">
+        <p style="color:#aaa; font-size:0.85rem; font-style:italic; margin:0;">"${alumni.quote}"</p>
+       </div>` : '';
+    
+    const socialLinks = alumni.social_links || {};
+    const socialItems = [];
+    if (socialLinks.linkedin) {
+        socialItems.push(`<a href="${socialLinks.linkedin}" target="_blank" style="background:rgba(0,119,181,0.15); color:#0077B5; border:1px solid rgba(0,119,181,0.3); padding:4px 10px; border-radius:20px; font-size:0.75rem; text-decoration:none;">🔗 LinkedIn</a>`);
+    }
+    if (socialLinks.github) {
+        socialItems.push(`<a href="${socialLinks.github}" target="_blank" style="background:rgba(36,41,46,0.5); color:#f0f0f0; border:1px solid #444; padding:4px 10px; border-radius:20px; font-size:0.75rem; text-decoration:none;">💻 GitHub</a>`);
+    }
+    if (socialLinks.instagram) {
+        socialItems.push(`<a href="${socialLinks.instagram}" target="_blank" style="background:rgba(225,48,108,0.1); color:#E1306C; border:1px solid rgba(225,48,108,0.3); padding:4px 10px; border-radius:20px; font-size:0.75rem; text-decoration:none;">📷 Instagram</a>`);
+    }
+    if (socialLinks.twitter) {
+        socialItems.push(`<a href="${socialLinks.twitter}" target="_blank" style="background:rgba(29,161,242,0.1); color:#1DA1F2; border:1px solid rgba(29,161,242,0.3); padding:4px 10px; border-radius:20px; font-size:0.75rem; text-decoration:none;">🐦 Twitter</a>`);
+    }
+    if (socialLinks.other_url) {
+        socialItems.push(`<a href="${socialLinks.other_url}" target="_blank" style="background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); padding:4px 10px; border-radius:20px; font-size:0.75rem; text-decoration:none;">🌐 ${socialLinks.other_name || 'Link'}</a>`);
+    }
+    
+    const socialHtml = socialItems.length > 0 ?
+      `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">
+        ${socialItems.join('')}
+       </div>` : '';
+    
+    const actionBtn = window.IS_ADMIN ?
+      `<button onclick="handleActionMenu(event, this, 'alumni', '${alumni._id}')" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; z-index:10;">⋮</button>` : '';
+
+    return `
+      <div style="background:#141428; border:1px solid #1e1e3a; border-left:4px solid #6c63ff; border-radius:12px; padding:20px; margin-bottom:16px; position:relative;">
+        ${actionBtn}
+        <div style="display:flex; gap:16px; align-items:flex-start;">
+          <div style="flex-shrink:0;">${avatarHtml}</div>
+          <div style="flex:1;">
+            <h3 style="color:#f0f0f0; margin:0 0 2px 0; font-size:1rem; font-weight:700;">${alumni.name || 'Unknown'}</h3>
+            <p style="color:#888; margin:0; font-size:0.82rem;">Batch ${alumni.batch_year || ''}</p>
+            <div style="margin-top:8px; display:flex; flex-direction:column; gap:4px;">
+              <span style="color:#f0f0f0; font-size:0.9rem;">💼 ${alumni.role || ''}</span>
+              <span style="color:#4ecca3; font-size:0.9rem; font-weight:600;">🏢 ${alumni.company || ''}</span>
+              ${packageHtml}
+              ${alumni.location ? `<span style="color:#888; font-size:0.82rem;">📍 ${alumni.location}</span>` : ''}
+            </div>
+            ${quoteHtml}
+            ${socialHtml}
+          </div>
+        </div>
+      </div>
+    `;
+}
+
+function buildEmptyState(type, year) {
+    const yearNames = { 1: '1st Year', 2: '2nd Year', 3: '3rd Year', 4: 'Final Year', 5: 'Alumni' };
+    
+    const addBtn = window.IS_ADMIN ? `
+      <button onclick="${type === 'alumni' ? 'openAddAlumniModal()' : `openAddStudentModal(${year})`}"
+              style="background:linear-gradient(135deg, #6c63ff, #4ecca3); border:none; color:white; padding:10px 24px; border-radius:8px; font-weight:600; cursor:pointer; margin-top:12px;">
+        + Add ${type === 'alumni' ? 'Alumni' : 'Top Student'}
+      </button>
+    ` : '';
+    
+    return `
+      <div style="text-align:center; padding:50px 20px; color:#555;">
+        <div style="font-size:3rem; margin-bottom:12px;">${type === 'alumni' ? '🎓' : '🏆'}</div>
+        <p style="color:#4ecca3; font-weight:600; margin:0 0 6px 0;">No ${type === 'alumni' ? 'Alumni' : yearNames[year] + ' Students'} Added</p>
+        <p style="font-size:0.85rem; margin:0;">${window.IS_ADMIN ? 'Click below to add records.' : 'Check back later.'}</p>
+        ${addBtn}
+      </div>
+    `;
+}
+
+async function deleteStudent(sid) {
+    if(!confirm('Delete this record?')) return;
+    try {
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/students/${sid}`, { method: 'DELETE' });
+        loadStudentsByYear(currentYear);
+    } catch(e) { alert('Error deleting student'); }
+}
+
+async function deleteAlumni(aid) {
+    if(!confirm('Delete this record?')) return;
+    try {
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/alumni/${aid}`, { method: 'DELETE' });
+        loadAlumni();
+    } catch(e) { alert('Error deleting alumni'); }
+}
+
+function openAddStudentModal() {
+    const form = document.getElementById('addStudentForm');
+    if (form) {
+        form.reset();
+        form.onsubmit = submitAddStudent;
+        document.querySelector('#addStudentModal h3').textContent = 'ADD TOP STUDENT';
+    }
+    openModal('addStudentModal');
+}
+
+function openAddAlumniModal() {
+    const form = document.getElementById('addAlumniForm');
+    if (form) {
+        form.reset();
+        form.onsubmit = submitAddAlumni;
+        document.querySelector('#addAlumniModal h3').textContent = 'ADD ALUMNI RECORD';
+        ['alumLinkedin', 'alumTwitter', 'alumInstagram', 'alumOtherName', 'alumOtherUrl'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = '';
+        });
+    }
+    openModal('addAlumniModal');
+}
+
+function openAddPlacementModal() {
+    const form = document.getElementById('addPlacementForm');
+    if (form) {
+        form.reset();
+        form.onsubmit = submitAddPlacement;
+        document.querySelector('#addPlacementModal h3').textContent = 'ADD PLACEMENT RECORD';
+        // Ensure social fields are cleared
+        ['plLinkedin', 'plTwitter', 'plInstagram', 'plOtherName', 'plOtherUrl'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = '';
+        });
+    }
+    openModal('addPlacementModal');
+}
+
+function openAddFeatureModal() {
+    const form = document.getElementById('addFeatureForm');
+    if (form) {
+        form.reset();
+        form.onsubmit = submitAddFeature;
+        document.querySelector('#addFeatureModal h3').textContent = 'ADD DEPARTMENT HIGHLIGHT';
+    }
+    openModal('addFeatureModal');
+}
+
+function openAddGalleryModal() {
+    const form = document.getElementById('addGalleryForm');
+    if (form) {
+        form.reset();
+        form.onsubmit = submitAddGallery;
+        document.querySelector('#addGalleryModal h3').textContent = 'POST MOMENT TO GALLERY';
+        toggleGalleryOtherCategory('Labs'); // Hide 'Other' input by default
+    }
+    openModal('addGalleryModal');
+}
+
+function toggleGalleryOtherCategory(val) {
+    const container = document.getElementById('galCategoryOtherContainer');
+    if (container) {
+        container.style.display = (val === 'Other') ? 'block' : 'none';
+    }
+}
+
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+}
+
+async function handleFileUpload(fileInputId, fallbackUrlId) {
+    const fileInput = document.getElementById(fileInputId);
+    if (fileInput && fileInput.files.length > 0) {
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        try {
+            const res = await fetch('/api/colleges/upload/', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('access_token') || localStorage.getItem('token')) },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.url) return data.url;
+        } catch (e) { console.error('Upload failed:', e); }
+    }
+    return document.getElementById(fallbackUrlId) ? document.getElementById(fallbackUrlId).value : '';
+}
+
+async function submitAddStudent(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'UPLOADING...';
+    btn.disabled = true;
+
+    try {
+        const photoUrl = await handleFileUpload('stuFile', 'stuPhoto');
+        btn.innerHTML = 'SAVING...';
+        
+        const data = {
+            name: document.getElementById('stuName').value,
+            photo_url: photoUrl,
+            year: document.getElementById('stuYear').value,
+            cgpa: document.getElementById('stuCgpa').value,
+            rank: document.getElementById('stuRank').value,
+            social_links: {
+                linkedin: document.getElementById('stuLinkedin').value
+            },
+            is_anonymous: document.getElementById('stuAnonymous').checked
+        };
+
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/students`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        closeModal('addStudentModal');
+        e.target.reset();
+        loadStudentsByYear(data.year);
+    } catch (err) {
+        alert('Failed to add student');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function submitAddAlumni(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'UPLOADING...';
+    btn.disabled = true;
+
+    try {
+        const photoUrl = await handleFileUpload('alumFile', 'alumPhoto');
+        btn.innerHTML = 'SAVING...';
+
+        const data = {
+            name: document.getElementById('alumName').value,
+            photo_url: photoUrl,
+            batch_year: document.getElementById('alumBatch').value,
+            package_lpa: document.getElementById('alumPackage').value,
+            company: document.getElementById('alumCompany').value,
+            role: document.getElementById('alumRole').value,
+            quote: document.getElementById('alumQuote').value,
+            social_links: {
+                linkedin: document.getElementById('alumLinkedin').value,
+                twitter: document.getElementById('alumTwitter').value,
+                instagram: document.getElementById('alumInstagram').value,
+                other_name: document.getElementById('alumOtherName').value,
+                other_url: document.getElementById('alumOtherUrl').value
+            }
+        };
+
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/alumni`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        closeModal('addAlumniModal');
+        e.target.reset();
+        loadAlumni();
+    } catch (err) {
+        alert('Failed to add alumni');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+
+
+async function submitAddPlacement(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'UPLOADING...';
+    btn.disabled = true;
+
+    try {
+        const photoUrl = await handleFileUpload('plFile', 'plPhoto');
+        btn.innerHTML = 'SAVING...';
+        
+        const data = {
+            student_name: document.getElementById('plName').value,
+            photo_url: photoUrl,
+            batch_year: document.getElementById('plBatch').value,
+            package_lpa: document.getElementById('plPackage').value,
+            company: document.getElementById('plCompany').value,
+            role: document.getElementById('plRole').value,
+            quote: document.getElementById('plQuote').value,
+            linkedin_url: document.getElementById('plLinkedin').value,
+            twitter_url: document.getElementById('plTwitter').value,
+            instagram_url: document.getElementById('plInstagram').value,
+            other_social_name: document.getElementById('plOtherName').value,
+            other_social_url: document.getElementById('plOtherUrl').value
+        };
+
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/placements`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        closeModal('addPlacementModal');
+        e.target.reset();
+        loadPlacements();
+    } catch (err) {
+        alert('Failed to add placement');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+function handleActionMenu(event, btn, type, id) {
+    event.stopPropagation();
+    const existing = document.getElementById('action-ctx-menu');
+    if (existing) {
+        const wasSame = existing.dataset.id === id;
+        existing.remove();
+        if (wasSame) return;
+    }
+
+    const menu = document.createElement('div');
+    menu.id = 'action-ctx-menu';
+    menu.dataset.id = id;
+    menu.className = 'glass-menu-premium animate-in';
+    menu.innerHTML = `
+        <div onclick="openEditModal('${type}', '${id}')" class="menu-item-premium">
+            <span class="icon">✏️</span>
+            <span class="label">Edit Record</span>
+        </div>
+        <div onclick="handleDelete('${type}', '${id}')" class="menu-item-premium delete">
+            <span class="icon">🗑️</span>
+            <span class="label">Delete</span>
+        </div>
+    `;
+
+    Object.assign(menu.style, {
+        position: 'fixed', zIndex: '10000', minWidth: '160px'
     });
 
-    function setupSubTabs() {
-        document.querySelectorAll('#subTabs .tab-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('#subTabs .tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const target = btn.dataset.target;
-                document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
-                const pane = document.getElementById(`pane-${target}`);
-                if (pane) pane.style.display = 'block';
-            };
+    document.body.appendChild(menu);
+    const rect = btn.getBoundingClientRect();
+    menu.style.top = `${rect.bottom + 5}px`;
+    menu.style.left = `${rect.right - 120}px`;
+
+    document.addEventListener('click', () => menu.remove(), { once: true });
+}
+
+async function handleDelete(type, id) {
+    if (String(id).startsWith('demo')) {
+        // Find the element and hide it to simulate deletion for the user
+        const menu = document.getElementById('action-ctx-menu');
+        const targetId = menu ? menu.dataset.id : id;
+        
+        // Find closest parent card/row and hide it
+        const elements = document.querySelectorAll(`[onclick*="${id}"]`);
+        elements.forEach(el => {
+            const card = el.closest('.rank-card-premium, .placement-card-premium, .feature-box, .gallery-item');
+            if(card) {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.8)';
+                setTimeout(() => card.remove(), 400);
+            }
         });
+        
+        showNotification('Demo record removed (Refresh to restore)', 'info');
+        return;
     }
+    if (!confirm(`Are you sure you want to delete this ${type}?`)) return;
+    try {
+        let url = '';
+        if (type === 'student') url = `/api/colleges/${CID}/dept/${DID}/students/${id}`;
+        else if (type === 'alumni') url = `/api/colleges/${CID}/dept/${DID}/alumni/${id}`;
+        else if (type === 'placement') url = `/api/colleges/${CID}/dept/${DID}/placements/${id}`;
+        else if (type === 'feature') url = `/api/colleges/${CID}/dept/${DID}/features/${id}`;
+        else if (type === 'gallery') url = `/api/colleges/${CID}/dept/${DID}/gallery/${id}`;
+        
+        await apiFetch(url, { method: 'DELETE' });
+        showNotification(`${type.toUpperCase()} deleted successfully`, 'success');
 
-    function renderHeader(d) {
-        document.getElementById('loader').style.display = 'none';
-        document.getElementById('deptContent').style.display = 'block';
+        
+        if (type === 'student') loadStudentsByYear(currentYear);
+        else if (type === 'alumni') loadAlumni();
+        else if (type === 'placement') loadPlacements();
+        else if (type === 'feature') loadFeatures();
+        else if (type === 'gallery') loadGallery();
+    } catch (err) {
+        alert('Delete failed');
+    }
+}
 
-        document.getElementById('bcDeptText').textContent = d.name;
-        document.getElementById('deptName').textContent = d.name;
-        document.getElementById('deptSubtitle').textContent = d.short_name || 'CAMPUS HUB';
-        document.getElementById('memberCountBadge').textContent = `👥 ${d.stats?.total_members || 0} MEMBERS`;
-
-        if (d.is_member) {
-            const jbtn = document.getElementById('joinBtn');
-            jbtn.className = 'btn btn-outline';
-            jbtn.textContent = '✅ JOINED';
-            jbtn.onclick = null;
-            document.getElementById('createPostBtn').style.display = 'inline-block';
+async function openEditModal(type, id) {
+    if (String(id).startsWith('demo')) {
+        // Handle demo record editing visually
+        const demoData = {
+            student: { name: 'Alex Johnson', year: 1, cgpa: 9.8, rank: 1, social_links: { linkedin: '#' } },
+            alumni: { name: 'David Smith', batch_year: 2021, company: 'Google', role: 'SDE-2', package_lpa: 42, quote: 'Success is a journey.', social_links: { linkedin: '#' } },
+            placement: { student_name: 'David Smith', batch_year: 2024, company: 'Google', role: 'Software Engineer', package_lpa: 42.5, quote: 'Success is a journey.' },
+            feature: { title: 'AI Research Lab', description: 'State-of-the-art facility.', icon: '🤖', stat_value: '25+ Patents' },
+            gallery: { caption: 'Campus Fest', category: 'General' }
+        };
+        const data = demoData[type] || {};
+        
+        if (type === 'student') {
+            document.getElementById('stuName').value = data.name;
+            document.getElementById('stuYear').value = data.year;
+            document.getElementById('stuCgpa').value = data.cgpa;
+            document.getElementById('stuRank').value = data.rank;
+            document.getElementById('stuLinkedin').value = data.social_links.linkedin;
+            document.querySelector('#addStudentModal h3').textContent = 'EDIT STUDENT (DEMO MODE)';
+            openModal('addStudentModal');
+        } else if (type === 'alumni') {
+            document.getElementById('alumName').value = data.name;
+            document.getElementById('alumBatch').value = data.batch_year;
+            document.getElementById('alumCompany').value = data.company;
+            document.getElementById('alumRole').value = data.role;
+            document.getElementById('alumPackage').value = data.package_lpa;
+            document.getElementById('alumQuote').value = data.quote;
+            document.getElementById('alumLinkedin').value = data.social_links?.linkedin || '';
+            document.getElementById('alumTwitter').value = data.social_links?.twitter || '';
+            document.getElementById('alumInstagram').value = data.social_links?.instagram || '';
+            document.getElementById('alumOtherName').value = data.social_links?.other_name || '';
+            document.getElementById('alumOtherUrl').value = data.social_links?.other_url || '';
+            document.querySelector('#addAlumniModal h3').textContent = 'EDIT ALUMNI (DEMO MODE)';
+            openModal('addAlumniModal');
+        } else if (type === 'placement') {
+            document.getElementById('plName').value = data.student_name;
+            document.getElementById('plBatch').value = data.batch_year;
+            document.getElementById('plCompany').value = data.company;
+            document.getElementById('plRole').value = data.role;
+            document.getElementById('plPackage').value = data.package_lpa;
+            document.getElementById('plQuote').value = data.quote;
+            document.getElementById('plLinkedin').value = data.social_links?.linkedin || '';
+            document.getElementById('plTwitter').value = data.social_links?.twitter || '';
+            document.getElementById('plInstagram').value = data.social_links?.instagram || '';
+            document.getElementById('plOtherName').value = data.social_links?.other_name || '';
+            document.getElementById('plOtherUrl').value = data.social_links?.other_url || '';
+            document.querySelector('#addPlacementModal h3').textContent = 'EDIT PLACEMENT (DEMO MODE)';
+            openModal('addPlacementModal');
         }
+        return;
     }
-
-    async function loadPosts() {
-        const list = document.getElementById('postsFeed');
-        const empty = document.getElementById('emptyFeed');
-        list.innerHTML = '<div class="spinner-container"><div class="spinner"></div></div>';
-        empty.style.display = 'none';
-
-        try {
-            const sort = document.getElementById('postSort').value;
-            let url = `/api/colleges/${CID}/posts/?sort=${sort}`;
-            if (DEPT._id) url += `&dept_id=${DEPT._id}`;
-
-            ALL_POSTS = await apiFetch(url);
-            renderPosts(ALL_POSTS);
-        } catch (e) {
-            list.innerHTML = 'Error loading feed.';
+    try {
+        let url = '';
+        if (type === 'student') url = `/api/colleges/${CID}/dept/${DID}/students/${id}`;
+        else if (type === 'alumni') url = `/api/colleges/${CID}/dept/${DID}/alumni/${id}`;
+        else if (type === 'placement') url = `/api/colleges/${CID}/dept/${DID}/placements/${id}`;
+        else if (type === 'feature') url = `/api/colleges/${CID}/dept/${DID}/features/${id}`;
+        else if (type === 'gallery') url = `/api/colleges/${CID}/dept/${DID}/gallery/${id}`;
+        
+        const data = await apiFetch(url);
+        
+        if (type === 'student') {
+            document.getElementById('stuName').value = data.name;
+            document.getElementById('stuYear').value = data.year;
+            document.getElementById('stuCgpa').value = data.cgpa;
+            document.getElementById('stuRank').value = data.rank || '';
+            document.getElementById('stuLinkedin').value = data.social_links?.linkedin || '';
+            document.getElementById('stuAnonymous').checked = data.is_anonymous || false;
+            const form = document.getElementById('addStudentForm');
+            form.onsubmit = (e) => submitEditStudent(e, id);
+            document.querySelector('#addStudentModal h3').textContent = 'EDIT STUDENT RECORD';
+            openModal('addStudentModal');
+        } else if (type === 'alumni') {
+            document.getElementById('alumName').value = data.name;
+            document.getElementById('alumBatch').value = data.batch_year;
+            document.getElementById('alumCompany').value = data.company;
+            document.getElementById('alumRole').value = data.role;
+            document.getElementById('alumPackage').value = data.package_lpa || '';
+            document.getElementById('alumQuote').value = data.quote || '';
+            document.getElementById('alumLinkedin').value = data.social_links?.linkedin || '';
+            document.getElementById('alumTwitter').value = data.social_links?.twitter || '';
+            document.getElementById('alumInstagram').value = data.social_links?.instagram || '';
+            document.getElementById('alumOtherName').value = data.social_links?.other_name || '';
+            document.getElementById('alumOtherUrl').value = data.social_links?.other_url || '';
+            const form = document.getElementById('addAlumniForm');
+            form.onsubmit = (e) => submitEditAlumni(e, id);
+            document.querySelector('#addAlumniModal h3').textContent = 'EDIT ALUMNI RECORD';
+            openModal('addAlumniModal');
+        } else if (type === 'placement') {
+            document.getElementById('plName').value = data.student_name;
+            document.getElementById('plBatch').value = data.batch_year;
+            document.getElementById('plCompany').value = data.company;
+            document.getElementById('plRole').value = data.role;
+            document.getElementById('plPackage').value = data.package_lpa;
+            document.getElementById('plQuote').value = data.quote || '';
+            document.getElementById('plLinkedin').value = data.linkedin_url || '';
+            document.getElementById('plTwitter').value = data.twitter_url || '';
+            document.getElementById('plInstagram').value = data.instagram_url || '';
+            document.getElementById('plOtherName').value = data.other_social_name || '';
+            document.getElementById('plOtherUrl').value = data.other_social_url || '';
+            const form = document.getElementById('addPlacementForm');
+            form.onsubmit = (e) => submitEditPlacement(e, id);
+            document.querySelector('#addPlacementModal h3').textContent = 'EDIT PLACEMENT RECORD';
+            openModal('addPlacementModal');
+        } else if (type === 'feature') {
+            document.getElementById('featTitle').value = data.title;
+            document.getElementById('featDesc').value = data.description;
+            document.getElementById('featIcon').value = data.icon || '✨';
+            document.getElementById('featStat').value = data.stat_value || '';
+            const form = document.getElementById('addFeatureForm');
+            form.onsubmit = (e) => submitEditFeature(e, id);
+            document.querySelector('#addFeatureModal h3').textContent = 'EDIT HIGHLIGHT';
+            openModal('addFeatureModal');
+        } else if (type === 'gallery') {
+            document.getElementById('galCaption').value = data.caption || '';
+            const categorySelect = document.getElementById('galCategory');
+            const predefined = ['Labs', 'Events', 'Fests'];
+            if (predefined.includes(data.category)) {
+                categorySelect.value = data.category;
+                toggleGalleryOtherCategory(data.category);
+            } else {
+                categorySelect.value = 'Other';
+                toggleGalleryOtherCategory('Other');
+                document.getElementById('galCategoryOther').value = data.category;
+            }
+            const form = document.getElementById('addGalleryForm');
+            form.onsubmit = (e) => submitEditGallery(e, id);
+            document.querySelector('#addGalleryModal h3').textContent = 'EDIT GALLERY ITEM';
+            openModal('addGalleryModal');
         }
+    } catch (err) {
+        alert('Failed to load record');
     }
+}
 
-    function renderPosts(posts) {
-        const list = document.getElementById('postsFeed');
-        const empty = document.getElementById('emptyFeed');
-        const filterType = document.querySelector('#postFilters .btn-primary').dataset.type;
+async function submitEditPlacement(e, id) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.innerHTML = 'SAVING...';
+    btn.disabled = true;
+    try {
+        let photoUrl = document.getElementById('plPhoto').value;
+        if (document.getElementById('plFile').files.length > 0) photoUrl = await handleFileUpload('plFile', 'plPhoto');
+        const data = {
+            student_name: document.getElementById('plName').value,
+            photo_url: photoUrl,
+            batch_year: document.getElementById('plBatch').value,
+            company: document.getElementById('plCompany').value,
+            role: document.getElementById('plRole').value,
+            package_lpa: document.getElementById('plPackage').value,
+            quote: document.getElementById('plQuote').value,
+            linkedin_url: document.getElementById('plLinkedin').value,
+            twitter_url: document.getElementById('plTwitter').value,
+            instagram_url: document.getElementById('plInstagram').value,
+            other_social_name: document.getElementById('plOtherName').value,
+            other_social_url: document.getElementById('plOtherUrl').value
+        };
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/placements/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+        closeModal('addPlacementModal');
+        loadPlacements();
+    } catch (err) { alert('Update failed'); } finally { btn.innerHTML = 'SAVE PLACEMENT'; btn.disabled = false; }
+}
 
-        const filtered = posts.filter(p => {
-            return filterType === 'all' || p.post_type === filterType;
+async function submitEditFeature(e, id) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.innerHTML = 'SAVING...';
+    btn.disabled = true;
+    try {
+        const data = {
+            title: document.getElementById('featTitle').value,
+            description: document.getElementById('featDesc').value,
+            icon: document.getElementById('featIcon').value,
+            stat_value: document.getElementById('featStat').value
+        };
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/features/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+        closeModal('addFeatureModal');
+        loadFeatures();
+    } catch (err) { alert('Update failed'); } finally { btn.innerHTML = 'SAVE HIGHLIGHT'; btn.disabled = false; }
+}
+
+async function submitEditGallery(e, id) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.innerHTML = 'SAVING...';
+    btn.disabled = true;
+    try {
+        let photoUrl = document.getElementById('galPhoto').value;
+        if (document.getElementById('galFile').files.length > 0) photoUrl = await handleFileUpload('galFile', 'galPhoto');
+        
+        let category = document.getElementById('galCategory').value;
+        if(category === 'Other') {
+            category = document.getElementById('galCategoryOther').value || 'Other';
+        }
+
+        const data = { photo_url: photoUrl, caption: document.getElementById('galCaption').value, category: category };
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/gallery/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+        closeModal('addGalleryModal');
+        loadGallery();
+    } catch (err) { alert('Update failed'); } finally { btn.innerHTML = 'SAVE GALLERY'; btn.disabled = false; }
+}
+
+async function submitEditStudent(e, id) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.innerHTML = 'SAVING...';
+    btn.disabled = true;
+
+    try {
+        let photoUrl = document.getElementById('stuPhoto').value;
+        if (document.getElementById('stuFile').files.length > 0) {
+            photoUrl = await handleFileUpload('stuFile', 'stuPhoto');
+        }
+
+        const data = {
+            name: document.getElementById('stuName').value,
+            photo_url: photoUrl,
+            year: document.getElementById('stuYear').value,
+            cgpa: document.getElementById('stuCgpa').value,
+            rank: document.getElementById('stuRank').value,
+            social_links: { linkedin: document.getElementById('stuLinkedin').value },
+            is_anonymous: document.getElementById('stuAnonymous').checked
+        };
+
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/students/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
         });
+        closeModal('addStudentModal');
+        loadStudentsByYear(currentYear);
+    } catch (err) {
+        alert('Update failed');
+    } finally {
+        btn.innerHTML = 'SAVE STUDENT';
+        btn.disabled = false;
+    }
+}
 
-        if (filtered.length === 0) {
-            list.innerHTML = '';
-            empty.style.display = 'block';
+async function submitEditAlumni(e, id) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.innerHTML = 'SAVING...';
+    btn.disabled = true;
+
+    try {
+        let photoUrl = document.getElementById('alumPhoto').value;
+        if (document.getElementById('alumFile').files.length > 0) {
+            photoUrl = await handleFileUpload('alumFile', 'alumPhoto');
+        }
+
+        const data = {
+            name: document.getElementById('alumName').value,
+            photo_url: photoUrl,
+            batch_year: document.getElementById('alumBatch').value,
+            company: document.getElementById('alumCompany').value,
+            role: document.getElementById('alumRole').value,
+            package_lpa: document.getElementById('alumPackage').value,
+            quote: document.getElementById('alumQuote').value,
+            social_links: {
+                linkedin: document.getElementById('alumLinkedin').value,
+                twitter: document.getElementById('alumTwitter').value,
+                instagram: document.getElementById('alumInstagram').value,
+                other_name: document.getElementById('alumOtherName').value,
+                other_url: document.getElementById('alumOtherUrl').value
+            }
+        };
+
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/alumni/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+        closeModal('addAlumniModal');
+        loadAlumni();
+    } catch (err) {
+        alert('Update failed');
+    } finally {
+        btn.innerHTML = 'SAVE ALUMNI';
+        btn.disabled = false;
+    }
+}
+
+async function submitAddFeature(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.innerHTML = 'SAVING...';
+    btn.disabled = true;
+
+    try {
+        const data = {
+            title: document.getElementById('featTitle').value,
+            icon: document.getElementById('featIcon').value,
+            description: document.getElementById('featDesc').value,
+            stat_value: document.getElementById('featStat').value
+        };
+
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/features`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        closeModal('addFeatureModal');
+        e.target.reset();
+        loadFeatures();
+    } catch (err) {
+        alert('Failed to add highlight');
+    } finally {
+        btn.innerHTML = 'SAVE HIGHLIGHT';
+        btn.disabled = false;
+    }
+}
+
+async function submitAddGallery(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'UPLOADING...';
+    btn.disabled = true;
+
+    try {
+        const photoUrl = await handleFileUpload('galFile', 'galPhoto');
+        btn.innerHTML = 'POSTING...';
+
+        let category = document.getElementById('galCategory').value;
+        if(category === 'Other') {
+            category = document.getElementById('galCategoryOther').value || 'Other';
+        }
+
+        const data = {
+            photo_url: photoUrl,
+            caption: document.getElementById('galCaption').value,
+            category: category
+        };
+
+        await apiFetch(`/api/colleges/${CID}/dept/${DID}/gallery`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        closeModal('addGalleryModal');
+        e.target.reset();
+        loadGallery();
+    } catch (err) {
+        alert('Failed to post moment');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function loadPlacements() {
+    const grid = document.getElementById('deptPlacementsGrid');
+    try {
+        const res = await apiFetch(`/api/colleges/${CID}/dept/${DID}/placements`);
+        let placements = res.placements || res || [];
+        
+        if (placements.length === 0) {
+            const demoPlacements = [
+                { _id: 'demo-p1', student_name: 'David Smith', company: 'Google', package_lpa: 42.5, role: 'Software Engineer', batch_year: 2024, quote: 'The department mentors were instrumental in my journey.', photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200' },
+                { _id: 'demo-p2', student_name: 'Emily Chen', company: 'Microsoft', package_lpa: 38.2, role: 'Cloud Architect', batch_year: 2023, quote: 'Hands-on projects prepared me for the corporate world.', photo_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200' },
+                { _id: 'demo-p3', student_name: 'Marcus Thorne', company: 'Amazon', package_lpa: 35.0, role: 'SDE', batch_year: 2024, quote: 'Networking at EDU Link Hub was the key!', photo_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200' }
+            ];
+            grid.innerHTML = demoPlacements.map(pl => buildPlacementCard(pl)).join('');
             return;
         }
 
-        list.innerHTML = filtered.map(p => `
-    <div class="card feed-post glass animate-in">
-        <div class="post-header">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span class="post-type-label type-${p.post_type}">${p.post_type.toUpperCase()}</span>
-                ${p.is_pinned ? '<span class="pinned-badge">📌 PINNED</span>' : ''}
-            </div>
-            <div class="post-date">${new Date(p.created_at).toLocaleDateString()}</div>
-        </div>
-        
-        <h3 class="post-title">${p.title}</h3>
-        <p class="post-excerpt">${p.content}</p>
-        
-        ${renderPostMediaGrid(p.media)}
-        
-        <div class="post-tags">
-            ${(p.tags || []).map(t => `<span class="tag">#${t}</span>`).join('')}
-        </div>
-        
-        <div class="post-footer">
-            <div class="author">
-                <div class="avatar">${p.is_anonymous ? '👤' : (p.author_info?.name ? p.author_info.name[0] : '?')}</div>
-                <span>${p.is_anonymous ? 'Anonymous Student' : (p.author_info?.name || 'Unknown')}</span>
-            </div>
-            <div class="actions">
-                <button class="btn-action" onclick="toggleUpvote('${p._id}', this)">👍 <span class="count">${p.upvotes?.length || 0}</span></button>
-                <button class="btn-action" onclick="viewPost('${p._id}')">💬 ${p.replies?.length || 0} REPLIES</button>
-            </div>
-        </div>
-    </div>`).join('');
+        grid.innerHTML = placements.map(pl => buildPlacementCard(pl)).join('');
+    } catch (e) { 
+        grid.innerHTML = '<p style="color:#ff4757; text-align:center;">Error loading placements</p>';
     }
+}
 
-    function renderPostMediaGrid(media) {
-        if (!media || media.length === 0) return '';
-        const m = media[0];
-        let icon = '📎';
-        if (m.type === 'image') icon = '🖼️';
-        else if (m.type === 'video') icon = '🎬';
-        else if (m.type === 'document') icon = '📄';
+function buildPlacementCard(pl) {
+    const menuBtn = window.IS_ADMIN ?
+      `<button onclick="handleActionMenu(event, this, 'placement', '${pl._id}')" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; z-index:10;">⋮</button>` : '';
 
-        return `
-    <div class="post-media-box glass" onclick="event.stopPropagation(); window.open('${m.url}')">
-        <div class="icon">${icon}</div>
-        <div class="info">
-            <div class="fname">${m.filename}</div>
-            <div class="fmeta">${m.type.toUpperCase()} • ${(m.size_bytes / 1024 / 1024).toFixed(1)} MB</div>
-        </div>
-        <div class="download-icon">⬇️</div>
-    </div>`;
-    }
-
-    function setupFilters() {
-        document.querySelectorAll('#postFilters button').forEach(btn => {
-            btn.onclick = (e) => {
-                document.querySelectorAll('#postFilters button').forEach(b => b.className = 'btn btn-sm btn-secondary');
-                btn.className = 'btn btn-sm btn-primary';
-                renderPosts(ALL_POSTS);
-            };
-        });
-    }
-
-    function openCreateModal() {
-        if (!requireAuth()) return;
-        openModal('createPostModal');
-        updateCpForm();
-    }
-
-    function updateCpForm() {
-        const type = document.getElementById('cpType').value;
-        const sec = document.getElementById('cpDynamicSec');
-        let html = '';
-
-        if (type === 'event') {
-            html = `
-            <div class="grid grid-2" style="gap:20px;">
-                <div class="form-group"><label>Event Date</label><input type="date" id="cpEvDate" class="input glass"></div>
-                <div class="form-group"><label>Venue</label><input type="text" id="cpEvVenue" class="input glass" placeholder="Campus place..."></div>
+    return `
+        <div class="card glass placement-card-premium animate-in" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:25px; transition:0.3s; position:relative;">
+            ${menuBtn}
+            <div class="pl-header" style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
+                <div class="avatar-sm"><img src="${pl.photo_url || 'https://via.placeholder.com/60'}" style="width:50px; height:50px; border-radius:12px; object-fit:cover;"></div>
+                <div>
+                    <div class="name" style="color:#fff; font-weight:700;">${pl.student_name}</div>
+                    <div class="batch" style="color:#888; font-size:0.8rem;">Batch ${pl.batch_year}</div>
+                </div>
             </div>
-            <div class="form-group" style="margin-top:15px;"><label>Registration Link (Optional)</label><input type="url" id="cpEvLink" class="input glass" placeholder="https://..."></div>
-        `;
-        } else if (type === 'placement_info') {
-            html = `
-            <div class="grid grid-3" style="gap:20px;">
-                <div class="form-group"><label>Company</label><input type="text" id="cpPlComp" class="input glass" placeholder="Amazon, etc."></div>
-                <div class="form-group"><label>Package</label><input type="text" id="cpPlPack" class="input glass" placeholder="8.5 LPA"></div>
-                <div class="form-group"><label>Date</label><input type="date" id="cpPlDate" class="input glass"></div>
+            <div class="company-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span class="company-name" style="color:#4ecca3; font-weight:600;">🏢 ${pl.company}</span>
+                <span class="package-tag" style="background:rgba(78,204,163,0.1); color:#4ecca3; padding:2px 10px; border-radius:20px; font-size:0.85rem; font-weight:700;">${pl.package_lpa} LPA</span>
             </div>
-        `;
+            <div class="role-text" style="color:#aaa; font-size:0.9rem; margin-bottom:10px;">💼 ${pl.role}</div>
+            <p class="quote" style="color:#666; font-size:0.85rem; font-style:italic; margin-bottom:12px;">"${pl.quote || 'Success is a journey, not a destination.'}"</p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                ${pl.linkedin_url ? `<a href="${pl.linkedin_url}" target="_blank" class="social-chip-premium linkedin">🔗 LinkedIn</a>` : ''}
+                ${pl.twitter_url ? `<a href="${pl.twitter_url}" target="_blank" class="social-chip-premium twitter">🐦 Twitter</a>` : ''}
+                ${pl.instagram_url ? `<a href="${pl.instagram_url}" target="_blank" class="social-chip-premium instagram">📸 Instagram</a>` : ''}
+                ${pl.other_social_url ? `<a href="${pl.other_social_url}" target="_blank" class="social-chip-premium info">🌐 ${pl.other_social_name || 'Website'}</a>` : ''}
+            </div>
+        </div>`;
+}
+
+async function loadFeatures() {
+    const grid = document.getElementById('featuresGrid');
+    try {
+        const res = await apiFetch(`/api/colleges/${CID}/dept/${DID}/features`);
+        let features = res.features || res || [];
+
+        if (features.length === 0) {
+            const demoFeatures = [
+                { _id: 'demo-f1', title: 'AI Research Lab', description: 'State-of-the-art facility for deep learning and robotics research.', icon: '🤖', stat_value: '25+ Patents' },
+                { _id: 'demo-f2', title: 'Industry Connect', description: 'Collaborations with top tech giants for internships and live projects.', icon: '🤝', stat_value: '50+ Partners' },
+                { _id: 'demo-f3', title: 'Innovation Hub', description: 'A space for student startups and creative engineering solutions.', icon: '💡', stat_value: '12 Startups' }
+            ];
+            grid.innerHTML = demoFeatures.map(f => {
+                const menuBtn = window.IS_ADMIN ?
+                  `<button onclick="handleActionMenu(event, this, 'feature', '${f._id}')" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; z-index:10;">⋮</button>` : '';
+
+                return `
+                <div class="feature-box glass animate-in" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:40px; text-align:center; position:relative;">
+                    ${menuBtn}
+                    <div class="icon" style="font-size:3.5rem; margin-bottom:20px;">${f.icon || '✨'}</div>
+                    <h3 style="color:#fff; font-size:1.4rem; margin-bottom:12px;">${f.title}</h3>
+                    <p style="color:#888; line-height:1.6; margin-bottom:20px;">${f.description}</p>
+                    <div class="stat" style="color:#4ecca3; font-weight:800; font-size:1.2rem;">${f.stat_value || ''}</div>
+                </div>`;
+            }).join('');
+            return;
         }
 
-        if (html) { sec.innerHTML = html; sec.style.display = 'block'; } else { sec.style.display = 'none'; sec.innerHTML = ''; }
+        grid.innerHTML = (features.length === 0 ? [] : features).map(f => {
+            const menuBtn = window.IS_ADMIN ?
+              `<button onclick="handleActionMenu(event, this, 'feature', '${f._id}')" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; z-index:10;">⋮</button>` : '';
+
+            return `
+            <div class="feature-box glass animate-in" style="position:relative;">
+                ${menuBtn}
+                <div class="icon">${f.icon || '✨'}</div>
+                <h3>${f.title}</h3>
+                <p>${f.description}</p>
+                <div class="stat">${f.stat_value || ''}</div>
+            </div>`;
+        }).join('');
+    } catch (e) { 
+        grid.innerHTML = '<p style="color:#ff4757; text-align:center;">Error loading features</p>';
     }
+}
 
-    function setupDragDrop() {
-        const zone = document.getElementById('dropZone');
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-            zone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
-        });
-        zone.addEventListener('dragover', () => zone.classList.add('dragging'));
-        zone.addEventListener('dragleave', () => zone.classList.remove('dragging'));
-        zone.addEventListener('drop', (e) => {
-            zone.classList.remove('dragging');
-            if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
-        });
-    }
+async function loadEvents() {
+    const grid = document.getElementById('eventsGrid');
+    try {
+        const res = await apiFetch(`/api/colleges/${CID}/posts/?post_type=event&dept_id=${DID}`);
+        grid.innerHTML = (res || []).map(ev => `
+        <div class="event-card-premium glass animate-in">
+            <div class="ev-date-box">
+                <span class="day">20</span>
+                <span class="month">MAY</span>
+            </div>
+            <div class="ev-content">
+                <h3>${ev.title}</h3>
+                <p>📍 ${ev.event_data?.venue || 'Campus Auditorium'}</p>
+                <button class="btn btn-xs btn-primary">REGISTER NOW</button>
+            </div>
+        </div>`).join('');
+    } catch (e) { }
+}
 
-    async function handleFiles(files) {
-        if (!files.length) return;
-        const file = files[0];
+async function loadPosts() {
+    const grid = document.getElementById('postsFeed');
+    try {
+        const res = await apiFetch(`/api/colleges/${CID}/posts/?dept_id=${DID}`);
+        grid.innerHTML = res.map(p => `
+        <div class="feed-item glass animate-in">
+            <div class="p-head">
+                <span class="type-pill">${p.post_type.toUpperCase()}</span>
+                <span class="time">${new Date(p.created_at).toLocaleDateString()}</span>
+            </div>
+            <h3>${p.title}</h3>
+            <p>${p.content.substring(0, 150)}...</p>
+        </div>`).join('');
+    } catch (e) { }
+}
 
-        if (file.size > 20 * 1024 * 1024) return showToast('File too large (>20MB)', 'warning');
+async function loadGallery() {
+    const grid = document.getElementById('galleryGrid');
+    try {
+        const res = await apiFetch(`/api/colleges/${CID}/dept/${DID}/gallery`);
+        let photos = res.photos || res || [];
 
-        const progressSec = document.getElementById('uploadProgressContainer');
-        const bar = document.getElementById('uploadBar');
-        const pct = document.getElementById('uploadPercent');
-        const status = document.getElementById('uploadStatusText');
+        if (photos.length === 0) {
+            const demoPhotos = [
+                { _id: 'demo-g1', photo_url: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=500', caption: 'Student Collaboration' },
+                { _id: 'demo-g2', photo_url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500', caption: 'Innovation Workshop' },
+                { _id: 'demo-g3', photo_url: 'https://images.unsplash.com/photo-1524178232363-1fb28f74b0cd?w=500', caption: 'Expert Lecture' },
+                { _id: 'demo-g4', photo_url: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=500', caption: 'Research Lab' },
+                { _id: 'demo-g5', photo_url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=500', caption: 'Campus Fest' },
+                { _id: 'demo-g6', photo_url: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=500', caption: 'Team Discussion' }
+            ];
+            grid.innerHTML = demoPhotos.map(p => {
+                const menuBtn = window.IS_ADMIN ?
+                  `<button onclick="handleActionMenu(event, this, 'gallery', '${p._id}')" style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#fff; width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; z-index:10;">⋮</button>` : '';
 
-        progressSec.style.display = 'block';
-        bar.style.width = '0%';
-        pct.textContent = '0%';
-        status.textContent = `Uploading ${file.name}...`;
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api/colleges/upload/', true);
-            if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-
-            xhr.upload.onprogress = (e) => {
-                if (e.lengthComputable) {
-                    const per = Math.round((e.loaded / e.total) * 100);
-                    bar.style.width = per + '%';
-                    pct.textContent = per + '%';
-                }
-            };
-
-            xhr.onload = () => {
-                if (xhr.status === 200) {
-                    const data = JSON.parse(xhr.responseText);
-                    UPLOADED_MEDIA.push(data);
-                    renderFilePreviews();
-                    status.textContent = 'Upload Complete!';
-                    setTimeout(() => { progressSec.style.display = 'none'; }, 1500);
-                } else {
-                    status.textContent = 'Upload Failed!';
-                    bar.style.backgroundColor = 'var(--danger)';
-                }
-            };
-
-            xhr.send(formData);
-        } catch (e) {
-            status.textContent = 'Upload Error.';
-        }
-    }
-
-    function renderFilePreviews() {
-        const grid = document.getElementById('filePreviewGrid');
-        grid.innerHTML = UPLOADED_MEDIA.map((m, i) => `
-    <div class="file-chip glass">
-       <span>📄 ${m.filename}</span>
-       <button class="rm-btn" onclick="UPLOADED_MEDIA.splice(${i},1); renderFilePreviews()">✕</button>
-    </div>`).join('');
-    }
-
-    async function submitPost() {
-        const title = document.getElementById('cpTitle').value.trim();
-        const content = document.getElementById('cpContent').value.trim();
-        if (!title || !content) return showToast('Title and content required', 'warning');
-
-        const type = document.getElementById('cpType').value;
-        const btn = document.getElementById('submitPostBtn');
-
-        btn.disabled = true;
-        btn.textContent = 'PUBLISHING...';
-
-        const payload = {
-            department_id: DEPT._id,
-            post_type: type,
-            title: title,
-            content: content,
-            is_anonymous: document.getElementById('cpAnon').checked,
-            tags: document.getElementById('cpTags').value.split(',').map(t => t.trim()).filter(t => t),
-            media: UPLOADED_MEDIA
-        };
-
-        if (type === 'event') {
-            payload.event_data = {
-                event_date: document.getElementById('cpEvDate')?.value,
-                venue: document.getElementById('cpEvVenue')?.value,
-                registration_link: document.getElementById('cpEvLink')?.value
-            };
-        } else if (type === 'placement_info') {
-            payload.placement_data = {
-                company: document.getElementById('cpPlComp')?.value,
-                package: document.getElementById('cpPlPack')?.value,
-                visit_date: document.getElementById('cpPlDate')?.value
-            };
+                return `
+                <div class="gallery-item animate-in" style="position:relative;">
+                    ${menuBtn}
+                    <img src="${p.photo_url}" loading="lazy" style="width:100%; border-radius:15px; display:block;">
+                    <div class="overlay" style="position:absolute; bottom:0; left:0; width:100%; padding:20px; background:linear-gradient(transparent, rgba(0,0,0,0.8)); color:#fff; font-size:0.8rem; border-radius:0 0 15px 15px;">
+                        <span>${p.caption || ''}</span>
+                    </div>
+                </div>`;
+            }).join('');
+            return;
         }
 
-        try {
-            await apiFetch(`/api/colleges/${CID}/posts/`, { method: 'POST', body: payload });
-            showToast('Community post published!', 'success');
-            closeModal('createPostModal');
-            UPLOADED_MEDIA = [];
-            renderFilePreviews();
-            loadPosts();
-        } catch (e) {
-            showToast('Publish failed. Try again.', 'error');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'PUBLISH POST';
-        }
-    }
+        grid.innerHTML = (photos.length === 0 ? [] : photos).map(p => {
+            const menuBtn = window.IS_ADMIN ?
+              `<button onclick="handleActionMenu(event, this, 'gallery', '${p._id}')" style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#fff; width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; z-index:10;">⋮</button>` : '';
 
-    async function toggleUpvote(id, btn) {
-        if (!requireAuth()) return;
-        try {
-            const res = await apiFetch(`/api/colleges/posts/${id}/upvote`, { method: 'PATCH' });
-            const countSpan = btn.querySelector('.count');
-            let current = parseInt(countSpan.textContent);
-            countSpan.textContent = res.status === 'added' ? current + 1 : current - 1;
-            btn.classList.toggle('active', res.status === 'added');
-        } catch (e) { }
+            return `
+            <div class="gallery-item animate-in" style="position:relative;">
+                ${menuBtn}
+                <img src="${p.photo_url}" loading="lazy">
+                <div class="overlay"><span>${p.caption || ''}</span></div>
+            </div>`;
+        }).join('');
+    } catch (e) { 
+        grid.innerHTML = '<p style="color:#ff4757; text-align:center;">Error loading gallery</p>';
     }
-
-    async function joinDept() {
-        if (!requireAuth()) return;
-        try {
-            await apiFetch(`/api/colleges/${CID}/join`, { method: 'POST', body: { department_id: DEPT._id } });
-            showToast('Successfully joined the department!', 'success');
-            location.reload();
-        } catch (e) { showToast('Join failed.', 'error'); }
-    }
-
-    function openLightbox(src) {
-        document.getElementById('lightboxImg').src = src;
-        document.getElementById('lightbox').style.display = 'flex';
-    }
-    function closeLightbox() {
-        document.getElementById('lightbox').style.display = 'none';
-    }
+}
 </script>
 
 <style>
-    /* Exclusive Styles for Department Feed */
-    .media-dropzone {
-        border: 2px dashed var(--border);
-        padding: 40px;
-        border-radius: 20px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s;
-        background: rgba(0, 0, 0, 0.2);
-    }
+.mesh-gradient {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 10% 20%, rgba(5,217,232,0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255,42,109,0.05) 0%, transparent 40%);
+    pointer-events: none;
+}
+.mega-title { font-size: 5rem; font-weight: 900; letter-spacing: -3px; color: #fff; margin: 0; line-height: 1; }
+.branch-code { font-family: 'Rajdhani'; font-weight: 800; color: var(--accent); font-size: 1.5rem; letter-spacing: 5px; opacity: 0.6; }
 
-    .media-dropzone:hover,
-    .media-dropzone.dragging {
-        border-color: var(--accent);
-        background: rgba(5, 217, 232, 0.05);
-    }
+.sub-nav-sticky { background: rgba(1,10,20,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); position: sticky; top: var(--navbar-height); z-index: 100; }
+.sub-tabs-scroller { display: flex; gap: 40px; padding: 20px 0; }
+.sub-tab-link { background: none; border: none; color: var(--text-muted); font-family: 'Rajdhani'; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: 0.3s; position: relative; }
+.sub-tab-link.active { color: var(--accent); }
+.sub-tab-link.active::after { content: ''; position: absolute; bottom: -20px; left: 0; width: 100%; height: 3px; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
 
-    .media-dropzone .drop-icon {
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-    }
 
-    .media-dropzone .drop-text {
-        font-weight: bold;
-        color: var(--accent);
-        font-family: 'Rajdhani';
-    }
+/* PREMIUM COMMUNITY SECTION STYLES */
+.community-module {
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 30px;
+    padding: 50px;
+    margin-top: 30px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+    position: relative;
+    overflow: hidden;
+}
 
-    .media-dropzone .drop-hint {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-    }
+.community-module::before {
+    content: '';
+    position: absolute;
+    top: -150px;
+    right: -150px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(108,99,255,0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
 
-    .media-preview-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 15px;
-    }
+.section-header-premium {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 30px;
+}
 
-    .file-chip {
-        padding: 8px 15px;
-        border-radius: 40px;
-        border: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.85rem;
-    }
+.premium-title {
+    font-size: 2.2rem;
+    font-weight: 900;
+    margin: 0 0 8px 0;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+}
 
-    .file-chip .rm-btn {
-        background: none;
-        border: none;
-        color: var(--danger);
-        cursor: pointer;
-        font-weight: bold;
-    }
+.premium-subtitle {
+    color: #888;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+}
 
-    .post-type-label {
-        font-size: 0.7rem;
-        font-weight: bold;
-        padding: 2px 8px;
-        border-radius: 4px;
-    }
+.premium-add-btn {
+    background: linear-gradient(135deg, #6c63ff, #4ecca3);
+    color: #fff !important;
+    padding: 14px 28px;
+    border-radius: 14px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 10px 25px rgba(108, 99, 255, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Rajdhani';
+    text-transform: uppercase;
+}
 
-    .type-discussion {
-        background: rgba(149, 40, 215, 0.1);
-        color: #9528d7;
-        border: 1px solid rgba(149, 40, 215, 0.3);
-    }
+.premium-add-btn.alumni-btn {
+    background: linear-gradient(135deg, #6c63ff, #ff6b9d);
+    box-shadow: 0 10px 25px rgba(255, 107, 157, 0.3);
+}
 
-    .type-announcement {
-        background: rgba(255, 42, 109, 0.1);
-        color: #ff2a6d;
-        border: 1px solid rgba(255, 42, 109, 0.3);
-    }
+.premium-add-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(108, 99, 255, 0.4);
+    filter: brightness(1.1);
+}
 
-    .type-resource {
-        background: rgba(5, 217, 232, 0.1);
-        color: #05d9e8;
-        border: 1px solid rgba(5, 217, 232, 0.3);
-    }
+.filter-bar-premium {
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: center;
+}
 
-    .type-placement_info {
-        background: #0c1a2e;
-        color: #fff;
-        border: 1px solid var(--border);
-    }
+.segmented-control {
+    display: flex;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 6px;
+    backdrop-filter: blur(10px);
+}
 
-    .type-event {
-        background: rgba(255, 165, 0, 0.1);
-        color: #ffa500;
-        border: 1px solid rgba(255, 165, 0, 0.3);
-    }
+.segment-btn {
+    background: transparent;
+    border: none;
+    color: #666;
+    padding: 12px 28px;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Rajdhani';
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
 
-    .feed-post {
-        padding: 30px;
-        border: 1px solid var(--border);
-        transition: transform 0.2s;
-        cursor: pointer;
-    }
+.segment-btn:hover:not(.active) {
+    color: #aaa;
+    background: rgba(255, 255, 255, 0.05);
+}
 
-    .feed-post:hover {
-        transform: scale(1.01);
-        border-color: var(--cyan);
-    }
+.segment-btn.active {
+    background: var(--accent);
+    color: #050a14;
+    box-shadow: 0 4px 20px rgba(5, 217, 232, 0.4);
+}
 
-    .post-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-    }
+.plus-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+}
 
-    .post-date {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-    }
+.podium-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 20px; }
+.rank-card-premium { position: relative; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 24px; padding: 40px 30px; text-align: center; transition: 0.3s; }
+.rank-card-premium:hover { transform: translateY(-10px); background: rgba(255,255,255,0.04); }
+.rank-card-premium.gold { border-color: #ffd700; box-shadow: 0 0 30px rgba(255,215,0,0.1); }
+.rank-card-premium.silver { border-color: #c0c0c0; }
+.rank-card-premium.bronze { border-color: #cd7f32; }
 
-    .post-title {
-        font-size: 1.5rem;
-        color: #fff;
-        margin-bottom: 10px;
-    }
+.rank-crown { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); background: #050a14; padding: 5px 20px; border: 1px solid inherit; border-radius: 40px; font-weight: 900; font-family: 'Rajdhani'; }
+.avatar-large { width: 120px; height: 120px; margin: 0 auto 20px; border-radius: 50%; padding: 5px; border: 2px solid var(--border); }
+.avatar-large img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.cgpa-badge { font-family: 'Rajdhani'; font-weight: 900; font-size: 2.5rem; color: var(--accent); margin-bottom: 10px; }
+.skill-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px; }
+.skill-pills .pill { background: rgba(5,217,232,0.1); color: var(--accent); padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; }
 
-    .post-excerpt {
-        color: var(--text-secondary);
-        line-height: 1.6;
-        margin-bottom: 20px;
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        line-clamp: 3;
-    }
+.feature-box { 
+    padding: 40px; 
+    border-radius: 24px; 
+    text-align: center; 
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.feature-box:hover {
+    transform: translateY(-12px);
+    background: rgba(255,255,255,0.04);
+    border-color: var(--accent);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(5, 217, 232, 0.1);
+}
+.feature-box .icon { font-size: 3.5rem; margin-bottom: 25px; transition: 0.3s; }
+.feature-box:hover .icon { transform: scale(1.2) rotate(5deg); }
+.feature-box h3 { font-size: 1.5rem; color: #fff; margin-bottom: 15px; font-weight: 800; }
+.feature-box p { color: #888; line-height: 1.6; margin-bottom: 20px; font-size: 1rem; }
+.feature-box .stat { margin-top: 15px; font-weight: 900; font-size: 1.6rem; color: var(--accent); font-family: 'Rajdhani'; }
 
-    .post-media-box {
-        display: flex;
-        align-items: center;
-        padding: 15px;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        gap: 15px;
-        margin-bottom: 20px;
-    }
+.placement-card-premium {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 30px;
+    transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+.placement-card-premium:hover {
+    transform: translateY(-8px);
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(78, 204, 163, 0.4);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+.placement-card-premium .company-name { font-size: 1.2rem; }
+.placement-card-premium .package-tag { box-shadow: 0 4px 10px rgba(78, 204, 163, 0.2); }
 
-    .post-media-box .icon {
-        font-size: 2rem;
-    }
+.masonry-grid { columns: 3; gap: 20px; }
+.gallery-item { break-inside: avoid; margin-bottom: 20px; border-radius: 15px; overflow: hidden; position: relative; }
+.gallery-item img { width: 100%; display: block; }
+.gallery-item .overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: #fff; font-size: 0.8rem; opacity: 0; transition: 0.3s; }
+.gallery-item:hover .overlay { opacity: 1; }
 
-    .post-media-box .fname {
-        font-weight: bold;
-        font-family: 'Rajdhani';
-        color: var(--cyan);
-    }
+.glass-menu-premium {
+    background: rgba(10, 15, 30, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 8px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(108, 99, 255, 0.2);
+    overflow: hidden;
+}
 
-    .post-media-box .fmeta {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-    }
+.menu-item-premium {
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: 0.2s;
+    color: #eee;
+    font-family: 'Rajdhani';
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
 
-    .post-tags {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-bottom: 20px;
-    }
+.menu-item-premium:hover {
+    background: rgba(108, 99, 255, 0.2);
+    color: var(--accent);
+    transform: translateX(5px);
+}
 
-    .post-tags .tag {
-        font-size: 0.8rem;
-        color: var(--accent);
-        opacity: 0.8;
-    }
+.menu-item-premium.delete:hover {
+    background: rgba(255, 71, 87, 0.15);
+    color: #ff4757;
+}
 
-    .post-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 15px;
-        border-top: 1px solid var(--border-light);
-    }
+.menu-item-premium .icon { font-size: 1.1rem; }
 
-    .post-footer .author {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
+.demo-badge-premium {
+    background: rgba(108, 99, 255, 0.05);
+    border: 1px solid rgba(108, 99, 255, 0.2);
+    color: #888;
+    padding: 8px 24px;
+    border-radius: 40px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: 'Rajdhani';
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
 
-    .post-footer .avatar {
-        width: 30px;
-        height: 30px;
-        background: var(--bg-card);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--border);
-    }
+.social-chip-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    text-decoration: none;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: 0.3s;
+}
 
-    .post-footer .btn-action {
-        background: none;
-        border: 1px solid var(--border);
-        color: var(--text-muted);
-        border-radius: 6px;
-        padding: 5px 12px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
+.social-chip-premium.linkedin { background: rgba(0,119,181,0.1); color: #0077b5; border-color: rgba(0,119,181,0.2); }
+.social-chip-premium.twitter { background: rgba(29,161,242,0.1); color: #1da1f2; border-color: rgba(29,161,242,0.2); }
+.social-chip-premium.instagram { background: rgba(225,48,108,0.1); color: #e1306c; border-color: rgba(225,48,108,0.2); }
 
-    .post-footer .btn-action:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-    }
+.social-chip-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    filter: brightness(1.2);
+}
 
-    .post-footer .btn-action.active {
-        background: rgba(5, 217, 232, 0.1);
-        border-color: var(--accent);
-        color: var(--accent);
-    }
 
-    .switch-ui {
-        position: relative;
-        display: inline-block;
-        width: 40px;
-        height: 20px;
-    }
+/* Modal Fixes */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    display: none !important; /* Hide by default */
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
 
-    .switch-ui input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
+.modal-overlay.show {
+    display: flex !important;
+}
 
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: var(--border);
-        transition: .4s;
-        border-radius: 34px;
-    }
+.modal {
+    background: #141428;
+    border: 1px solid rgba(108, 99, 255, 0.3);
+    border-radius: 20px;
+    padding: 40px;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
 
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 14px;
-        width: 14px;
-        left: 3px;
-        bottom: 3px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
+/* Premium Toast Styles */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
-    input:checked+.slider {
-        background-color: var(--accent);
-    }
+.premium-toast {
+    background: rgba(10, 15, 30, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px 20px;
+    min-width: 300px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4), 0 0 20px rgba(108, 99, 255, 0.2);
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    transform-origin: right;
+}
 
-    input:focus+.slider {
-        box-shadow: 0 0 1px var(--accent);
-    }
+.premium-toast.success { border-left: 4px solid #4ecca3; }
+.premium-toast.error { border-left: 4px solid #ff4757; }
+.premium-toast.warning { border-left: 4px solid #ffa502; }
+.premium-toast.info { border-left: 4px solid #05d9e8; }
 
-    input:checked+.slider:before {
-        transform: translateX(20px);
-    }
+.toast-icon { font-size: 1.4rem; }
+.toast-content { flex: 1; font-size: 0.95rem; letter-spacing: 0.5px; }
+.toast-close { cursor: pointer; opacity: 0.5; transition: 0.3s; font-size: 1.2rem; }
+.toast-close:hover { opacity: 1; color: #ff4757; }
 
-    /* Gallery & Video Styles */
-    .masonry-grid {
-        column-count: 3;
-        column-gap: 15px;
-        width: 100%;
-    }
-
-    @media(max-width: 768px) {
-        .masonry-grid {
-            column-count: 2;
-        }
-    }
-
-    @media(max-width: 480px) {
-        .masonry-grid {
-            column-count: 1;
-        }
-    }
-
-    .gallery-photo {
-        width: 100%;
-        margin-bottom: 15px;
-        border-radius: 12px;
-        display: block;
-        border: 1px solid var(--border);
-        transition: transform 0.3s;
-        cursor: pointer;
-    }
-
-    .gallery-photo:hover {
-        transform: scale(1.02);
-        border-color: var(--cyan);
-        box-shadow: 0 0 15px rgba(5, 217, 232, 0.4);
-    }
-
-    .lightbox-overlay {
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.9);
-        justify-content: center;
-        align-items: center;
-    }
-
-    .lightbox-content {
-        max-width: 90%;
-        max-height: 90%;
-        border-radius: 8px;
-        border: 2px solid var(--cyan);
-    }
-
-    .lightbox-close {
-        position: absolute;
-        top: 20px;
-        right: 30px;
-        color: #fff;
-        font-size: 40px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .video-card {
-        overflow: hidden;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: transform 0.3s;
-    }
-
-    .video-card:hover {
-        transform: translateY(-5px);
-        border-color: var(--cyan);
-    }
-
-    .video-thumb {
-        height: 180px;
-        position: relative;
-        background-size: cover;
-        background-position: center;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .video-thumb::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.4);
-    }
-
-    .play-btn {
-        z-index: 2;
-        width: 50px;
-        height: 50px;
-        background: rgba(5, 217, 232, 0.8);
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: #000;
-        font-size: 1.5rem;
-        transition: transform 0.2s;
-    }
-
-    .video-card:hover .play-btn {
-        transform: scale(1.1);
-        background: var(--cyan);
-    }
-
-    .video-info {
-        padding: 15px;
-    }
-
-    /* Fest Styles */
-    .fest-card {
-        border-radius: 15px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .fest-cover {
-        height: 250px;
-    }
-
-    .fest-body {
-        padding: 30px;
-    }
+.premium-toast.fade-out {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+    transition: all 0.5s ease-in-out;
+}
 </style>
 {% endblock %}

@@ -37,7 +37,7 @@
         <span class="icon">🏆</span> Leaderboard
       </a>
       <a href="/study-groups" class="nav-item">
-        <span class="icon">👥</span> Study Groups
+        <span class="icon">👥</span> Synapse Society
       </a>
       <a href="/bookmarks" class="nav-item">
         <span class="icon">🔖</span> Saved Items
@@ -48,6 +48,17 @@
       <a href="/notifications" class="nav-item">
         <span class="icon">🔔</span> Notifications
         <span id="sidebarNotifBadge" class="sidebar-badge" style="display: none;">0</span>
+      </a>
+    </div>
+
+    <!-- Admin section — shown via JS for admin/moderator only -->
+    <div class="nav-section" id="adminNavSection" style="display:none;">
+      <div class="nav-section-title" style="color:#ff2a6d;">Admin</div>
+      <a href="/admin" id="sidebarAdminLink" class="nav-item" style="display:none; color:#ff6b9d; border-left:2px solid #ff2a6d;">
+        <span class="icon">🛡️</span> Admin Panel
+      </a>
+      <a href="/moderate" class="nav-item" style="color:#ffb347; border-left:2px solid #ff8c00;">
+        <span class="icon">✅</span> Moderate Queue
       </a>
     </div>
   </nav>
@@ -70,6 +81,18 @@
   (function() {
     const user = getUser();
     if (user) {
+      // Show admin sidebar section for admins/moderators
+      if (user.role === 'admin' || user.role === 'moderator') {
+        const adminSection = document.getElementById('adminNavSection');
+        if (adminSection) adminSection.style.display = 'block';
+        
+        // Show actual Admin Panel link ONLY for admins
+        if (user.role === 'admin') {
+          const adminLink = document.getElementById('sidebarAdminLink');
+          if (adminLink) adminLink.style.display = 'flex';
+        }
+      }
+
       // Fetch initial counts for other Sidebar Badges (Not notifications which are handled in app.js)
       apiFetch('/api/events').then(data => {
         const badge = document.getElementById('sidebarEventBadge');
@@ -80,7 +103,6 @@
       }).catch(() => {});
 
       apiFetch('/api/opportunities').then(data => {
-        // Look for badge if added in the future
         const badge = document.getElementById('sidebarOppBadge');
         if (badge && data && data.length > 0) {
           badge.textContent = data.length > 99 ? '99+' : data.length;
