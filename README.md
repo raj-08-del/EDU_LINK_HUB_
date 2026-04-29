@@ -22,3 +22,4 @@ A comprehensive student networking and resource-sharing platform built with Flas
 2. Copy `.env.example` → `.env` and fill in your credentials
 3. Install dependencies: `pip install -r requirements.txt`
 4. Run locally: `python run.py`
+# EDU_LINK_HUB
