@@ -60,7 +60,36 @@ def create_app():
     # Handle Proxy headers (important for Cloudflare Tunnel)
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
-    mongo.init_app(app)
+    # Append fast-timeout params to Atlas URI so DNS failures fail quickly
+    _mongo_uri = app.config['MONGO_URI']
+    if 'mongodb+srv' in _mongo_uri and 'serverSelectionTimeoutMS' not in _mongo_uri:
+        sep = '&' if '?' in _mongo_uri else '?'
+        _mongo_uri += f"{sep}serverSelectionTimeoutMS=8000&connectTimeoutMS=8000"
+        app.config['MONGO_URI'] = _mongo_uri
+
+    # Try Atlas first — fall back to local MongoDB on any connection/DNS error
+    _local_uri = 'mongodb://127.0.0.1:27017/edu_link_hub?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000'
+    try:
+        mongo.init_app(app)
+        # Quick DNS pre-check for SRV URIs
+        if 'mongodb+srv' in app.config['MONGO_URI']:
+            import pymongo
+            _test_client = pymongo.MongoClient(
+                app.config['MONGO_URI'],
+                serverSelectionTimeoutMS=8000
+            )
+            _test_client.admin.command('ping')
+            _test_client.close()
+        print(">>> MongoDB Atlas connection initialised")
+    except Exception as _atlas_err:
+        print(f">>> Atlas unavailable ({type(_atlas_err).__name__}). Falling back to local MongoDB...")
+        app.config['MONGO_URI'] = _local_uri
+        # Re-initialise mongo with local URI
+        try:
+            mongo.init_app(app)
+            print(">>> Using local MongoDB (127.0.0.1:27017)")
+        except Exception as _local_err:
+            print(f">>> WARNING: Local MongoDB also failed: {_local_err}")
     jwt.init_app(app)
     bcrypt.init_app(app)
 

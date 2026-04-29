@@ -2379,3 +2379,349 @@ a.chat-btn:hover,
 .empty-box span { font-size: 3rem; display: block; margin-bottom: 15px; }
 .empty-box h3 { color: #fff; margin-bottom: 10px; }
 .empty-box p { color: #666; }
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS — EDU LINK HUB
+   ══════════════════════════════════════════════════════ */
+
+/* ── Utility ── */
+img { max-width: 100%; height: auto; }
+.mobile-only  { display: none; }
+.desktop-only { display: block; }
+
+/* ── Mobile Top Navbar (hidden on desktop) ── */
+.mobile-navbar {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: rgba(5, 12, 25, 0.95);
+  border-bottom: 2px solid var(--accent);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 1500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.mobile-navbar .brand {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ff2a6d, #05d9e8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
+}
+
+/* ── Hamburger Button ── */
+.hamburger-btn {
+  background: none;
+  border: 1px solid rgba(5, 217, 232, 0.3);
+  color: #05d9e8;
+  cursor: pointer;
+  padding: 7px 8px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: all 0.2s;
+}
+.hamburger-btn:hover { background: rgba(5, 217, 232, 0.1); }
+.hamburger-btn span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #05d9e8;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* ── Sidebar Overlay ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 1499;
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.active { display: block; }
+
+/* ── Sidebar transition base ── */
+.sidebar {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.3s ease;
+}
+
+/* ── Modal overlay — scrollable on all sizes ── */
+.modal-overlay {
+  overflow-y: auto !important;
+}
+
+/* ══════════════════════════════════════════
+   TABLET — max-width: 1024px
+   ══════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  :root { --sidebar-width: 0px; } /* Effectively hide sidebar space */
+
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    z-index: 1600;
+  }
+  .sidebar.mobile-open { transform: translateX(0); width: 280px !important; }
+
+  .mobile-navbar { display: flex !important; }
+
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 16px !important;
+    padding-top: 72px !important; /* Space for mobile navbar */
+  }
+
+  .navbar { display: none !important; }
+
+  /* Dashboard stats — 2 columns */
+  .stats-grid,
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Grids → 1 column for safety on tablet */
+  .opp-grid, .opportunity-grid, .events-grid, .explore-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ══════════════════════════════════════════
+   MOBILE — max-width: 768px
+   ══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .mobile-only   { display: block !important; }
+  .desktop-only  { display: none !important; }
+
+  /* Ensure sidebar is consistently hidden until toggled */
+  .sidebar { width: 280px !important; }
+  .sidebar:not(.mobile-open) { transform: translateX(-100%); }
+
+  /* Main content — tighter padding */
+  .main-content {
+    padding: 12px !important;
+    padding-top: 68px !important;
+  }
+
+  /* Hide desktop top navbar on mobile (sidebar-linked) */
+  .navbar { display: none !important; }
+
+  /* App layout — single column */
+  .app-layout { flex-direction: column; }
+
+  /* ── Dashboard Stats: 2 columns ── */
+  .stats-grid,
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .stat-card .stat-number { font-size: 26px !important; }
+  .stat-card .stat-label  { font-size: 10px !important; }
+
+  /* ── All major grids → 1 column ── */
+  .opp-grid,
+  .opportunity-grid,
+  .events-grid,
+  .explore-grid,
+  .study-groups-grid,
+  .leaderboard-grid,
+  .planner-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* College profile stats */
+  .college-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Search box — full width */
+  .search-box { width: 100%; }
+
+  /* ── Modals — full-screen friendly ── */
+  .modal-overlay {
+    align-items: flex-start !important;
+    padding: 60px 10px 20px !important;
+  }
+  .modal-card,
+  .report-modal,
+  .glass-card.modal {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 88vh !important;
+    padding: 20px 16px !important;
+    border-radius: 14px !important;
+    overflow-y: auto !important;
+  }
+  /* Collapse 2-col modal forms to 1 col */
+  .modal-card [style*="grid-template-columns: 1fr 1fr"],
+  .modal-card [style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Community Q&A header ── */
+  .community-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .community-filter-tabs {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    width: 100% !important;
+    padding-bottom: 4px !important;
+  }
+
+  /* ── Chat — hide channel sidebar ── */
+  .channel-sidebar { display: none !important; }
+  .channel-sidebar.mobile-open {
+    display: block !important;
+    position: fixed;
+    inset: 0;
+    z-index: 2100;
+    width: 80vw;
+    max-width: 300px;
+  }
+  .channel-main { margin-left: 0 !important; width: 100% !important; }
+
+  /* ── Leaderboard podium — smaller ── */
+  .podium-card {
+    padding: 12px 8px !important;
+    min-width: 80px !important;
+  }
+  .podium-avatar {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 18px !important;
+  }
+
+  /* ── Study Group room ── */
+  .study-group-members { display: none !important; }
+  .study-group-chat    { width: 100% !important; }
+
+  /* ── Card image heights ── */
+  .opp-card img,
+  .opp-card-image,
+  .event-card img,
+  .event-card-image { height: 180px !important; }
+
+  /* ── Buttons — stack on mobile ── */
+  .opp-actions,
+  .event-actions {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .opp-actions a, .opp-actions button,
+  .event-actions a, .event-actions button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* ── Report card actions ── */
+  .report-card .report-actions {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .report-card .report-actions button,
+  .report-card .report-actions a {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* ── Scrollable tab bars ── */
+  .bookmark-tabs,
+  .report-tabs,
+  .sub-tabs-scroller {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding-bottom: 4px !important;
+  }
+
+  /* ── Auth card ── */
+  .auth-card {
+    padding: 28px 20px !important;
+    margin: 16px !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+
+  /* ── Page header ── */
+  .page-header {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+  }
+
+  /* ── Department hero ── */
+  section[style*="padding:60px"] {
+    padding: 24px 16px !important;
+  }
+  #deptName { font-size: 2.2rem !important; }
+
+  /* College hero */
+  .college-hero { height: 200px !important; }
+  .college-hero h1 { font-size: 22px !important; }
+}
+
+/* ══════════════════════════════════════════
+   SMALL MOBILE — max-width: 480px
+   ══════════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  /* Page title */
+  h1, .page-title, .glow-heading { font-size: 20px !important; }
+  h2 { font-size: 18px !important; }
+
+  /* Stats grid */
+  .stats-grid,
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* Report detail grid */
+  .report-detail-grid { grid-template-columns: 1fr !important; }
+
+  /* Modal padding tighter */
+  .modal-card,
+  .report-modal {
+    padding: 16px 12px !important;
+  }
+
+  /* Community post card padding */
+  .post-card { padding: 14px !important; }
+
+  /* Dropdowns — right-align */
+  .event-dropdown,
+  .opp-dropdown,
+  .group-dropdown,
+  .post-dropdown,
+  .card-dropdown-menu {
+    min-width: 160px !important;
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  /* Nav items text size */
+  .nav-item { font-size: 14px !important; padding: 10px 14px !important; }
+
+  /* Placement cards — full width */
+  #placements-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Department placement grid */
+  .grid.grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+}

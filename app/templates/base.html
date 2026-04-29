@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>{% block title %}EDU Link Hub{% endblock %}</title>
   <meta name="description" content="EDU Link Hub - Student Networking Platform">
   <!-- F10 PWA -->
@@ -32,6 +32,22 @@
   </div>
   <div class="particles-overlay" id="particlesOverlay"></div>
   <div class="scanlines"></div>
+
+  <!-- Mobile Top Navbar -->
+  <div class="mobile-navbar" id="mobileNavbar">
+    <span class="brand">EDU LINK HUB</span>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span id="mobile-notification-badge"
+        style="background:#ff2a6d; color:#fff; border-radius:50%; width:20px; height:20px; font-size:10px; display:none; align-items:center; justify-content:center; font-weight:700;">
+      </span>
+      <button class="hamburger-btn" onclick="toggleMobileSidebar()" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
   <!-- F7: Global Report Modal -->
   <div id="reportModalOverlay" class="report-modal-overlay" style="display:none" onclick="if(event.target===this)closeReportModal()">
@@ -165,6 +181,50 @@
         .catch(err => console.log('SW registration failed:', err));
     });
   }
+  </script>
+
+  <!-- Mobile Sidebar JS -->
+  <script>
+  function toggleMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const hamburger = document.getElementById('hamburger');
+    if (!sidebar) return;
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active');
+    const spans = hamburger.querySelectorAll('span');
+    if (sidebar.classList.contains('mobile-open')) {
+      spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+      spans[1].style.opacity = '0';
+      spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+    } else {
+      spans.forEach(s => { s.style.transform = 'none'; s.style.opacity = '1'; });
+    }
+  }
+
+  function closeMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (!sidebar) return;
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+    const spans = document.querySelectorAll('.hamburger-btn span');
+    spans.forEach(s => { s.style.transform = 'none'; s.style.opacity = '1'; });
+  }
+
+  // Close sidebar when a nav link is clicked on mobile
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.sidebar .nav-item, .sidebar a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) closeMobileSidebar();
+      });
+    });
+  });
+
+  // Auto-close on resize to desktop
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) closeMobileSidebar();
+  });
   </script>
 
   {% block scripts %}{% endblock %}

@@ -249,7 +249,7 @@
           <div class="placement-card" data-dept="{{ p.get('department','General') }}" style="background:#0d1b2a; border:1px solid #1e2a3a; border-radius:16px; padding:24px; text-align:center; transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative;"
             onmouseover="this.style.transform='translateY(-8px)'; this.style.borderColor='rgba(46,213,115,0.4)'; this.style.boxShadow='0 10px 30px rgba(46,213,115,0.1)';"
             onmouseout="this.style.transform='none'; this.style.borderColor='#1e2a3a'; this.style.boxShadow='none';">
-            
+
             {% if current_user and (current_user.role in ['admin', 'moderator'] or current_user._id|string == college.created_by|string) %}
             <div style="position:absolute; top:12px; left:12px; z-index:10;">
               <button class="three-dots-btn" onclick="toggleDropdown(event, 'dropdown-placement-{{ p._id }}')" style="background:transparent; border:none; color:#888; font-size:20px; cursor:pointer; width:30px; height:30px; display:flex; align-items:center; justify-content:center; transition:0.3s;">⋮</button>
@@ -269,14 +269,37 @@
               <img src="{{ p.get('company_logo', '') }}" style="height:28px; object-fit:contain; margin-bottom:8px;" onerror="this.style.display='none'">
               <p style="margin:0 0 4px; font-size:14px; color:#05d9e8; font-weight:700;">{{ p.get('company','') }}</p>
               <p style="margin:0 0 8px; font-size:12px; color:#aaa;">{{ p.get('role','') }}</p>
-              <div style="margin-bottom:12px; display:flex; gap:6px; flex-wrap:wrap; justify-content:center;">
-                {% if p.linkedin_url %}<a href="{{ p.linkedin_url }}" target="_blank" style="text-decoration:none; font-size:11px; background:rgba(0,119,181,0.1); color:#0077b5; padding:2px 8px; border-radius:4px; border:1px solid rgba(0,119,181,0.2);">LinkedIn</a>{% endif %}
-                {% if p.twitter_url %}<a href="{{ p.twitter_url }}" target="_blank" style="text-decoration:none; font-size:11px; background:rgba(29,161,242,0.1); color:#1da1f2; padding:2px 8px; border-radius:4px; border:1px solid rgba(29,161,242,0.2);">Twitter</a>{% endif %}
-                {% if p.instagram_url %}<a href="{{ p.instagram_url }}" target="_blank" style="text-decoration:none; font-size:11px; background:rgba(225,48,108,0.1); color:#e1306c; padding:2px 8px; border-radius:4px; border:1px solid rgba(225,48,108,0.2);">Instagram</a>{% endif %}
-                {% if p.other_social_url %}<a href="{{ p.other_social_url }}" target="_blank" style="text-decoration:none; font-size:11px; background:rgba(255,255,255,0.05); color:#fff; padding:2px 8px; border-radius:4px; border:1px solid rgba(255,255,255,0.1);">{{ p.get('other_social_name', 'Web') }}</a>{% endif %}
-              </div>
               <span style="background:linear-gradient(135deg, #2ed573, #1abc9c); color:#fff; padding:4px 16px; border-radius:20px; font-size:14px; font-weight:800; display:inline-block; box-shadow:0 2px 8px rgba(46,213,115,0.4);">{{ p.get('package_lpa','') }} LPA</span>
             </div>
+
+            <!-- Show More Expandable Panel -->
+            <div id="cpmore-{{ loop.index }}" style="display:none; margin-top:12px; text-align:left; background:rgba(5,217,232,0.03); border:1px solid rgba(5,217,232,0.12); border-radius:10px; padding:12px;">
+              <!-- Company & Role row -->
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div style="flex:1;">
+                  <p style="margin:0; font-size:13px; color:#05d9e8; font-weight:700;">🏢 {{ p.get('company','') }}</p>
+                  <p style="margin:4px 0 0; font-size:11px; color:#aaa;">💼 {{ p.get('role','') }}</p>
+                </div>
+              </div>
+              {% if p.get('quote') %}
+              <p style="font-size:12px; color:#aaa; font-style:italic; margin:0 0 10px; line-height:1.6;">"{{ p.get('quote') }}"</p>
+              {% endif %}
+              <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                {% if p.linkedin_url %}<a href="{{ p.linkedin_url }}" target="_blank" style="text-decoration:none; font-size:11px; background:rgba(0,119,181,0.15); color:#0077b5; padding:4px 10px; border-radius:20px; border:1px solid rgba(0,119,181,0.3); font-weight:600;">🔗 LinkedIn</a>{% endif %}
+                {% if p.twitter_url %}<a href="{{ p.twitter_url }}" target="_blank" style="text-decoration:none; font-size:11px; background:rgba(29,161,242,0.15); color:#1da1f2; padding:4px 10px; border-radius:20px; border:1px solid rgba(29,161,242,0.3); font-weight:600;">🐦 Twitter</a>{% endif %}
+                {% if p.instagram_url %}<a href="{{ p.instagram_url }}" target="_blank" style="text-decoration:none; font-size:11px; background:rgba(225,48,108,0.15); color:#e1306c; padding:4px 10px; border-radius:20px; border:1px solid rgba(225,48,108,0.3); font-weight:600;">📸 Instagram</a>{% endif %}
+                {% if p.other_social_url %}<a href="{{ p.other_social_url }}" target="_blank" style="text-decoration:none; font-size:11px; background:rgba(255,255,255,0.07); color:#fff; padding:4px 10px; border-radius:20px; border:1px solid rgba(255,255,255,0.15); font-weight:600;">🌐 {{ p.get('other_social_name','Web') }}</a>{% endif %}
+                {% if not p.linkedin_url and not p.twitter_url and not p.instagram_url and not p.other_social_url %}
+                <span style="font-size:11px; color:#555; font-style:italic;">No social links added</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <button onclick="togglePlacementMore('cpmore-{{ loop.index }}', this)"
+              style="margin-top:10px; background:transparent; border:1px solid rgba(5,217,232,0.3); color:#05d9e8; padding:5px 16px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; width:100%;"
+              onmouseover="this.style.background='rgba(5,217,232,0.1)'" onmouseout="this.style.background='transparent'">
+              Show More ▾
+            </button>
           </div>
           {% endfor %}
         </div>
@@ -432,6 +455,15 @@ function filterPlacements(dept) {
       setTimeout(() => { card.style.display = 'none'; }, 300);
     }
   });
+}
+
+function togglePlacementMore(panelId, btn) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  btn.innerHTML = isOpen ? 'Show More ▾' : 'Show Less ▴';
+  btn.style.borderColor = isOpen ? 'rgba(5,217,232,0.3)' : 'rgba(5,217,232,0.6)';
 }
 
 // Ensure first tab is open on load

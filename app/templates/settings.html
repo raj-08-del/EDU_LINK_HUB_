@@ -265,6 +265,12 @@
       document.getElementById('avatarInitials').textContent = user.name[0].toUpperCase();
     }
     
+    // Hide LinkedIn section for Google-authenticated users
+    if (user.auth_provider === 'google') {
+      const linkedinRow = document.getElementById('linkedin-section')?.closest('.form-row');
+      if (linkedinRow) linkedinRow.style.display = 'none';
+    }
+
     // LinkedIn Integration initialization
     if (user.linkedin_connected && user.linkedin_profile) {
       document.getElementById('linkedin-name').textContent = user.linkedin_profile.name || user.name;

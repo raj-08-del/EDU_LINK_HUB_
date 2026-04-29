@@ -837,8 +837,10 @@ function buildAlumniCard(alumni) {
     const actionBtn = window.IS_ADMIN ?
       `<button onclick="handleActionMenu(event, this, 'alumni', '${alumni._id}')" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; z-index:10;">⋮</button>` : '';
 
+    const panelId = `alum-more-${alumni._id}`;
+
     return `
-      <div style="background:#141428; border:1px solid #1e1e3a; border-left:4px solid #6c63ff; border-radius:12px; padding:20px; margin-bottom:16px; position:relative;">
+      <div class="alumni-card-premium animate-in" style="background:#141428; border:1px solid #1e1e3a; border-left:4px solid #6c63ff; border-radius:12px; padding:20px; margin-bottom:16px; position:relative; transition:0.3s;">
         ${actionBtn}
         <div style="display:flex; gap:16px; align-items:flex-start;">
           <div style="flex-shrink:0;">${avatarHtml}</div>
@@ -849,14 +851,37 @@ function buildAlumniCard(alumni) {
               <span style="color:#f0f0f0; font-size:0.9rem;">💼 ${alumni.role || ''}</span>
               <span style="color:#4ecca3; font-size:0.9rem; font-weight:600;">🏢 ${alumni.company || ''}</span>
               ${packageHtml}
-              ${alumni.location ? `<span style="color:#888; font-size:0.82rem;">📍 ${alumni.location}</span>` : ''}
             </div>
-            ${quoteHtml}
-            ${socialHtml}
+
+            <!-- Show More Expandable Panel -->
+            <div id="${panelId}" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05);">
+                <div style="background:rgba(108,99,255,0.03); padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid rgba(108,99,255,0.1);">
+                    <p style="margin:0; font-size:12px; color:#6c63ff; font-weight:700;">🏢 ${alumni.company || 'Private'}</p>
+                    <p style="margin:4px 0 0; font-size:11px; color:#aaa;">💼 ${alumni.role || 'Professional'}</p>
+                </div>
+                ${alumni.location ? `<p style="color:#888; font-size:0.82rem; margin-bottom:10px;">📍 ${alumni.location}</p>` : ''}
+                ${quoteHtml}
+                ${socialHtml}
+            </div>
+
+            <button onclick="toggleAlumniMore('${panelId}', this)"
+              style="margin-top:12px; width:100%; background:transparent; border:1px solid rgba(108,99,255,0.3); color:#6c63ff; padding:6px 0; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; transition:0.2s;"
+              onmouseover="this.style.background='rgba(108,99,255,0.08)'" onmouseout="this.style.background='transparent'">
+              Show More ▾
+            </button>
           </div>
         </div>
       </div>
     `;
+}
+
+function toggleAlumniMore(panelId, btn) {
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    const isOpen = panel.style.display !== 'none';
+    panel.style.display = isOpen ? 'none' : 'block';
+    btn.innerHTML = isOpen ? 'Show More ▾' : 'Show Less ▴';
+    btn.style.borderColor = isOpen ? 'rgba(108,99,255,0.3)' : 'rgba(108,99,255,0.6)';
 }
 
 function buildEmptyState(type, year) {
@@ -1561,6 +1586,17 @@ function buildPlacementCard(pl) {
     const menuBtn = window.IS_ADMIN ?
       `<button onclick="handleActionMenu(event, this, 'placement', '${pl._id}')" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; z-index:10;">⋮</button>` : '';
 
+    const panelId = `dpl-more-${pl._id}`;
+
+    // Build social links chips for the expanded panel
+    const socialChips = [
+        pl.linkedin_url  ? `<a href="${pl.linkedin_url}"  target="_blank" class="social-chip-premium linkedin">🔗 LinkedIn</a>`  : '',
+        pl.twitter_url   ? `<a href="${pl.twitter_url}"   target="_blank" class="social-chip-premium twitter">🐦 Twitter</a>`   : '',
+        pl.instagram_url ? `<a href="${pl.instagram_url}" target="_blank" class="social-chip-premium instagram">📸 Instagram</a>` : '',
+        pl.other_social_url ? `<a href="${pl.other_social_url}" target="_blank" class="social-chip-premium info">🌐 ${pl.other_social_name || 'Website'}</a>` : ''
+    ].filter(Boolean).join('');
+    const noSocial = !pl.linkedin_url && !pl.twitter_url && !pl.instagram_url && !pl.other_social_url;
+
     return `
         <div class="card glass placement-card-premium animate-in" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:25px; transition:0.3s; position:relative;">
             ${menuBtn}
@@ -1576,14 +1612,37 @@ function buildPlacementCard(pl) {
                 <span class="package-tag" style="background:rgba(78,204,163,0.1); color:#4ecca3; padding:2px 10px; border-radius:20px; font-size:0.85rem; font-weight:700;">${pl.package_lpa} LPA</span>
             </div>
             <div class="role-text" style="color:#aaa; font-size:0.9rem; margin-bottom:10px;">💼 ${pl.role}</div>
-            <p class="quote" style="color:#666; font-size:0.85rem; font-style:italic; margin-bottom:12px;">"${pl.quote || 'Success is a journey, not a destination.'}"</p>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                ${pl.linkedin_url ? `<a href="${pl.linkedin_url}" target="_blank" class="social-chip-premium linkedin">🔗 LinkedIn</a>` : ''}
-                ${pl.twitter_url ? `<a href="${pl.twitter_url}" target="_blank" class="social-chip-premium twitter">🐦 Twitter</a>` : ''}
-                ${pl.instagram_url ? `<a href="${pl.instagram_url}" target="_blank" class="social-chip-premium instagram">📸 Instagram</a>` : ''}
-                ${pl.other_social_url ? `<a href="${pl.other_social_url}" target="_blank" class="social-chip-premium info">🌐 ${pl.other_social_name || 'Website'}</a>` : ''}
+
+            <!-- Show More Expandable Panel -->
+            <div id="${panelId}" style="display:none; margin-top:8px; padding:12px; background:rgba(78,204,163,0.03); border:1px solid rgba(78,204,163,0.12); border-radius:10px;">
+                <!-- Company & Role row -->
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <div style="flex:1;">
+                        <p style="margin:0; font-size:13px; color:#4ecca3; font-weight:700;">🏢 ${pl.company}</p>
+                        <p style="margin:4px 0 0; font-size:11px; color:#aaa;">💼 ${pl.role}</p>
+                    </div>
+                </div>
+                ${pl.quote ? `<p style="color:#888; font-size:0.82rem; font-style:italic; margin:0 0 10px; line-height:1.6;">"${pl.quote}"</p>` : ''}
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    ${socialChips || (noSocial ? '<span style="font-size:11px; color:#555; font-style:italic;">No social links added</span>' : '')}
+                </div>
             </div>
+
+            <button onclick="toggleDeptPlacementMore('${panelId}', this)"
+              style="margin-top:10px; width:100%; background:transparent; border:1px solid rgba(78,204,163,0.3); color:#4ecca3; padding:6px 0; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; transition:0.2s;"
+              onmouseover="this.style.background='rgba(78,204,163,0.08)'" onmouseout="this.style.background='transparent'">
+              Show More ▾
+            </button>
         </div>`;
+}
+
+function toggleDeptPlacementMore(panelId, btn) {
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    const isOpen = panel.style.display !== 'none';
+    panel.style.display = isOpen ? 'none' : 'block';
+    btn.innerHTML = isOpen ? 'Show More ▾' : 'Show Less ▴';
+    btn.style.borderColor = isOpen ? 'rgba(78,204,163,0.3)' : 'rgba(78,204,163,0.6)';
 }
 
 async function loadFeatures() {

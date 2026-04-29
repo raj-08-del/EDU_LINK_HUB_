@@ -1,3 +1,4 @@
+import threading
 import requests
 import feedparser
 from bs4 import BeautifulSoup
@@ -13,7 +14,12 @@ def generate_source_id(title, source):
 
 # ── HELPER: Check if already exists ──
 def already_exists(mongo, source_id, collection):
-    return mongo.db[collection].find_one({"source_id": source_id}) is not None
+    try:
+        # Use a short max_time_ms to prevent hanging if DB connection is unstable
+        return mongo.db[collection].find_one({"source_id": source_id}, max_time_ms=2000) is not None
+    except Exception as e:
+        # If the DB itself fails, we raise a specific error to stop the collector
+        raise RuntimeError(f"Database error during check: {str(e)}")
 
 # ══════════════════════════════════════════════
 # OPPORTUNITIES COLLECTORS
@@ -495,41 +501,12 @@ def collect_from_eventbrite(mongo, api_key):
 # MAIN COLLECTOR — runs all collectors
 # ══════════════════════════════════════════════
 
-def run_all_collectors(mongo, config=None):
-    print(f"\n[AutoCollector] Starting collection at {datetime.utcnow()}")
-    config = config or {}
-    
-    # Opportunities
-    collect_from_internshala(mongo)
-    collect_from_unstop(mongo)
-    collect_from_remotive(mongo)
-    collect_from_jobicy(mongo)
-    collect_from_themuse(mongo)
-    
-    # Events
-    collect_hackathons_from_devpost(mongo)
-    collect_tech_events_from_rss(mongo)
-    collect_from_mlh(mongo)
-    
-    # Only run Adzuna if API keys configured
-    if config.get("ADZUNA_APP_ID") and config.get("ADZUNA_APP_KEY"):
-        collect_from_adzuna(
-            mongo,
-            config["ADZUNA_APP_ID"],
-            config["ADZUNA_APP_KEY"]
-        )
-        
-    # Only run Eventbrite if API key configured
-    if config.get("EVENTBRITE_API_KEY"):
-        collect_from_eventbrite(
-            mongo,
-            config["EVENTBRITE_API_KEY"]
-        )
-    
-    print(f"[AutoCollector] Collection complete at {datetime.utcnow()}\n")
-
 # ── Start the scheduler ──
 def start_scheduler(mongo, config=None):
+    if os.getenv('DISABLE_AUTO_COLLECTOR', 'false').lower() == 'true':
+        print("[AutoCollector] Disabled via .env")
+        return None
+
     scheduler = BackgroundScheduler()
     scheduler.add_job(
         func=lambda: run_all_collectors(mongo, config),
@@ -540,6 +517,65 @@ def start_scheduler(mongo, config=None):
     )
     scheduler.start()
     print("[AutoCollector] Scheduler started — runs every 6 hours")
-    # Run once immediately on startup
-    run_all_collectors(mongo, config)
+    
+    # Run once immediately on startup in a separate thread to not block main app
+    def initial_run():
+        import time
+        time.sleep(5) # Wait for app to settle
+        run_all_collectors(mongo, config)
+        
+    threading.Thread(target=initial_run, daemon=True).start()
     return scheduler
+
+def run_all_collectors(mongo, config=None):
+    print(f"\n[AutoCollector] Starting collection cycle...")
+    config = config or {}
+    
+    # ── Pre-check: Basic Internet & DB ──
+    try:
+        # Check DB
+        mongo.db.command('ping')
+        # Check Internet (Quick DNS test)
+        requests.get("https://8.8.8.8", timeout=2) 
+    except Exception as e:
+        print(f"[AutoCollector] Skipping: Network or Database unreachable.")
+        return
+
+    # Helper to run a collector with specific network-error silencing
+    def run_safe(func_name, func, *args):
+        try:
+            func(*args)
+        except RuntimeError as e:
+            print(f"[AutoCollector] DB ERROR during {func_name}: {e}")
+            return False
+        except requests.exceptions.ConnectionError as e:
+            if "Failed to resolve" in str(e) or "11001" in str(e):
+                print(f"[AutoCollector] {func_name}: SKIPPED (DNS Blocked/Restricted on this network)")
+            else:
+                print(f"[AutoCollector] {func_name}: Connection failed")
+        except requests.exceptions.Timeout:
+            print(f"[AutoCollector] {func_name}: SKIPPED (Timed out)")
+        except Exception as e:
+            print(f"[AutoCollector] {func_name} error: {str(e)[:50]}...")
+        return True
+
+    # Opportunities
+    if not run_safe("Internshala", collect_from_internshala, mongo): return
+    if not run_safe("Unstop", collect_from_unstop, mongo): return
+    if not run_safe("Remotive", collect_from_remotive, mongo): return
+    if not run_safe("Jobicy", collect_from_jobicy, mongo): return
+    if not run_safe("The Muse", collect_from_themuse, mongo): return
+    
+    # Events
+    if not run_safe("Devpost", collect_hackathons_from_devpost, mongo): return
+    if not run_safe("RSS Events", collect_tech_events_from_rss, mongo): return
+    if not run_safe("MLH", collect_from_mlh, mongo): return
+    
+    # Optional API-based collectors
+    if config.get("ADZUNA_APP_ID") and config.get("ADZUNA_APP_KEY"):
+        run_safe("Adzuna", collect_from_adzuna, mongo, config["ADZUNA_APP_ID"], config["ADZUNA_APP_KEY"])
+        
+    if config.get("EVENTBRITE_API_KEY"):
+        run_safe("Eventbrite", collect_from_eventbrite, mongo, config["EVENTBRITE_API_KEY"])
+    
+    print(f"[AutoCollector] Cycle complete at {datetime.utcnow()}\n")
