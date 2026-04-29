@@ -393,4 +393,83 @@ window.showSkeletons = function(containerId, count = 6) {
     container.innerHTML = html;
 };
 
+// ══════════════════════════════════════════════════════
+// CREATE OPPORTUNITY MODAL
+// ══════════════════════════════════════════════════════
+
+window.openCreateOppModal = function() {
+  const modal = document.getElementById('createOppModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeCreateOppModal = function() {
+  const modal = document.getElementById('createOppModal');
+  if (!modal) return;
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
+};
+
+// Close on backdrop click
+document.addEventListener('click', function(e) {
+  const modal = document.getElementById('createOppModal');
+  if (modal && e.target === modal) closeCreateOppModal();
+});
+
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeCreateOppModal();
+});
+
+window.submitCreateOpp = async function(e) {
+  e.preventDefault();
+  const form = document.getElementById('createOppForm');
+  const btn  = document.getElementById('btnSubmitOpp');
+  if (!form || !btn) return;
+
+  // Validate required selects
+  const category = form.querySelector('[name="category"]').value;
+  if (!category) { showOppToast('⚠️ Please select a category'); return; }
+
+  btn.textContent = '⏳ Submitting...';
+  btn.disabled = true;
+
+  try {
+    const formData = new FormData(form);
+
+    // Get auth token from localStorage (matches your apiFetch setup)
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token') || '';
+
+    const res = await fetch('/api/opportunities/', {
+      method: 'POST',
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showOppToast('✅ Opportunity submitted! Pending review.');
+      form.reset();
+      document.getElementById('oppImageLabel').textContent = 'Click to upload image';
+      closeCreateOppModal();
+
+      // If admin/moderator — auto-approved so refresh feed
+      if (currentUserRole === 'admin' || currentUserRole === 'moderator') {
+        setTimeout(() => location.reload(), 1200);
+      }
+    } else {
+      showOppToast('❌ ' + (data.error || 'Failed to submit. Try again.'));
+    }
+  } catch (err) {
+    console.error(err);
+    showOppToast('❌ Network error. Please try again.');
+  } finally {
+    btn.textContent = '🚀 Submit Opportunity';
+    btn.disabled = false;
+  }
+};
+
 console.log('✅ opportunities.js loaded successfully');
+

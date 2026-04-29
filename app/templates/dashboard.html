@@ -25,7 +25,7 @@
       </div>
 
       <!-- Stats Matrix (Full Width) -->
-      <div class="stats-grid holographic-stats" id="statsGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; width: 100%;">
+      <div class="stats-grid holographic-stats" id="statsGrid">
         <div class="stat-card" onclick="window.location.href='/explore'">
           <div class="stat-icon glow-icon">🎪</div>
           <div class="stat-value" id="stat-events">{{ campus_events_count | default(0, true) }}</div>
@@ -273,29 +273,6 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-  }
-
-  .stat-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    min-height: 140px;
-  }
-  .stat-card:hover {
-    transform: translateY(-8px);
-    background: rgba(180, 81, 252, 0.08);
-    border-color: rgba(180, 81, 252, 0.4);
-    box-shadow: 0 12px 30px rgba(180, 81, 252, 0.2), 0 0 20px rgba(5, 217, 232, 0.1);
   }
 
   @keyframes fadeInUp {

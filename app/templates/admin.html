@@ -20,24 +20,24 @@
 
       <!-- Stats -->
       <div class="stats-grid" id="adminStats">
-        <div class="stat-card" style="cursor:pointer; transition:transform 0.2s;" onclick="document.getElementById('usersContainer').scrollIntoView({behavior: 'smooth'})" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+        <div class="stat-card" onclick="document.getElementById('usersContainer').scrollIntoView({behavior: 'smooth'})">
           <div class="stat-icon">👥</div>
           <div class="stat-value" id="a_users">0</div>
           <div class="stat-label">Total Users</div>
         </div>
-        <div class="stat-card" style="cursor:pointer; transition:transform 0.2s;" onclick="window.location.href='/explore'" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+        <div class="stat-card" onclick="window.location.href='/explore'">
           <div class="stat-icon">🎪</div>
           <div class="stat-value" id="a_events">0</div>
           <div class="stat-label">Events</div>
           <div style="font-size:11px; color:#05d9e8; margin-top:4px;" id="a_auto_events">🤖 0 Auto</div>
         </div>
-        <div class="stat-card" style="cursor:pointer; transition:transform 0.2s;" onclick="window.location.href='/opportunities'" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+        <div class="stat-card" onclick="window.location.href='/opportunities'">
           <div class="stat-icon">💼</div>
           <div class="stat-value" id="a_opps">0</div>
           <div class="stat-label">Opportunities</div>
           <div style="font-size:11px; color:#05d9e8; margin-top:4px;" id="a_auto_opps">🤖 0 Auto</div>
         </div>
-        <div class="stat-card" style="cursor:pointer; transition:transform 0.2s; background:rgba(255,165,0,0.05); border-color:rgba(255,165,0,0.2);" onclick="window.location.href='/moderate'" onmouseover="this.style.transform='translateY(-3px)'; this.style.borderColor='orange';" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(255,165,0,0.2)';">
+        <div class="stat-card stat-card--pending" onclick="window.location.href='/moderate'">
           <div class="stat-icon">⏳</div>
           <div class="stat-value" id="a_pending" style="color:orange;">0</div>
           <div class="stat-label">Pending Review (Click to view)</div>

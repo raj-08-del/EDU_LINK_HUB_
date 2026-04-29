@@ -936,6 +936,80 @@ a:hover {
   margin-top: 4px;
 }
 
+/* ─── Stats Grid (Admin + Dashboard) ─── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  min-height: 130px;
+}
+
+.stat-card:hover {
+  transform: translateY(-8px);
+  background: rgba(180, 81, 252, 0.08);
+  border-color: rgba(180, 81, 252, 0.4);
+  box-shadow: 0 12px 30px rgba(180, 81, 252, 0.2), 0 0 20px rgba(5, 217, 232, 0.1);
+}
+
+.stat-card .stat-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.stat-card .stat-value {
+  font-size: 32px !important;
+  font-weight: 800;
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 1px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-card .stat-label {
+  font-size: 11px !important;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 0;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Admin stats — 4 columns on desktop */
+#adminStats {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Pending stat card — orange tint variant */
+.stat-card--pending {
+  background: rgba(255, 165, 0, 0.05);
+  border-color: rgba(255, 165, 0, 0.2);
+}
+.stat-card--pending:hover {
+  background: rgba(255, 165, 0, 0.12);
+  border-color: orange;
+  box-shadow: 0 12px 30px rgba(255, 165, 0, 0.2);
+}
+
 /* ─── Image Upload Area ─── */
 .img-upload-area {
   border: 2px dashed rgba(180, 81, 252, 0.3);

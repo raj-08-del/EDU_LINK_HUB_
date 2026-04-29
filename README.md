@@ -6,9 +6,9 @@ A comprehensive student networking and resource-sharing platform built with Flas
 - 🔐 JWT Authentication with Google OAuth
 - 🏆 Gamified Leaderboard System
 - 📚 Study Groups & Resources
-- 💼 Opportunities & Events Board
+- 💼 Opportunities & Events Board (with Manual Posting)
 - 🏫 College Directory & Community Hub
-- 📊 Admin Dashboard & Reports
+- 📊 Admin Dashboard & Reports (Responsive Layout)
 - 🔔 Real-time Notifications
 
 ## Tech Stack

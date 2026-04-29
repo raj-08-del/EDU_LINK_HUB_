@@ -24,9 +24,22 @@
     
     <div class="page-content">
       <!-- Animated Header -->
-      <header class="animated-header">
-        <h1 id="pageTitle">Find Your Next Opportunity</h1>
-        <p class="header-subtitle" style="color: var(--text-muted); margin-top: 10px;">Curated jobs, internships, and hackathons from across the web.</p>
+      <header class="animated-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div>
+          <h1 id="pageTitle">Find Your Next Opportunity</h1>
+          <p class="header-subtitle" style="color: var(--text-muted); margin-top: 10px;">Curated jobs, internships, and hackathons from across the web.</p>
+        </div>
+        <button id="btnCreateOpp" onclick="openCreateOppModal()"
+          style="display:inline-flex; align-items:center; gap:8px;
+                 padding:12px 22px; border-radius:12px; border:none;
+                 background:linear-gradient(135deg,#ff2a6d,#05d9e8);
+                 color:#fff; font-size:14px; font-weight:700;
+                 cursor:pointer; box-shadow:0 0 20px rgba(5,217,232,0.3);
+                 font-family:'Rajdhani',sans-serif; letter-spacing:0.5px;
+                 transition:all 0.3s ease;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Post Opportunity
+        </button>
       </header>
 
       <!-- Sticky Filter Bar -->
@@ -150,7 +163,175 @@
   </div>
 </div>
 
-{% include "partials/modals/opportunity_modals.html" ignore missing %}
+<!-- ═══════════════════════════════════════════════════════
+     CREATE OPPORTUNITY MODAL
+     ═══════════════════════════════════════════════════════ -->
+<div id="createOppModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82);
+     backdrop-filter:blur(10px); z-index:9999; align-items:center; justify-content:center;
+     overflow-y:auto; padding:24px 12px;">
+
+  <div style="background:#0d0d1a; border:1px solid rgba(5,217,232,0.25); border-radius:20px;
+              padding:32px 28px; width:100%; max-width:620px; margin:auto;
+              box-shadow:0 0 60px rgba(5,217,232,0.08); font-family:'Inter',sans-serif;
+              position:relative;">
+
+    <!-- Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <div>
+        <h2 style="margin:0; font-size:20px; font-weight:700; color:#fff; font-family:'Rajdhani',sans-serif;
+                   letter-spacing:0.5px; text-transform:uppercase;">Post an Opportunity</h2>
+        <p style="margin:4px 0 0; font-size:13px; color:#556;">Fill in the details below. It'll go live after review.</p>
+      </div>
+      <button onclick="closeCreateOppModal()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+              color:#aaa; width:34px; height:34px; border-radius:50%; font-size:20px; cursor:pointer;
+              display:flex; align-items:center; justify-content:center; transition:all 0.2s;"
+              onmouseover="this.style.background='rgba(255,71,87,0.2)'; this.style.color='#ff4757'"
+              onmouseout="this.style.background='rgba(255,255,255,0.06)'; this.style.color='#aaa'">&times;</button>
+    </div>
+
+    <!-- Form -->
+    <form id="createOppForm" onsubmit="submitCreateOpp(event)" enctype="multipart/form-data">
+
+      <!-- Row 1: Company + Role -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+        <div>
+          <label style="font-size:12px; color:#05d9e8; font-weight:600; text-transform:uppercase;
+                         letter-spacing:0.06em; display:block; margin-bottom:6px;">Company *</label>
+          <input name="company" placeholder="e.g. Google" required
+                 style="width:100%; padding:10px 14px; background:#0a1628; border:1px solid rgba(5,217,232,0.2);
+                        border-radius:10px; color:#e0f7ff; font-size:14px; outline:none;
+                        font-family:'Inter',sans-serif; box-sizing:border-box;"
+                 onfocus="this.style.borderColor='#05d9e8'" onblur="this.style.borderColor='rgba(5,217,232,0.2)'">
+        </div>
+        <div>
+          <label style="font-size:12px; color:#05d9e8; font-weight:600; text-transform:uppercase;
+                         letter-spacing:0.06em; display:block; margin-bottom:6px;">Role / Title *</label>
+          <input name="role" placeholder="e.g. Frontend Developer" required
+                 style="width:100%; padding:10px 14px; background:#0a1628; border:1px solid rgba(5,217,232,0.2);
+                        border-radius:10px; color:#e0f7ff; font-size:14px; outline:none;
+                        font-family:'Inter',sans-serif; box-sizing:border-box;"
+                 onfocus="this.style.borderColor='#05d9e8'" onblur="this.style.borderColor='rgba(5,217,232,0.2)'">
+        </div>
+      </div>
+
+      <!-- Row 2: Category + Location -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+        <div>
+          <label style="font-size:12px; color:#05d9e8; font-weight:600; text-transform:uppercase;
+                         letter-spacing:0.06em; display:block; margin-bottom:6px;">Category *</label>
+          <select name="category" required
+                  style="width:100%; padding:10px 14px; background:#0a1628; border:1px solid rgba(5,217,232,0.2);
+                         border-radius:10px; color:#e0f7ff; font-size:14px; outline:none;
+                         font-family:'Inter',sans-serif; box-sizing:border-box;">
+            <option value="">Select category</option>
+            <option value="job">Job</option>
+            <option value="internship">Internship</option>
+            <option value="campus-placement">Campus Placement</option>
+            <option value="skill-based">Skill Based</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px; color:#05d9e8; font-weight:600; text-transform:uppercase;
+                         letter-spacing:0.06em; display:block; margin-bottom:6px;">Location *</label>
+          <input name="location" placeholder="e.g. Bangalore / Remote" required
+                 style="width:100%; padding:10px 14px; background:#0a1628; border:1px solid rgba(5,217,232,0.2);
+                        border-radius:10px; color:#e0f7ff; font-size:14px; outline:none;
+                        font-family:'Inter',sans-serif; box-sizing:border-box;"
+                 onfocus="this.style.borderColor='#05d9e8'" onblur="this.style.borderColor='rgba(5,217,232,0.2)'">
+        </div>
+      </div>
+
+      <!-- Row 3: Eligibility + Deadline -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+        <div>
+          <label style="font-size:12px; color:#05d9e8; font-weight:600; text-transform:uppercase;
+                         letter-spacing:0.06em; display:block; margin-bottom:6px;">Eligibility *</label>
+          <input name="eligibility" placeholder="e.g. Open to All / B.Tech" required
+                 style="width:100%; padding:10px 14px; background:#0a1628; border:1px solid rgba(5,217,232,0.2);
+                        border-radius:10px; color:#e0f7ff; font-size:14px; outline:none;
+                        font-family:'Inter',sans-serif; box-sizing:border-box;"
+                 onfocus="this.style.borderColor='#05d9e8'" onblur="this.style.borderColor='rgba(5,217,232,0.2)'">
+        </div>
+        <div>
+          <label style="font-size:12px; color:#05d9e8; font-weight:600; text-transform:uppercase;
+                         letter-spacing:0.06em; display:block; margin-bottom:6px;">Deadline *</label>
+          <input name="deadline" type="date" required
+                 style="width:100%; padding:10px 14px; background:#0a1628; border:1px solid rgba(5,217,232,0.2);
+                        border-radius:10px; color:#e0f7ff; font-size:14px; outline:none;
+                        font-family:'Inter',sans-serif; box-sizing:border-box; color-scheme:dark;"
+                 onfocus="this.style.borderColor='#05d9e8'" onblur="this.style.borderColor='rgba(5,217,232,0.2)'">
+        </div>
+      </div>
+
+      <!-- Apply Link -->
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px; color:#05d9e8; font-weight:600; text-transform:uppercase;
+                       letter-spacing:0.06em; display:block; margin-bottom:6px;">Apply Link *</label>
+        <input name="applyLink" type="url" placeholder="https://company.com/apply" required
+               style="width:100%; padding:10px 14px; background:#0a1628; border:1px solid rgba(5,217,232,0.2);
+                      border-radius:10px; color:#e0f7ff; font-size:14px; outline:none;
+                      font-family:'Inter',sans-serif; box-sizing:border-box;"
+               onfocus="this.style.borderColor='#05d9e8'" onblur="this.style.borderColor='rgba(5,217,232,0.2)'">
+      </div>
+
+      <!-- Description -->
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px; color:#05d9e8; font-weight:600; text-transform:uppercase;
+                       letter-spacing:0.06em; display:block; margin-bottom:6px;">Description</label>
+        <textarea name="description" rows="4" placeholder="Tell candidates about this opportunity..."
+                  style="width:100%; padding:10px 14px; background:#0a1628; border:1px solid rgba(5,217,232,0.2);
+                         border-radius:10px; color:#e0f7ff; font-size:14px; outline:none; resize:vertical;
+                         font-family:'Inter',sans-serif; box-sizing:border-box; line-height:1.5;"
+                  onfocus="this.style.borderColor='#05d9e8'" onblur="this.style.borderColor='rgba(5,217,232,0.2)'"></textarea>
+      </div>
+
+      <!-- Tags -->
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px; color:#05d9e8; font-weight:600; text-transform:uppercase;
+                       letter-spacing:0.06em; display:block; margin-bottom:6px;">Tags <span style="color:#556;font-weight:400;">(comma separated)</span></label>
+        <input name="tags" placeholder="e.g. python, remote, full-time"
+               style="width:100%; padding:10px 14px; background:#0a1628; border:1px solid rgba(5,217,232,0.2);
+                      border-radius:10px; color:#e0f7ff; font-size:14px; outline:none;
+                      font-family:'Inter',sans-serif; box-sizing:border-box;"
+               onfocus="this.style.borderColor='#05d9e8'" onblur="this.style.borderColor='rgba(5,217,232,0.2)'">
+      </div>
+
+      <!-- Image Upload -->
+      <div style="margin-bottom:24px;">
+        <label style="font-size:12px; color:#05d9e8; font-weight:600; text-transform:uppercase;
+                       letter-spacing:0.06em; display:block; margin-bottom:6px;">Company Logo / Image <span style="color:#556;font-weight:400;">(optional)</span></label>
+        <label for="oppImageFile" style="display:flex; align-items:center; gap:12px; padding:14px 16px;
+               background:rgba(5,217,232,0.04); border:1.5px dashed rgba(5,217,232,0.3);
+               border-radius:10px; cursor:pointer; transition:all 0.2s;"
+               onmouseover="this.style.borderColor='#05d9e8'; this.style.background='rgba(5,217,232,0.08)'"
+               onmouseout="this.style.borderColor='rgba(5,217,232,0.3)'; this.style.background='rgba(5,217,232,0.04)'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#05d9e8" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span style="color:#aaa; font-size:13px;" id="oppImageLabel">Click to upload image</span>
+        </label>
+        <input id="oppImageFile" name="image" type="file" accept="image/*" style="display:none;"
+               onchange="document.getElementById('oppImageLabel').textContent = this.files[0]?.name || 'Click to upload image'">
+      </div>
+
+      <!-- Info note -->
+      <div style="background:rgba(5,217,232,0.05); border:1px solid rgba(5,217,232,0.15); border-radius:10px;
+                  padding:12px 16px; margin-bottom:20px; display:flex; align-items:flex-start; gap:10px;">
+        <span style="font-size:18px; flex-shrink:0;">ℹ️</span>
+        <p style="margin:0; font-size:12px; color:#6a9ab5; line-height:1.5;">Your opportunity will be submitted for review. Once approved by a moderator or admin, it will appear publicly in the feed.</p>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" id="btnSubmitOpp"
+              style="width:100%; padding:14px; background:linear-gradient(135deg,#ff2a6d,#05d9e8);
+                     border:none; border-radius:12px; color:#fff; font-size:15px; font-weight:700;
+                     cursor:pointer; font-family:'Rajdhani',sans-serif; letter-spacing:0.5px;
+                     transition:all 0.3s; box-shadow:0 0 20px rgba(5,217,232,0.2);"
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 30px rgba(5,217,232,0.4)'"
+              onmouseout="this.style.transform='none'; this.style.boxShadow='0 0 20px rgba(5,217,232,0.2)'">
+        🚀 Submit Opportunity
+      </button>
+    </form>
+  </div>
+</div>
 
 {% endblock %}
 
